@@ -267,7 +267,7 @@
   .exptag.on{color:var(--amber);border-color:var(--amber)}
   .exprow{display:flex;gap:8px}
   .expcap{font-family:var(--display);font-size:9px;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase;text-align:center}
-  .stage{background:linear-gradient(rgba(200,205,212,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,205,212,.03) 1px,transparent 1px),linear-gradient(180deg,#181B20 0%,#14161A 100%);background-size:28px 28px,28px 28px,100% 100%;border-bottom:1px solid var(--edge);padding:8px 6px 2px}
+  .stage{background:linear-gradient(rgba(200,205,212,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,205,212,.03) 1px,transparent 1px),linear-gradient(180deg,#181B20 0%,#14161A 100%);background-size:28px 28px,28px 28px,100% 100%;border-bottom:1px solid var(--edge);padding:8px 0 2px}
   .stage svg{width:100%;height:auto}
   .stage svg.gun-svg{display:none}
   .stage svg.gun-svg.active{display:block}
@@ -2855,7 +2855,7 @@ const EXP_LAYERS=[{n:"mag",asm:[11.65,-19.89],src:"assets/guns/glock/mag.png"},{
     st.style.height="auto";
     st.style.width=`min(100%, calc(31vh / ${set.hRatio}))`;
     st.style.width=`min(100%, calc(31svh / ${set.hRatio}))`; /* upgrades if supported, ignored if not */
-    st.style.maxWidth="94%";
+    st.style.maxWidth="100%";
     set.layers.forEach(L=>{
       const im=document.createElement("img");
       im.src=L.src; im.id="lst-"+L.n; im.alt=L.n;
