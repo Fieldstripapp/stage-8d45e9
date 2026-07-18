@@ -2715,21 +2715,21 @@ const EXP_LAYERS=[{n:"mag",asm:[11.65,-19.89],src:"assets/guns/glock/mag.png"},{
   /* ---- Mossberg 500 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const M500_LAYERS=[
     {n:"receiver",asm:[0,0],src:"assets/guns/m500/receiver.png"},
-    {n:"pump",asm:[-10.43,-17.58],src:"assets/guns/m500/pump.png"},
-    {n:"barrel",asm:[-14.22,16.67],src:"assets/guns/m500/barrel.png"}
+    {n:"pump",asm:[-7.56,-9.74],src:"assets/guns/m500/pump.png"},
+    {n:"barrel",asm:[-12.1,33.54],src:"assets/guns/m500/barrel.png"}
   ];
-  const M500_CENTERS={barrel:[81.4,26.1],pump:[67.4,64.4],receiver:[44.3,57.4]};
+  const M500_CENTERS={barrel:[73.9,16.1],pump:[61.1,64.4],receiver:[37.4,67.7]};
   const M500_NAMES={barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Stock"};
   const M500_LSTEPS=[
     {pos:{receiver:"a",pump:"a",barrel:"a"},hl:null,m:null},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"pump",m:{x:57,y:33,ch:"\u25c0"}},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"receiver",m:{x:77,y:36,ch:"\u27f2"}},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e"},hl:"barrel",m:{x:72,y:16,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"pump",m:{x:54,y:41,ch:"\u25c0"}},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"receiver",m:{x:70,y:46,ch:"\u27f2"}},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e"},hl:"barrel",m:{x:64,y:8,ch:"\u25b2"}},
     {pos:{receiver:"a",pump:"a",barrel:"e"},hl:null,m:null},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",m:{x:47,y:66,ch:"\u25b2"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",m:{x:47,y:62,ch:"\u25bc"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",m:{x:50,y:44,ch:"\u25c0"}},
-    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:"pump",m:{x:52,y:52,ch:"\u25c0"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",m:{x:40,y:76,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",m:{x:40,y:72,ch:"\u25bc"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",m:{x:43,y:54,ch:"\u25c0"}},
+    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:"pump",m:{x:49,y:60,ch:"\u25c0"}},
     {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:null,m:null}
   ];
   /* ---- 1911 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
@@ -2831,7 +2831,7 @@ const EXP_LAYERS=[{n:"mag",asm:[11.65,-19.89],src:"assets/guns/glock/mag.png"},{
     cfsup:{layers:CFSUP_LAYERS,lsteps:CFSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 137",hRatio:137/1400,zAsm:1.9,zAsmC:27},
     sldsup:{layers:CFSUP_LAYERS,lsteps:SLDSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 137",hRatio:137/1400,zAsm:1.9,zAsmC:27},
     g19:{layers:EXP_LAYERS,lsteps:G19_LSTEPS,centers:G19_CENTERS,names:PARTNAMES,nums:[["slide",1],["barrel",2],["rsa",3],["frame",4],["mag",5]],tags:["slide","rsa","barrel","frame","mag"],aspect:"880 / 1107",hRatio:1107/880},
-    m500:{layers:M500_LAYERS,lsteps:M500_LSTEPS,centers:M500_CENTERS,names:M500_NAMES,nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",hRatio:330/1055},
+    m500:{layers:M500_LAYERS,lsteps:M500_LSTEPS,centers:M500_CENTERS,names:M500_NAMES,nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1400 / 342",hRatio:342/1400},
     g1911:{layers:G1911_LAYERS,lsteps:G1911_LSTEPS,centers:G1911_CENTERS,names:G1911_NAMES,nums:[["slide",1],["barrel",2],["slidestop",3],["frame",4],["mag",5]],tags:["slide","barrel","slidestop","frame","mag"],aspect:"1200 / 830",hRatio:830/1200},
     m500sw:{layers:[M500SW_RECV,M500_LAYERS[1],M500_LAYERS[2]],lsteps:M500_LSTEPS,centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",hRatio:330/1055},
     revda:{layers:REVDA_LAYERS,lsteps:REVDA_LSTEPS,centers:REVDA_CENTERS,names:REVDA_NAMES,nums:[["cylinder",1],["frame",2]],tags:["cylinder","frame"],aspect:"1400 / 769",hRatio:769/1400},
