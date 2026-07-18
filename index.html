@@ -1219,6 +1219,9 @@
     "AR15":[7500,"Action spring"],"AR10":[7500,"Action spring"],"X95":[5000,"Recoil spring"]};
   const catEntry=k=>CATALOG.find(c=>c.i===k);
   function guideKey(k){ if(GUIDE_EXACT[k])return GUIDE_EXACT[k]; const c=catEntry(k); return (c&&GUIDE_FAM[c.fm])||null; }
+  /* magazine gating by platform: revolvers/suppressors/most-shotguns/tube-fed & fixed-mag rifles have no detachable mags */
+  const MAG_DENY_FM=new Set(["MARLIN60","SA22","LEVER-HENRY","LEVER-HENRY-CF","LEVER-MARLIN","LEVER-WIN94","LEVER-WIN92","LEVER-WIN73","LEVER-BL22","LEVER-SAV99","MOSIN","MAUSER98","BOLT-M70","GARAND","SKS","CRICKETT"]);
+  function hasMags(f){ const c=catEntry(f&&f.model); if(!c) return true; const gp=c.gp, fm=c.fm||""; if(gp==="Revolvers"||gp==="Suppressors") return false; if(gp==="Shotguns") return fm==="SEMI-AR-SG"; if(MAG_DENY_FM.has(fm)) return false; return true; }
   const modelByKey=k=>{ const c=catEntry(k);
     if(!c) return {key:k,name:"Unknown model",sub:"",cat:"",guide:false,spring:0,springName:null};
     const sp=SPRINGS[c.fm]||[0,null];
@@ -1682,7 +1685,7 @@
         const g=+(f.wt.current-f.wt.base).toFixed(2), th=f.wt.thresh||(f.wt.unit==="g"?30:2);
         if(g>=th) dots.push('<div class="alertdot amber">CLEAN DUE (WT)</div>');
       }
-      if(Array.isArray(f.mags) && f.mags.some(m=>m.role==="Carry" && (!m.lastRot || (Date.now()-m.lastRot)/86400000 >= (f.magRotDays||90)))) dots.push('<div class="alertdot amber">ROTATE MAGS</div>');
+      if(hasMags(f) && Array.isArray(f.mags) && f.mags.some(m=>m.role==="Carry" && (!m.lastRot || (Date.now()-m.lastRot)/86400000 >= (f.magRotDays||90)))) dots.push('<div class="alertdot amber">ROTATE MAGS</div>');
       if(Array.isArray(f.reminders) && f.reminders.some(r=>!r.last || (Date.now()-r.last)/86400000 >= r.everyDays)) dots.push('<div class="alertdot amber">CARE DUE</div>');
       const card=document.createElement("button");
       card.className="fa-card";
@@ -1845,8 +1848,9 @@
     if(isNFA&&!nfaLocked) renderWt(f);
 
     const magBoxEl=document.getElementById("magBox");
-    magBoxEl.style.display=isNFA?"none":"block";
-    if(!isNFA) renderMags(f);
+    const showMags=hasMags(f);
+    magBoxEl.style.display=showMags?"block":"none";
+    if(showMags) renderMags(f);
     renderCare(f);
     renderSvc(f);
     document.getElementById("zeroBox").style.display=isNFA?"none":"block";
@@ -2515,7 +2519,7 @@
       const list=[]; let nid=1;
       safe.forEach(f=>{
         const name=(modelByKey(f.model)||{}).name||"Firearm";
-        (f.mags||[]).forEach(m=>{
+        if(hasMags(f)) (f.mags||[]).forEach(m=>{
           if(m.role!=="Carry"||!m.lastRot) return;
           const due=m.lastRot + (f.magRotDays||90)*86400000;
           if(due>now){
