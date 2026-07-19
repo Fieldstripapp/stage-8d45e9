@@ -2896,6 +2896,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
       const im=document.getElementById("lst-"+L.n);
       if(!im) return;
       const p=cfg.pos[L.n]||"a";
+      if(p==="x"){im.style.visibility="hidden";return;} /* "x" = hide this layer on this step */
+      im.style.visibility="";
       let tx,ty,sc=1;
       if(p==="e"){tx=0;ty=0;}
       else if(p==="a"){tx=L.asm[0];ty=L.asm[1];}
