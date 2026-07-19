@@ -1449,15 +1449,15 @@
         const A={mag:[0,0],lower:[0,0],bcg:[0,0],bolt:[0,0],upper:[0,0],port:[0,0],ch:[0,0],pins:[0,0]};
         const UP=[26,-96];
         return [
-          {phase:"Clear",title:"Confirm the rifle is clear",body:"Verified at the gate — magazine out, chamber checked by sight and by touch, safety on. Muzzle in a safe direction for everything that follows.",t:{...A},hl:[],labels:[],arrow:null},
-          {phase:"Clear",title:"Remove the magazine",body:"Press the magazine release on the right side of the lower and strip the magazine out. It should fall free of the generous AR magwell without a tug — if it hangs up, that's grit in the well worth a wipe while you're in there. Set it aside, away from the bench.",t:{...A,mag:[-14,122]},hl:["mag"],labels:["ar-lbl-mag"],arrow:{x:288,y:300,rot:12,nx:"-2px",ny:"8px"}},
-          {phase:"Clear",title:"Charge and inspect the chamber",body:"Pull the charging handle fully rearward and lock the bolt back with the bolt catch. Look into the chamber through the ejection port, then feel it. Empty by sight AND touch, then ride the bolt forward.",t:{...A,mag:[-14,122],ch:[-46,0]},hl:["ch","port"],labels:[],arrow:{x:255,y:100,rot:90,nx:"-8px",ny:"0px"}},
-          {phase:"Strip",title:"Push out both takedown pins",body:"Push the rear takedown pin and the front pivot pin from left to right until they stop — both are captive and stay in the lower. A punch or the tip of a cartridge helps if they're tight.",t:{...A,mag:[-14,122],pins:[0,42]},hl:["pins"],labels:[],arrow:{x:414,y:252,rot:0,nx:"0px",ny:"7px"}},
-          {phase:"Strip",title:"Separate the upper from the lower",body:"With both pins out, lift the upper receiver straight off the lower — two halves, two totally different cleaning jobs. If they stick, rock the upper gently side to side; new receivers fit tight. Resist levering them apart against the buffer tower — that's how takedown lugs crack. Set the lower aside.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:UP,ch:UP},hl:["upper"],labels:["ar-lbl-upper","ar-lbl-lower"],arrow:{x:480,y:118,rot:180,nx:"0px",ny:"-7px"}},
-          {phase:"Strip",title:"Withdraw the bolt carrier group",body:"Tilt the upper muzzle-up, pull the charging handle partway back, and the bolt carrier group slides out the rear of the receiver — catch it in your palm as it clears. A BCG dropped bolt-face-first on a bench is how extractors chip.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,ch:UP,bcg:[-110,-40]},hl:["bcg"],labels:["ar-lbl-bcg"],arrow:{x:200,y:92,rot:90,nx:"-8px",ny:"0px"}},
-          {phase:"Strip",title:"Remove the charging handle",body:"Pull the charging handle rearward to the end of its channel, then down and out through the clearance cutout. It only drops free at that cutout — if it's fighting you, slide it back a touch further instead of muscling it.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56]},hl:["ch"],labels:["ar-lbl-ch"],arrow:{x:110,y:106,rot:90,nx:"-8px",ny:"0px"}},
-          {phase:"Strip",title:"Separate the bolt from the carrier",body:"Push out the firing pin retaining pin, drop the firing pin out the rear, rotate the cam pin a quarter turn and lift it free, then pull the bolt out the front of the carrier. This bolt tail is where all the carbon lives on a DI gun.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:["bolt"],labels:["ar-lbl-bcg","ar-lbl-bolt"],arrow:{x:390,y:120,rot:-90,nx:"8px",ny:"0px"}},
-          {phase:"Strip",title:"Field strip complete",body:"Upper with barrel and handguard, lower with stock and fire control, bolt carrier, bolt, charging handle, magazine. Standard AR pattern — learn it here and you know every AR you'll ever pick up.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:[],labels:["ar-lbl-upper","ar-lbl-lower","ar-lbl-bcg","ar-lbl-bolt","ar-lbl-ch","ar-lbl-mag"],arrow:null}
+          {phase:"Clear",title:"Safe and clear",body:"Magazine out, charging handle back, look into the chamber and check it with a finger. Safety on if the hammer is cocked. An AR gets cleaned broken open — not torn down — for routine work.",t:{...A},hl:[],labels:[],arrow:null},
+          {phase:"Strip",title:"Drop the magazine",body:"Press the magazine release and let the mag fall free into your hand. Set it aside — mag maintenance is its own job, not part of the rifle's cleaning.",t:{...A,mag:[-14,122]},hl:["mag"],labels:["ar-lbl-mag"],arrow:{x:288,y:300,rot:12,nx:"-2px",ny:"8px"}},
+          {phase:"Strip",title:"Clear the chamber",body:"Pull the charging handle fully rearward and eyeball the chamber and bolt face. Empty means empty: look, then touch. Ride the handle back forward.",t:{...A,mag:[-14,122],ch:[-46,0]},hl:["ch","port"],labels:[],arrow:{x:255,y:100,rot:90,nx:"-8px",ny:"0px"}},
+          {phase:"Strip",title:"Push the rear takedown pin",body:"Press the rear takedown pin from left to right until it stops — it's captive and stays in the lower. A punch or the tip of a cartridge helps a stiff pin; don't hammer it.",t:{...A,mag:[-14,122],pins:[0,42]},hl:["pins"],labels:[],arrow:{x:414,y:252,rot:0,nx:"0px",ny:"7px"}},
+          {phase:"Strip",title:"Pivot the upper open",body:"The upper hinges forward on the front pivot pin, shotgun-style. Let the muzzle dip and the rear of the upper rise. For routine cleaning this is as far as the rifle comes apart — the front pin stays put.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:UP,ch:UP},hl:["upper"],labels:["ar-lbl-upper","ar-lbl-lower"],arrow:{x:480,y:118,rot:180,nx:"0px",ny:"-7px"}},
+          {phase:"Strip",title:"Pull the bolt carrier group",body:"Draw the charging handle rearward and the BCG rides out the back of the upper with it. Catch the carrier as it clears and set it on the bench.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,ch:UP,bcg:[-110,-40]},hl:["bcg"],labels:["ar-lbl-bcg"],arrow:{x:200,y:92,rot:90,nx:"-8px",ny:"0px"}},
+          {phase:"Strip",title:"Charging handle out",body:"Pull the charging handle back to its notch, then drop it down and out of its channel. That's the whole field strip: two parts out, receivers still married.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56]},hl:["ch"],labels:["ar-lbl-ch"],arrow:{x:110,y:106,rot:90,nx:"-8px",ny:"0px"}},
+          {phase:"Clean",title:"Wipe and inspect",body:"Bore from the chamber end. Scrub the bolt face and the carrier's exterior, wipe the charging handle, and run a patch through the upper. Light oil on the carrier rails — the AR runs wet where steel meets steel.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:["bolt"],labels:["ar-lbl-bcg","ar-lbl-bolt"],arrow:{x:390,y:120,rot:-90,nx:"8px",ny:"0px"}},
+          {phase:"Reassemble",title:"Close it up",body:"Charging handle in first — into its channel, not fully seated. Bolt forward in the carrier, feed the BCG onto the handle and slide both home. Swing the upper closed, click the rear pin back left, and function check: charge, safety on, trigger dead.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:[],labels:["ar-lbl-upper","ar-lbl-lower","ar-lbl-bcg","ar-lbl-bolt","ar-lbl-ch","ar-lbl-mag"],arrow:null}
         ];
       })(),
       cleaning:[
@@ -2806,25 +2806,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   ];
   /* ---- AR-15 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const AR15_LAYERS=[
-    {n:"bcg",asm:[15.28,11.61],src:"assets/guns/ar15/bcg.png"},
-    {n:"ch",asm:[16.67,23.57],src:"assets/guns/ar15/ch.png"},
-    {n:"mag",asm:[-0.46,-17.86],src:"assets/guns/ar15/mag.png"},
-    {n:"upper",asm:[0.0,17.86],src:"assets/guns/ar15/upper.png"},
+    {n:"bcg",asm:[26.06,17.91],src:"assets/guns/ar15/bcg.png"},
+    {n:"ch",asm:[24.08,17.86],src:"assets/guns/ar15/ch.png"},
+    {n:"mag",asm:[0,-18.63],src:"assets/guns/ar15/mag.png"},
+    {n:"upper",asm:[0,17.90],src:"assets/guns/ar15/upper.png"},
+    {n:"upper_open",asm:[0,0],eh:true,src:"assets/guns/ar15/upper_open.png"},
     {n:"lower",asm:[0,0],src:"assets/guns/ar15/lower.png"}
   ];
-  const AR15_NAMES={upper:"Upper Receiver Group",lower:"Lower Receiver Group",bcg:"Bolt Carrier Group",ch:"Charging Handle",mag:"Magazine"};
-  const AR15_CENTERS={upper:[67.2,20.0],lower:[38.3,52.3],bcg:[36.5,28.5],ch:[30.6,12.1],mag:[53.4,77.1]};
+  const AR15_NAMES={upper:"Upper Receiver Group",upper_open:"Upper Receiver (open)",lower:"Lower Receiver Group",bcg:"Bolt Carrier Group",ch:"Charging Handle",mag:"Magazine"};
+  const AR15_CENTERS={upper:[61.8,14.4],lower:[25.2,50.7],bcg:[16.8,17.3],ch:[13.1,11.9],mag:[44.4,77.8]};
   const UPD=-17.86; /* upper separation delta, canvas %% */
   const AR15_LSTEPS=[
-    {pos:{lower:"a",upper:"a",bcg:"a",ch:"a",mag:"a"},hl:null,m:null},
-    {pos:{lower:"a",upper:"a",bcg:"a",ch:"a",mag:"e"},hl:"mag",m:{x:54,y:66,ch:"\u25bc"}},
-    {pos:{lower:"a",upper:"a",bcg:"a",ch:"a",mag:"e"},hl:"upper",m:{x:36,y:26,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"a",bcg:"a",ch:"a",mag:"e"},hl:"lower",m:[{x:44.5,y:33,ch:"\u25bc"},{x:56.5,y:33,ch:"\u25bc"}]},
-    {pos:{lower:"a",upper:"e",bcg:["a",0,UPD],ch:["a",0,UPD],mag:"e"},hl:"upper",m:{x:66,y:12,ch:"\u25b2"}},
-    {pos:{lower:"a",upper:"e",bcg:"e",ch:["a",0,UPD],mag:"e"},hl:"bcg",m:{x:40,y:28,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"e",bcg:"e",ch:"e",mag:"e"},hl:"ch",m:{x:34,y:10,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"e",bcg:"e",ch:"e",mag:"e"},hl:"bcg",m:null},
-    {pos:{lower:"a",upper:"e",bcg:"e",ch:"e",mag:"e"},hl:null,m:null}
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"a"},hl:null,m:null},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e"},hl:"mag",m:{x:46,y:68,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e"},hl:"upper",m:{x:36,y:30,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e"},hl:"lower",m:{x:28,y:41,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e"},hl:"upper_open",m:{x:46,y:36,ch:"\u27f2"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e"},hl:"bcg",m:{x:25,y:17,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:"ch",m:{x:21,y:12,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:"bcg",m:null},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:null,m:null}
   ];
   /* ---- Suppressor layer set (Fieldstrip 3D pipeline, muzzle-right standard) ----
      stack is listed first so it z-stacks UNDER the tube: assembled, the stack
@@ -2860,7 +2861,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     m500sw:{layers:[M500SW_RECV,M500_LAYERS[1],M500_LAYERS[2]],lsteps:M500_LSTEPS,centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",hRatio:330/1055},
     revda:{layers:REVDA_LAYERS,lsteps:REVDA_LSTEPS,centers:REVDA_CENTERS,names:REVDA_NAMES,nums:[["cylinder",1],["frame",2]],tags:["cylinder","frame"],aspect:"1400 / 769",hRatio:769/1400},
     revsa:{layers:REVSA_LAYERS,lsteps:REVSA_LSTEPS,centers:REVSA_CENTERS,names:REVSA_NAMES,nums:[["frame",1],["cylinder",2],["pin",3]],tags:["frame","cylinder","pin"],aspect:"1500 / 682",hRatio:682/1500},
-    ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1080 / 560",hRatio:560/1080}
+    ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1400 / 726",hRatio:726/1400}
   };
   const activeLayerKey=()=>{ const k=guideKey(byId(activeId).model); return LAYER_SETS[k]?k:"g19"; };
 
@@ -2935,6 +2936,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     vp.style.width=`min(100vw, calc(66svh / ${set.hRatio}))`; /* upgrades if supported */
     vp.style.maxHeight="none";
     set.layers.forEach(L=>{
+      if(L.eh) return; /* eh = exp-hide: skip in the Parts Diagram (e.g. ar15 upper_open) */
       const im=document.createElement("img");
       im.src=L.src; im.id="expl-"+L.n; im.alt=set.names[L.n];
       wrap.appendChild(im);
