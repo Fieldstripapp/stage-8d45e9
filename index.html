@@ -1340,7 +1340,12 @@
         {phase:"Strip",title:"Run the slide off the frame",body:"Ease the slide assembly forward and off the frame rails.",warn:"The recoil spring and plug are under tension \u2014 keep the plug controlled during the next step. It can launch across the room.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Strip",title:"Recoil spring and plug",body:"Muzzle pointed into the bench, thumb capping the plug: rotate the bushing clockwise until the plug rises under your thumb, then ease the plug and spring out and lift the guide free. On a tight match bushing, a plastic bushing wrench saves both your thumb and the finish. Set the parts down in the order they came out \u2014 they return the same way.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Strip",title:"Remove the barrel",body:"Rotate the bushing counter-clockwise to free it, fold the barrel link forward flat, and slide the barrel out the front of the slide. While it's in your hand, glance at the locking lugs on top and the feed ramp \u2014 bright polished wear is normal, peening or chips are a gunsmith conversation.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Field strip complete",body:"Frame, slide, barrel, slide stop, recoil assembly, magazine. Detail stripping beyond this \u2014 firing pin, extractor, trigger group \u2014 is armorer or gunsmith work, not routine cleaning.",t:{},hl:[],labels:[],arrow:null}
+        {phase:"Strip",title:"Field strip complete",body:"Frame, slide, barrel, slide stop, recoil assembly, magazine. That's the full field strip. If you want to go deeper, the optional DEEP CLEAN path covers the barrel lugs, the extractor tunnel, and the frame rails \u2014 detail stripping past that, firing pin and trigger group, is armorer or gunsmith work, not routine cleaning.",t:{},hl:[],labels:[],arrow:null,branch:true}
+      ],
+      deepSteps:[
+        {phase:"Deep Clean",title:"Barrel and lug detail",body:"Scrub the locking lugs on top of the barrel and their recesses in the slide until solvent comes away clean \u2014 caked lugs are where 1911 accuracy quietly dies. Bore from the chamber end. Check the link pin is staked tight and the bushing finger for cracks \u2014 both are common high-round-count failures.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Extractor tunnel",body:"Scrub the breech face and hook the crud out from under the extractor claw with a nylon pick. Do not pull the extractor for routine cleaning \u2014 a 1911 extractor is tensioned by its bend, and removing it means re-tuning it. If cases are dropping at your feet instead of ejecting, that's an armorer conversation, not a deeper strip.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Rails and lockwork",body:"Wipe the frame rails, disconnector head, and the feed ramp \u2014 polish nothing, just clean. One drop of oil spread along each rail and one on the barrel hood. The 1911 likes to run wetter than modern polymer guns: if the rails look dry, they are.",t:{},hl:[],labels:[],arrow:null}
       ],
       cleaning:[
         {name:"BARREL",tasks:["Solvent-wet patch through the bore, chamber to muzzle","Bronze brush \u2014 8 to 10 passes","Dry patches until clean","Wipe the barrel exterior, locking lugs, and link; leave a light film of oil"]},
@@ -2796,7 +2801,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:{x:74,y:15,ch:"\u25b6"}},
     {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:10,ch:"\u25b6"}},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null}
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:9,ch:"\u27f2"}},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"slide",m:{x:35,y:21,ch:"\u25c0"}},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"frame",m:{x:37,y:30,ch:"\u25bc"}}
   ];
   /* ---- DA revolver layer set (Fieldstrip 3D pipeline) ---- */
   const REVDA_LAYERS=[
