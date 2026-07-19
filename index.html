@@ -2904,9 +2904,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
        so the scaled can neither slides under the topbar nor overlaps the steps UI */
     const par=st.parentElement;
     if(par){
-      const pad=(z>1)? Math.round((z-1)*st.offsetHeight/2)+10 : 0;
       par.style.transition="padding .85s cubic-bezier(.22,.9,.3,1)";
-      par.style.paddingTop=pad+"px"; par.style.paddingBottom=pad+"px";
+      const applyPad=()=>{ const pad=(z>1)? Math.round((z-1)*st.offsetHeight/2)+10 : 0;
+        par.style.paddingTop=pad+"px"; par.style.paddingBottom=pad+"px"; };
+      applyPad();
+      /* first render reads a stale offsetHeight (stage just built/shown) so pad
+         collapses ~10px; recompute after a layout flush. Guarded by stepIndex so a
+         stale frame from a superseded step can't clobber the current padding. */
+      const myStep=stepIndex;
+      requestAnimationFrame(()=>{ if(stepIndex===myStep) applyPad(); });
     }
   }
 
