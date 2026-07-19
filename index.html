@@ -455,9 +455,14 @@
         <button class="btn sm primary" id="wtSave" hidden style="margin-left:8px">Save</button>
         <button class="btn sm primary" id="wtLog" hidden style="margin-left:8px">Log Weigh-In</button>
       </div>
+      <div class="lifebox prolock" id="proWtLock" style="display:none">
+        <div class="lrow"><span class="lt">Fouling by Weight</span><span class="protag">PRO</span></div>
+        <div class="lmsg" id="proWtMsg"></div>
+        <button class="btn sm primary" id="proWtBtn">Unlock Pro</button>
+      </div>
       <div class="lifebox prolock" id="proNfaLock" style="display:none">
-        <div class="lrow"><span class="lt">NFA Record &amp; Fouling by Weight</span><span class="protag">PRO</span></div>
-        <div class="lmsg">Stamp and Form 4/1 tracking, a stored photo of the stamp itself, and the weight log — the only honest measure of sealed-can fouling. Part of Fieldstrip Pro.</div>
+        <div class="lrow"><span class="lt">NFA Record</span><span class="protag">PRO</span></div>
+        <div class="lmsg">Stamp and Form 4/1 tracking, plus a stored photo of the stamp itself. Part of Fieldstrip Pro.</div>
         <button class="btn sm primary" id="proNfaBtn">Unlock Pro</button>
       </div>
       <div class="lifebox" id="magBox" style="display:none">
@@ -1678,6 +1683,8 @@
   function renderSafe(){
     updateProRow();
     document.getElementById("proNfaBtn").onclick = openProSheet;
+    document.getElementById("proWtBtn").onclick = openProSheet;
+    document.getElementById("proWtLock").onclick = openProSheet;
     safeList.innerHTML="";
     document.getElementById("safeSub").textContent = safe.length
       ? "Your firearms, their round counts, and what's due."
@@ -1858,9 +1865,24 @@
     nfaBoxEl.style.display=(isNFA&&!nfaLocked)?"block":"none";
     if(isNFA&&!nfaLocked){ renderNfa(f); renderStamp(f); }
 
+    /* Fouling by Weight — Pro, locked-VISIBLE: the row stays on screen with a lock
+       tag and the existing weigh-in count; tapping opens the upsell. Stored weigh-ins
+       (f.wt + the "weight" log entries) are never hidden from the log or deleted, so a
+       lapsed Pro regains full access on re-upgrade with its history intact. */
     const wtBoxEl=document.getElementById("wtBox");
-    wtBoxEl.style.display=(isNFA&&!nfaLocked)?"block":"none";
-    if(isNFA&&!nfaLocked) renderWt(f);
+    const wtLocked = isNFA && !isPro();
+    wtBoxEl.style.display=(isNFA&&!wtLocked)?"block":"none";
+    if(isNFA&&!wtLocked) renderWt(f);
+    const wtLockEl=document.getElementById("proWtLock");
+    wtLockEl.style.display = wtLocked ? "block" : "none";
+    if(wtLocked){
+      /* "weight" log entries cover both the baseline and each weigh-in, so this is an
+         entry count, not a weigh-in count — label it accordingly. */
+      const n=(f.log||[]).filter(e=>e.type==="weight").length;
+      document.getElementById("proWtMsg").textContent =
+        (n ? `${n} ${n===1?"entry":"entries"} already recorded and still stored — unlock to view and log more. ` : "")
+        + "Baseline plus periodic weigh-ins are the only honest measure of fouling in a sealed can. Part of Fieldstrip Pro.";
+    }
 
     const magBoxEl=document.getElementById("magBox");
     const showMags=hasMags(f);
