@@ -462,7 +462,7 @@
       </div>
       <div class="lifebox prolock" id="proNfaLock" style="display:none">
         <div class="lrow"><span class="lt">NFA Record</span><span class="protag">PRO</span></div>
-        <div class="lmsg">Stamp and Form 4/1 tracking, plus a stored photo of the stamp itself. Part of Fieldstrip Pro.</div>
+        <div class="lmsg" id="proNfaMsg">Stamp and Form 4/1 tracking, plus a stored photo of the stamp itself. Part of Fieldstrip Pro.</div>
         <button class="btn sm primary" id="proNfaBtn">Unlock Pro</button>
       </div>
       <div class="lifebox" id="magBox" style="display:none">
@@ -1185,6 +1185,7 @@
       <div class="feat"><span class="fx">▸</span><span><b>Barcode check-in</b> — scan an ammo box and it lands in the locker, no typing.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Zero Record</b> — distance, ammo, and optic notes, so a re-zero starts from facts.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Spring life</b> — round-count tracking against the service interval, with a replacement log.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, where a guide has one. Standard guides stay free.</span></div>
       <div class="price" id="proPrice">$14.99 · one time</div>
       <button class="btn primary full" id="proBuy">Unlock Pro</button>
       <button class="btn full" id="proRestore" style="margin-top:8px">Restore Purchase</button>
@@ -1898,6 +1899,16 @@
     document.getElementById("proNfaLock").style.display = nfaLocked ? "block" : "none";
     nfaBoxEl.style.display=(isNFA&&!nfaLocked)?"block":"none";
     if(isNFA&&!nfaLocked){ renderNfa(f); renderStamp(f); }
+    if(nfaLocked){
+      /* match the other gated rows: say what is already stored, so the lock never
+         reads as data loss. f.nfa and f.stamp are untouched while locked. */
+      const has=[];
+      if(f.nfa && Object.keys(f.nfa).some(k=>f.nfa[k])) has.push("form details");
+      if(f.stamp) has.push("a stamp photo");
+      document.getElementById("proNfaMsg").textContent =
+        (has.length ? `${has.join(" and ")} already stored — unlock to view and edit. ` : "")
+        + "Stamp and Form 4/1 tracking, plus a stored photo of the stamp itself. Part of Fieldstrip Pro.";
+    }
 
     /* Fouling by Weight — Pro, locked-VISIBLE: the row stays on screen with a lock
        tag and the existing weigh-in count; tapping opens the upsell. Stored weigh-ins
@@ -3109,8 +3120,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
       } else arrowEl.classList.remove("show");
     }
     document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
+    /* Deep Clean branch — Pro, locked-VISIBLE: the button stays on the field-strip-
+       complete step with a PRO tag and opens the upsell on tap. The standard guide
+       itself is free; only the deeper branch is gated. */
     const bb=document.getElementById("branchBtn");
     bb.hidden=!(s.branch && !branched && gun.deepSteps);
+    bb.innerHTML = "Deep Clean ▸" + (isPro() ? "" : ' <span class="protag">PRO</span>');
     bb.parentElement.classList.toggle("three",!bb.hidden);
     document.getElementById("stepPhase").textContent=s.phase;
     document.getElementById("stepTitle").textContent=s.title;
@@ -3140,6 +3155,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   });
   document.getElementById("branchBtn").addEventListener("click",()=>{
     if(branched) return;
+    if(!isPro()){ openProSheet(); return; }
     branched=true;
     buildProgress();
     stepIndex++;
