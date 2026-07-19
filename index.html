@@ -2714,20 +2714,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const M500SW_RECV = {n:"receiver",asm:[0,0],src:"assets/guns/m500sw/receiver.png"};
   const G19_CENTERS={slide:[54.6,2.3],barrel:[75.6,22.9],rsa:[90.7,20.8],frame:[52.9,40.3],mag:[15.9,86.8]};
   const G19_LSTEPS=[
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},z:1.3,zc:52,zcy:35,hl:null,m:null},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",z:1.4,zc:30,zcy:65,m:{x:20,y:76,ch:"\u25bc"}},
-    {pos:{slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",z:1.4,zc:52,zcy:25,m:{x:43,y:15,ch:"\u25c0"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",z:1.4,zc:45,zcy:40,m:{x:34,y:49,ch:"\u25b2"}},
-    {pos:{slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",z:1.4,zc:45,zcy:35,m:{x:40,y:35,ch:"\u25bc"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",z:1.35,zc:55,zcy:15,m:{x:55,y:8,ch:"\u25b2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",z:1.35,zc:80,zcy:22,m:{x:91,y:26,ch:"\u25b2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",z:1.35,zc:70,zcy:24,m:{x:69,y:27,ch:"\u25c0"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},z:1.15,zc:50,zcy:45,hl:null,m:null},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:45,zcy:20,m:{x:40,y:14,ch:"▼"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:52,zcy:24,m:{x:52,y:22,ch:"◀"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:47,zcy:22,m:{x:45,y:19,ch:"◀"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:47,zcy:22,m:{x:45,y:19,ch:"⟲"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"frame",z:1.4,zc:48,zcy:35,m:{x:50,y:33,ch:"▼"}}
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:null,m:null},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",m:{x:20,y:76,ch:"\u25bc"}},
+    {pos:{slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",m:{x:43,y:15,ch:"\u25c0"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:34,y:49,ch:"\u25b2"}},
+    {pos:{slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",m:{x:40,y:35,ch:"\u25bc"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:8,ch:"\u25b2"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:26,ch:"\u25b2"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:27,ch:"\u25c0"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",m:{x:40,y:14,ch:"▼"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",m:{x:52,y:22,ch:"◀"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",m:{x:45,y:19,ch:"◀"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",m:{x:45,y:19,ch:"⟲"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"frame",m:{x:50,y:33,ch:"▼"}}
   ];
   const PARTNAMES={slide:"Slide",barrel:"Barrel",rsa:"Recoil Spring Assembly",frame:"Frame",mag:"Magazine"};
 
@@ -2740,16 +2740,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const M500_CENTERS={barrel:[72.8,12.8],pump:[70.3,46.6],receiver:[42.6,50.6]};
   const M500_NAMES={barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Stock"};
   const M500_LSTEPS=[
-    {pos:{receiver:"a",pump:"a",barrel:"a"},hl:null,z:1.25,zc:50,zcy:50,m:null},
+    {pos:{receiver:"a",pump:"a",barrel:"a"},hl:null,m:null},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"pump",z:1.4,zc:60,m:{x:61,y:29,ch:"\u25c0"}},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"receiver",z:1.4,zc:70,m:{x:75,y:29,ch:"\u27f2"}},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e"},hl:"barrel",z:1.25,zc:60,zcy:25,m:{x:63,y:6,ch:"\u25b2"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:null,z:1.2,zc:55,zcy:40,m:null},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e"},hl:"barrel",m:{x:63,y:6,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:null,m:null},
     {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",z:1.4,zc:46,m:{x:45,y:59,ch:"\u25b2"}},
     {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",z:1.4,zc:46,m:{x:45,y:55,ch:"\u25bc"}},
     {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",z:1.4,zc:47,m:{x:48,y:37,ch:"\u25c0"}},
     {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:"pump",z:1.4,zc:54,m:{x:56,y:48,ch:"\u25c0"}},
-    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:null,z:1.15,zc:55,zcy:45,m:null}
+    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:null,m:null}
   ];
   /* ---- 1911 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const G1911_LAYERS=[
@@ -2762,14 +2762,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const G1911_NAMES={slide:"Slide",barrel:"Barrel",slidestop:"Slide Stop",frame:"Frame",mag:"Magazine"};
   const G1911_CENTERS={slide:[57.9,20.7],barrel:[76.0,10.0],slidestop:[29.2,26.0],frame:[37.0,53.2],mag:[28.0,71.0]};
   const G1911_LSTEPS=[
-    {pos:{frame:"a",mag:"a",barrel:"a",slide:"a",slidestop:"a"},hl:null,z:1.25,zc:46,zcy:40,m:null},
-    {pos:{frame:"a",mag:"e",barrel:"a",slide:"a",slidestop:"a"},hl:"mag",z:1.4,zc:30,zcy:62,m:{x:30,y:74,ch:"\u25bc"}},
-    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"a"},hl:"slide",z:1.4,zc:50,zcy:28,m:{x:55,y:20,ch:"\u25c0"}},
-    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"e"},hl:"slidestop",z:1.4,zc:33,zcy:28,m:{x:34,y:24,ch:"\u25b2"}},
-    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",z:1.35,zc:62,zcy:20,m:{x:74,y:15,ch:"\u25b6"}},
-    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",z:1.4,zc:58,zcy:20,m:null},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",z:1.35,zc:78,zcy:14,m:{x:88,y:10,ch:"\u25b6"}},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,z:1.15,zc:50,zcy:42,m:null}
+    {pos:{frame:"a",mag:"a",barrel:"a",slide:"a",slidestop:"a"},hl:null,m:null},
+    {pos:{frame:"a",mag:"e",barrel:"a",slide:"a",slidestop:"a"},hl:"mag",m:{x:30,y:74,ch:"\u25bc"}},
+    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"a"},hl:"slide",m:{x:55,y:20,ch:"\u25c0"}},
+    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"e"},hl:"slidestop",m:{x:34,y:24,ch:"\u25b2"}},
+    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:{x:74,y:15,ch:"\u25b6"}},
+    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:10,ch:"\u25b6"}},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null}
   ];
   /* ---- DA revolver layer set (Fieldstrip 3D pipeline) ---- */
   const REVDA_LAYERS=[
@@ -2779,9 +2779,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const REVDA_NAMES={frame:"Frame, Barrel & Action",cylinder:"Cylinder & Crane"};
   const REVDA_CENTERS={frame:[50.0,49.96],cylinder:[54.34,77.44]};
   const REVDA_LSTEPS=[
-    {pos:{frame:"a",cylinder:"a"},hl:null,z:1.3,zc:50,zcy:42,m:null},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",z:1.25,zc:52,zcy:52,m:{x:52,y:53,ch:"\u25bc"}},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:null,z:1.25,zc:52,zcy:55,m:null}
+    {pos:{frame:"a",cylinder:"a"},hl:null,m:null},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:52,y:53,ch:"\u25bc"}},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:null,m:null}
   ];
   /* ---- Single-action revolver layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const REVSA_LAYERS=[
@@ -2792,12 +2792,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const REVSA_NAMES={frame:"Frame, Barrel & Grip",cylinder:"Cylinder",pin:"Base Pin"};
   const REVSA_CENTERS={frame:[72.0,20.0],cylinder:[41.9,66.1],pin:[67.1,35.3]};
   const REVSA_LSTEPS=[
-    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,z:1.1,zc:50,zcy:50,m:null},
-    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,z:1.4,zc:28,zcy:16,m:{x:25,y:9,ch:"\u25b2"}},
-    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,z:1.4,zc:48,zcy:24,m:{x:50,y:20,ch:"\u25c0"}},
-    {pos:{frame:"a",cylinder:"a",pin:"e"},hl:"pin",z:1.35,zc:60,zcy:32,m:{x:67,y:35,ch:"\u25b6"}},
-    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"cylinder",z:1.35,zc:44,zcy:52,m:{x:42,y:60,ch:"\u25bc"}},
-    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:null,z:1.15,zc:50,zcy:45,m:null}
+    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:null},
+    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:{x:25,y:9,ch:"\u25b2"}},
+    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:{x:50,y:20,ch:"\u25c0"}},
+    {pos:{frame:"a",cylinder:"a",pin:"e"},hl:"pin",m:{x:67,y:35,ch:"\u25b6"}},
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"cylinder",m:{x:42,y:60,ch:"\u25bc"}},
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:null,m:null}
   ];
   /* ---- AR-15 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const AR15_LAYERS=[
