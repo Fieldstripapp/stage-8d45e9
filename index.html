@@ -512,11 +512,21 @@
         </div>
         <button class="btn sm primary" id="zeroAdd" style="margin-top:10px">Log Zero</button>
       </div>
+      <div class="lifebox prolock" id="proZeroLock" style="display:none">
+        <div class="lrow"><span class="lt">Zero Record</span><span class="protag">PRO</span></div>
+        <div class="lmsg" id="proZeroMsg"></div>
+        <button class="btn sm primary" id="proZeroBtn">Unlock Pro</button>
+      </div>
       <div class="lifebox" id="springBox">
         <div class="lrow"><span class="lt" id="springTitle"></span><span class="lv" id="springVal"></span></div>
         <div class="lifebar"><i id="springBar"></i></div>
         <div class="lmsg" id="springMsg"></div>
         <button class="btn sm" id="springReset" hidden>Log spring replacement</button>
+      </div>
+      <div class="lifebox prolock" id="proSpringLock" style="display:none">
+        <div class="lrow"><span class="lt" id="proSpringTitle">Spring life</span><span class="protag">PRO</span></div>
+        <div class="lmsg" id="proSpringMsg"></div>
+        <button class="btn sm primary" id="proSpringBtn">Unlock Pro</button>
       </div>
       <div class="roundsbox">
         <div class="lt">Log range session</div>
@@ -1173,6 +1183,8 @@
       <div class="feat"><span class="fx">▸</span><span><b>NFA Record</b> — Form 4/1 dates, stamp reference, and a stored photo of the stamp itself.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Fouling by weight</b> — baseline, weigh-ins, and a clean-due threshold for sealed cans.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Barcode check-in</b> — scan an ammo box and it lands in the locker, no typing.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Zero Record</b> — distance, ammo, and optic notes, so a re-zero starts from facts.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Spring life</b> — round-count tracking against the service interval, with a replacement log.</span></div>
       <div class="price" id="proPrice">$14.99 · one time</div>
       <button class="btn primary full" id="proBuy">Unlock Pro</button>
       <button class="btn full" id="proRestore" style="margin-top:8px">Restore Purchase</button>
@@ -1690,6 +1702,10 @@
     document.getElementById("proNfaBtn").onclick = openProSheet;
     document.getElementById("proWtBtn").onclick = openProSheet;
     document.getElementById("proWtLock").onclick = openProSheet;
+    document.getElementById("proZeroBtn").onclick = openProSheet;
+    document.getElementById("proZeroLock").onclick = openProSheet;
+    document.getElementById("proSpringBtn").onclick = openProSheet;
+    document.getElementById("proSpringLock").onclick = openProSheet;
     safeList.innerHTML="";
     document.getElementById("safeSub").textContent = safe.length
       ? "Your firearms, their round counts, and what's due."
@@ -1805,8 +1821,21 @@
     document.getElementById("stSince").textContent=fmtN(f.roundsSinceClean);
     document.getElementById("stLast").textContent=f.lastClean?fmtDate(f.lastClean):"—";
 
+    /* Spring life — Pro, locked-VISIBLE. Only applies where the catalog defines a
+       service interval. Stored replacements (the "spring" log entries and
+       roundsSinceSpring) are untouched, so re-upgrading restores the full readout. */
     const box=document.getElementById("springBox");
-    if(m.spring>0){
+    const springLock=document.getElementById("proSpringLock");
+    const springLocked = m.spring>0 && !isPro();
+    springLock.style.display = springLocked ? "block" : "none";
+    if(springLocked){
+      const n=(f.log||[]).filter(e=>e.type==="spring").length;
+      document.getElementById("proSpringTitle").textContent=m.springName+" life";
+      document.getElementById("proSpringMsg").textContent =
+        (n ? `${n} ${n===1?"replacement":"replacements"} already logged and still stored — unlock to view and keep tracking. ` : "")
+        + `Round-count tracking against the ${fmtN(m.spring)}-round service interval, with a replacement log. Part of Fieldstrip Pro.`;
+    }
+    if(m.spring>0 && !springLocked){
       box.style.display="block";
       const pct=Math.min(100, Math.round(f.roundsSinceSpring/m.spring*100));
       const due=f.roundsSinceSpring>=m.spring;
@@ -1895,8 +1924,19 @@
     if(showMags) renderMags(f);
     renderCare(f);
     renderSvc(f);
-    document.getElementById("zeroBox").style.display=isNFA?"none":"block";
-    if(!isNFA) renderZero(f);
+    /* Zero Record — Pro, locked-VISIBLE. Suppressors never show it at all; for
+       everything else the row stays with a lock tag and the stored record count.
+       f.zeros is never trimmed, so a lapsed Pro gets its zeros back on re-upgrade. */
+    const zeroLocked = !isNFA && !isPro();
+    document.getElementById("zeroBox").style.display=(isNFA||zeroLocked)?"none":"block";
+    document.getElementById("proZeroLock").style.display=zeroLocked?"block":"none";
+    if(zeroLocked){
+      const n=(f.zeros||[]).length;
+      document.getElementById("proZeroMsg").textContent =
+        (n ? `${n} ${n===1?"zero":"zeros"} already recorded and still stored — unlock to view and log more. ` : "")
+        + "Where this firearm is zeroed, with what ammo — so a re-zero after optic work starts from facts, not memory. Part of Fieldstrip Pro.";
+    }
+    if(!isNFA && !zeroLocked) renderZero(f);
 
     const g=document.getElementById("guideBtn");
     const gk=guideKey(f.model);
