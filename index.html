@@ -245,9 +245,9 @@
   .expoverlay[hidden]{display:none!important}
   .expbtn[hidden]{display:none!important}
   .expoverlay{position:fixed;inset:0;z-index:60;background:
-    linear-gradient(rgba(200,205,212,.03) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(200,205,212,.03) 1px,transparent 1px),
-    linear-gradient(180deg,#3C424A 0%,#383E46 100%);
+    linear-gradient(rgba(200,205,212,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,205,212,.05) 1px,transparent 1px),
+    radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);
     background-size:28px 28px,28px 28px,100% 100%;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px 14px}
   .explayers{position:relative;height:min(66vh,66svh);aspect-ratio:985/1300;max-width:100vw}
@@ -267,7 +267,7 @@
   .exptag.on{color:var(--amber);border-color:var(--amber)}
   .exprow{display:flex;gap:8px}
   .expcap{font-family:var(--display);font-size:9px;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase;text-align:center}
-  .stage{background:linear-gradient(rgba(200,205,212,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,205,212,.03) 1px,transparent 1px),linear-gradient(180deg,#3C424A 0%,#383E46 100%);background-size:28px 28px,28px 28px,100% 100%;border-bottom:1px solid var(--edge);padding:8px 0 2px}
+  .stage{background:linear-gradient(rgba(200,205,212,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(200,205,212,.05) 1px,transparent 1px),radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);background-size:28px 28px,28px 28px,100% 100%;border-bottom:1px solid var(--edge);padding:8px 0 2px}
   .stage svg{width:100%;height:auto}
   .stage svg.gun-svg{display:none}
   .stage svg.gun-svg.active{display:block}
