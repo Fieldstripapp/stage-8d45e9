@@ -1269,9 +1269,16 @@
           {phase:"Strip",title:"Run the slide off the frame",body:"Ease the slide forward and off the frame rails. The barrel and recoil spring assembly come with it. Set the frame down.",t:{...A,mag:[-34,128],slide:OFF,rsa:OFF,barrel:OFF},hl:["slide"],labels:["g19-lbl-slide","g19-lbl-frame"],arrow:{x:600,y:60,rot:-90,nx:"8px",ny:"0px"}},
           {phase:"Strip",title:"Lift out the recoil spring assembly",body:"Turn the slide over. Press the recoil spring assembly slightly forward, lift the rear end up out of its seat, and remove it. It's under mild spring tension — control it. While it's out, run it through your fingers: kinks, gaps, or a wobbly end cap on the spring mean it's due for replacement.",t:{...A,mag:[-34,128],slide:OFF,barrel:OFF,rsa:[-46,-14]},hl:["rsa"],labels:["g19-lbl-slide","g19-lbl-rsa"],arrow:{x:330,y:112,rot:160,nx:"-3px",ny:"-7px"}},
           {phase:"Strip",title:"Remove the barrel",body:"Grab the barrel by the chamber block, tilt the rear end up, and slide it back and out of the slide. Before it hits the tray, check two spots: the feed ramp (polished wear is normal, gouges are not) and the barrel hood corners for peening. That's the complete field strip — four groups, ready to clean.",t:{...A,mag:[-34,128],slide:OFF,rsa:[-46,-14],barrel:[64,-28]},hl:["barrel"],labels:["g19-lbl-slide","g19-lbl-rsa","g19-lbl-barrel","g19-lbl-frame","g19-lbl-mag"],arrow:null},
-          {phase:"Strip",title:"Field strip complete",body:"Slide, barrel, recoil spring assembly, frame — plus the magazine. No further disassembly is needed for routine cleaning. Detail strips beyond this are armorer-level work.",t:{...A,mag:[-34,128],slide:OFF,rsa:[-46,-14],barrel:[64,-28]},hl:[],labels:["g19-lbl-slide","g19-lbl-rsa","g19-lbl-barrel","g19-lbl-frame","g19-lbl-mag"],arrow:null}
+          {phase:"Strip",title:"Field strip complete",body:"Slide, barrel, recoil spring assembly, frame — plus the magazine. That's the full field strip. If you want to go deeper, the optional DEEP CLEAN path covers the breech face, striker channel, and frame interior — anything past that is armorer-level work.",t:{...A,mag:[-34,128],slide:OFF,rsa:[-46,-14],barrel:[64,-28]},hl:[],labels:["g19-lbl-slide","g19-lbl-rsa","g19-lbl-barrel","g19-lbl-frame","g19-lbl-mag"],arrow:null,branch:true}
         ];
       })(),
+      deepSteps:[
+        {phase:"Deep Clean",title:"Strip the slide: backplate off",body:"Depress the striker sleeve — not the striker itself — with a punch or pen tip, and slide the backplate down and off. Control it: the extractor plunger assembly behind it is spring-loaded and will launch if you let it. Set the plate aside face-down.",warn:"Keep the slide pointed at the bench, not your face, while the plate comes off.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Striker assembly out",body:"Tip the slide and let the striker assembly drop rearward into your hand. Wipe the striker channel dry with a clean patch — no solvent, no oil. A wet striker channel collects fouling and slows ignition; this channel runs dry, always.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Extractor plunger out",body:"Let the extractor plunger assembly slide out the rear. Ease the extractor out of its slot from the breech face. Wipe the plunger, spring, and extractor claw; pick brass shavings from the slot with a nylon brush. Fouling here is the #1 cause of Glock ejection stutter.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Breech face and rails detail",body:"Scrub the breech face with solvent and a nylon brush until the crud ring around the firing pin hole is gone. Dry patch everything. Reassemble in reverse: extractor first, plunger behind it, striker assembly, then the backplate — depress the sleeve and plunger together and slide it home until it clicks.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Frame internals wipe",body:"With the frame open, wipe the trigger bar, connector, and cruciform with a barely-damp patch — a single drop of oil spread thin on the trigger bar's contact points is the entire lubrication job. Do not detail-strip the frame; pins stay put. If something in the frame looks broken, that's an armorer's job, not a cleaning step.",t:{},hl:[],labels:[],arrow:null}
+      ],
       cleaning:[
         {name:"BARREL",tasks:["Run a solvent-wet patch through the bore, chamber to muzzle","Scrub with a 9mm bronze bore brush — 8 to 10 passes","Push dry patches through until they come out clean","Wipe the feed ramp and barrel hood; one light pass of oil on the exterior"]},
         {name:"SLIDE",tasks:["Scrub the breech face with a nylon brush and solvent","Clean the slide rails (the grooves) with a patch or swab","Wipe the striker channel area DRY — no oil in the striker channel","Drop of oil on each slide rail groove"]},
@@ -2712,7 +2719,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:8,ch:"\u25b2"}},
     {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:26,ch:"\u25b2"}},
     {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:27,ch:"\u25c0"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null}
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:40,y:14,ch:"▼"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:52,y:22,ch:"◀"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:45,y:19,ch:"◀"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:45,y:19,ch:"⟲"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"frame",z:1.4,zc:45,m:{x:50,y:33,ch:"▼"}}
   ];
   const PARTNAMES={slide:"Slide",barrel:"Barrel",rsa:"Recoil Spring Assembly",frame:"Frame",mag:"Magazine"};
 
