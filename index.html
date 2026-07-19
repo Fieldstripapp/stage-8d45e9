@@ -250,10 +250,13 @@
     radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);
     background-size:28px 28px,28px 28px,100% 100%;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px 14px}
-  .explayers{position:relative;height:min(66vh,66svh);aspect-ratio:985/1300;max-width:100vw}
+  .expviewport{position:relative;overflow:hidden;height:min(66vh,66svh);aspect-ratio:985/1300;max-width:100vw;margin:0 auto}
+  .explayers{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.22,.9,.3,1)}
   .explayers img{position:absolute;inset:0;width:100%;transition:transform .9s cubic-bezier(.22,.9,.3,1),filter .3s}
   .explayers img.hl{filter:drop-shadow(0 0 5px rgba(232,163,61,.9)) drop-shadow(0 0 14px rgba(232,163,61,.45)) brightness(1.35)}
-  .lstage{position:relative;height:min(31vh,calc(88vw*1300/985));height:min(31svh,calc(88vw*1300/985));aspect-ratio:985/1300;margin:0 auto;pointer-events:none}
+  .lviewport{position:relative;overflow:hidden;height:min(31vh,calc(88vw*1300/985));height:min(31svh,calc(88vw*1300/985));aspect-ratio:985/1300;margin:0 auto;pointer-events:none}
+  .lviewport[hidden]{display:none!important}
+  .lstage{position:absolute;inset:0;transform-origin:0 0;transition:transform .85s cubic-bezier(.22,.9,.3,1)}
   .lstage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .85s cubic-bezier(.22,.9,.3,1),filter .3s;pointer-events:none}
   .lstage img.hl,.explayers img.hl{filter:drop-shadow(0 0 5px rgba(232,163,61,.9)) drop-shadow(0 0 14px rgba(232,163,61,.45)) brightness(1.35)}
   .lmark{position:absolute;z-index:8;font-size:24px;color:var(--amber);transform:translate(-50%,-50%);animation:markpulse 1.1s infinite;text-shadow:0 0 10px rgba(232,163,61,.8);pointer-events:none}
@@ -621,9 +624,9 @@
   <section class="screen" id="scr-player">
     <div class="player">
       <div class="stage" id="gunStage">
-      <div class="lstage" id="layerStage" hidden></div>
+      <div class="lviewport" id="layerViewport" hidden><div class="lstage" id="layerStage"></div></div>
       <div id="explodedOverlay" class="expoverlay" hidden>
-        <div class="explayers" id="expLayers" style="aspect-ratio:985/1300"></div>
+        <div class="expviewport" id="expViewport" style="aspect-ratio:985/1300"><div class="explayers" id="expLayers"></div></div>
         <div class="explegend" id="expLegend"></div>
         <div class="exptags" id="expTags"></div>
         <div class="exprow">
@@ -2711,20 +2714,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const M500SW_RECV = {n:"receiver",asm:[0,0],src:"assets/guns/m500sw/receiver.png"};
   const G19_CENTERS={slide:[54.6,2.3],barrel:[75.6,22.9],rsa:[90.7,20.8],frame:[52.9,40.3],mag:[15.9,86.8]};
   const G19_LSTEPS=[
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},z:1.3,zc:50,hl:null,m:null},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",z:1.4,zc:55,m:{x:20,y:76,ch:"\u25bc"}},
-    {pos:{slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",z:1.4,zc:55,m:{x:43,y:15,ch:"\u25c0"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",z:1.4,zc:55,m:{x:34,y:49,ch:"\u25b2"}},
-    {pos:{slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",z:1.4,zc:55,m:{x:40,y:35,ch:"\u25bc"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",z:1.35,zc:55,m:{x:55,y:8,ch:"\u25b2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",z:1.35,zc:75,m:{x:91,y:26,ch:"\u25b2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",z:1.35,zc:65,m:{x:69,y:27,ch:"\u25c0"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},z:1.25,zc:50,hl:null,m:null},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:40,y:14,ch:"▼"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:52,y:22,ch:"◀"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:45,y:19,ch:"◀"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:55,m:{x:45,y:19,ch:"⟲"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"frame",z:1.4,zc:45,m:{x:50,y:33,ch:"▼"}}
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},z:1.3,zc:52,zcy:35,hl:null,m:null},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",z:1.4,zc:30,zcy:65,m:{x:20,y:76,ch:"\u25bc"}},
+    {pos:{slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",z:1.4,zc:52,zcy:25,m:{x:43,y:15,ch:"\u25c0"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",z:1.4,zc:45,zcy:40,m:{x:34,y:49,ch:"\u25b2"}},
+    {pos:{slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",z:1.4,zc:45,zcy:35,m:{x:40,y:35,ch:"\u25bc"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",z:1.35,zc:55,zcy:15,m:{x:55,y:8,ch:"\u25b2"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",z:1.35,zc:80,zcy:22,m:{x:91,y:26,ch:"\u25b2"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",z:1.35,zc:70,zcy:24,m:{x:69,y:27,ch:"\u25c0"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},z:1.15,zc:50,zcy:45,hl:null,m:null},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:45,zcy:20,m:{x:40,y:14,ch:"▼"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:52,zcy:24,m:{x:52,y:22,ch:"◀"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:47,zcy:22,m:{x:45,y:19,ch:"◀"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"slide",z:1.4,zc:47,zcy:22,m:{x:45,y:19,ch:"⟲"}},
+    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:"frame",z:1.4,zc:48,zcy:35,m:{x:50,y:33,ch:"▼"}}
   ];
   const PARTNAMES={slide:"Slide",barrel:"Barrel",rsa:"Recoil Spring Assembly",frame:"Frame",mag:"Magazine"};
 
@@ -2861,13 +2864,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     const key=activeLayerKey();
     if(lstKey===key) return; lstKey=key;
     const set=LAYER_SETS[key];
+    const vp=document.getElementById("layerViewport");
     const st=document.getElementById("layerStage");
     st.innerHTML="";
-    st.style.aspectRatio=set.aspect;
-    st.style.height="auto";
-    st.style.width=`min(100%, calc(31vh / ${set.hRatio}))`;
-    st.style.width=`min(100%, calc(31svh / ${set.hRatio}))`; /* upgrades if supported, ignored if not */
-    st.style.maxWidth="100%";
+    vp.style.aspectRatio=set.aspect;
+    vp.style.height="auto";
+    vp.style.width=`min(100%, calc(31vh / ${set.hRatio}))`;
+    vp.style.width=`min(100%, calc(31svh / ${set.hRatio}))`; /* upgrades if supported, ignored if not */
+    vp.style.maxWidth="100%";
     set.layers.forEach(L=>{
       const im=document.createElement("img");
       im.src=L.src; im.id="lst-"+L.n; im.alt=L.n;
@@ -2901,31 +2905,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
       if(m){ mk.hidden=false; mk.style.left=m.x+"%"; mk.style.top=m.y+"%"; mk.textContent=m.ch; }
       else { mk.hidden=true; mk.textContent=""; }
     });
-    /* per-step stage zoom: z = scale factor, zc = content center x% (zoom anchor).
-       Lets long/thin renders (suppressors) fill the stage when assembled,
-       zooming back to 1 when the explode needs the full canvas.
-       Margins reserve real layout space for the scaled height — CSS transforms
-       don't affect layout, so without this the can overlaps the steps UI. */
+    /* viewport-crop zoom: .lviewport keeps the z=1 layout footprint (overflow:hidden) so the
+       step text below can never be crushed; .lstage scales+pans INSIDE it from a FIXED origin
+       (0 0, set in CSS). zc/zcy = the content point (x%,y%) parked at the viewport centre.
+       Anchor changes animate as pans (transform transition); edge cropping is intended. */
     const st=document.getElementById("layerStage");
-    const z=cfg.z||1, zc=(cfg.zc!=null)?cfg.zc:50;
-    st.style.transformOrigin=`${zc}% 50%`;
-    st.style.transition="transform .85s cubic-bezier(.22,.9,.3,1)";
-    st.style.transform=(z===1)?"none":`translateX(${50-zc}%) scale(${z})`;
-    st.style.marginTop=""; st.style.marginBottom="";
-    /* reserve real space on the parent via padding (padding never margin-collapses),
-       so the scaled can neither slides under the topbar nor overlaps the steps UI */
-    const par=st.parentElement;
-    if(par){
-      par.style.transition="padding .85s cubic-bezier(.22,.9,.3,1)";
-      const applyPad=()=>{ const pad=(z>1)? Math.round((z-1)*st.offsetHeight/2)+10 : 0;
-        par.style.paddingTop=pad+"px"; par.style.paddingBottom=pad+"px"; };
-      applyPad();
-      /* first render reads a stale offsetHeight (stage just built/shown) so pad
-         collapses ~10px; recompute after a layout flush. Guarded by stepIndex so a
-         stale frame from a superseded step can't clobber the current padding. */
-      const myStep=stepIndex;
-      requestAnimationFrame(()=>{ if(stepIndex===myStep) applyPad(); });
-    }
+    const z=cfg.z||1, zc=(cfg.zc!=null)?cfg.zc:50, zcy=(cfg.zcy!=null)?cfg.zcy:50;
+    st.style.transform=`translate(${(50-zc*z).toFixed(3)}%,${(50-zcy*z).toFixed(3)}%) scale(${z})`;
   }
 
   let expKey=null, expExploded=false, expHl=null;
@@ -2933,13 +2919,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     const key=activeLayerKey();
     if(expKey===key) return; expKey=key;
     const set=LAYER_SETS[key];
+    const vp=document.getElementById("expViewport");
     const wrap=document.getElementById("expLayers"), tags=document.getElementById("expTags");
     wrap.innerHTML=""; tags.innerHTML="";
-    wrap.style.aspectRatio=set.aspect;
-    wrap.style.height="auto";
-    wrap.style.width=`min(100vw, calc(66vh / ${set.hRatio}))`;
-    wrap.style.width=`min(100vw, calc(66svh / ${set.hRatio}))`; /* upgrades if supported */
-    wrap.style.maxHeight="none";
+    vp.style.aspectRatio=set.aspect;
+    vp.style.height="auto";
+    vp.style.width=`min(100vw, calc(66vh / ${set.hRatio}))`;
+    vp.style.width=`min(100vw, calc(66svh / ${set.hRatio}))`; /* upgrades if supported */
+    vp.style.maxHeight="none";
     set.layers.forEach(L=>{
       const im=document.createElement("img");
       im.src=L.src; im.id="expl-"+L.n; im.alt=set.names[L.n];
@@ -2975,15 +2962,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
       if(!im) return;
       im.style.transform = exploded? "translate(0%,0%)" : `translate(${L.asm[0]}%,${L.asm[1]}%)`;
     });
-    /* assembled-state zoom for long/thin sets (suppressors): fills the overlay
-       when assembled, zooms back out as the field strip spreads to full canvas */
+    /* viewport-crop zoom for long/thin sets (suppressors): .expviewport holds the z=1
+       footprint, .explayers scales+pans inside from the fixed origin (0 0). */
     const wrap=document.getElementById("expLayers");
     const z=(!exploded&&set.zAsm)?set.zAsm:1, zc=(set.zAsmC!=null)?set.zAsmC:50;
-    wrap.style.transformOrigin=`${zc}% 50%`;
-    wrap.style.transition="transform .9s cubic-bezier(.22,.9,.3,1), margin .9s cubic-bezier(.22,.9,.3,1)";
-    wrap.style.transform=(z===1)?"none":`translateX(${50-zc}%) scale(${z})`;
-    const zpad=(z>1)? Math.round((z-1)*wrap.offsetHeight/2) : 0;
-    wrap.style.marginTop=zpad+"px"; wrap.style.marginBottom=zpad+"px";
+    wrap.style.transform=`translate(${(50-zc*z).toFixed(3)}%,${(50-50*z).toFixed(3)}%) scale(${z})`;
     document.getElementById("expToggle").textContent = exploded? "\u25c2 Assemble" : "Field Strip \u25b8";
   }
   document.getElementById("explodedBtn").addEventListener("click",()=>{
@@ -3006,7 +2989,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   function startGuide(){
     const gun=activeGuide();
     const lm=!!gun.layerMode;
-    document.getElementById("layerStage").hidden=!lm;
+    document.getElementById("layerViewport").hidden=!lm;
     if(lm){ buildLayerStage(); }
     document.querySelectorAll(".gun-svg").forEach(s=>s.classList.toggle("active",!lm && s.id===gun.svg));
     for(const key in gun.origins){
