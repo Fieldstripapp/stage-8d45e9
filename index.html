@@ -254,7 +254,7 @@
   .explayers{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.22,.9,.3,1)}
   .explayers img{position:absolute;inset:0;width:100%;transition:transform .9s cubic-bezier(.22,.9,.3,1),filter .3s}
   .explayers img.hl{filter:drop-shadow(0 0 5px rgba(232,163,61,.9)) drop-shadow(0 0 14px rgba(232,163,61,.45)) brightness(1.35)}
-  .lviewport{position:relative;overflow:hidden;height:min(31vh,calc(88vw*1300/985));height:min(31svh,calc(88vw*1300/985));aspect-ratio:985/1300;margin:0 auto;pointer-events:none}
+  .lviewport{position:relative;overflow:hidden;height:min(38vh,calc(88vw*1300/985));height:min(38svh,calc(88vw*1300/985));aspect-ratio:985/1300;margin:0 auto;pointer-events:none}
   .lviewport[hidden]{display:none!important}
   .lstage{position:absolute;inset:0;transform-origin:0 0;transition:transform .85s cubic-bezier(.22,.9,.3,1)}
   .lstage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .85s cubic-bezier(.22,.9,.3,1),filter .3s;pointer-events:none}
@@ -306,6 +306,11 @@
   .progress i.done{background:var(--amber-dim)}
   .progress i.cur{background:var(--amber)}
   .controls{display:flex;gap:10px;padding:8px 20px calc(8px + var(--sab))}
+  /* 3-up row (Back / Deep Clean / Next) overflows phone width at natural size:
+     flex items default to min-width:auto so they refuse to shrink. Equal thirds
+     + tighter padding only in this state; 2-button rows are untouched. */
+  .controls.three{gap:8px}
+  .controls.three .btn{flex:1 1 0;min-width:0;padding:12px 10px;font-size:12px;letter-spacing:1px}
   .controls .primary{flex:1}
 
   /* ---------- CLEANING ---------- */
@@ -2869,8 +2874,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     st.innerHTML="";
     vp.style.aspectRatio=set.aspect;
     vp.style.height="auto";
-    vp.style.width=`min(100%, calc(31vh / ${set.hRatio}))`;
-    vp.style.width=`min(100%, calc(31svh / ${set.hRatio}))`; /* upgrades if supported, ignored if not */
+    vp.style.width=`min(100%, calc(38vh / ${set.hRatio}))`;
+    vp.style.width=`min(100%, calc(38svh / ${set.hRatio}))`; /* upgrades if supported, ignored if not */
     vp.style.maxWidth="100%";
     set.layers.forEach(L=>{
       const im=document.createElement("img");
@@ -3032,6 +3037,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
     const bb=document.getElementById("branchBtn");
     bb.hidden=!(s.branch && !branched && gun.deepSteps);
+    bb.parentElement.classList.toggle("three",!bb.hidden);
     document.getElementById("stepPhase").textContent=s.phase;
     document.getElementById("stepTitle").textContent=s.title;
     document.getElementById("stepBody").innerHTML=s.body;
