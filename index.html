@@ -2814,7 +2814,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {n:"lower",asm:[0,0],src:"assets/guns/ar15/lower.png"}
   ];
   const AR15_NAMES={upper:"Upper Receiver Group",upper_open:"Upper Receiver (open)",lower:"Lower Receiver Group",bcg:"Bolt Carrier Group",ch:"Charging Handle",mag:"Magazine"};
-  const AR15_CENTERS={upper:[61.8,14.4],lower:[25.2,50.7],bcg:[16.8,17.3],ch:[13.1,11.9],mag:[44.4,77.8]};
+  const AR15_CENTERS={upper:[61.8,14.4],lower:[25.2,50.7],bcg:[18.5,19.2],ch:[11.5,9.8],mag:[44.4,77.8]};
   const UPD=-17.86; /* upper separation delta, canvas %% */
   const AR15_LSTEPS=[
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"a"},hl:null,m:null},
@@ -2823,7 +2823,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e"},hl:"lower",m:{x:28,y:41,ch:"\u25bc"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e"},hl:"upper_open",m:{x:46,y:36,ch:"\u27f2"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e"},hl:"bcg",m:{x:25,y:17,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:"ch",m:{x:21,y:12,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:"ch",m:{x:21,y:9,ch:"\u25c0"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:"bcg",m:null},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:null,m:null}
   ];
@@ -2897,7 +2897,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
       const im=document.getElementById("lst-"+L.n);
       if(!im) return;
       const p=cfg.pos[L.n]||"a";
-      if(p==="x"){im.style.visibility="hidden";return;} /* "x" = hide this layer on this step */
+      if(p==="x"){im.style.visibility="hidden";im.classList.remove("hl");return;} /* "x" = hide this layer on this step */
       im.style.visibility="";
       let tx,ty,sc=1;
       if(p==="e"){tx=0;ty=0;}
