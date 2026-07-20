@@ -1377,7 +1377,12 @@
       steps:[
         {phase:"Clear",title:"Confirm the revolver is clear",body:"Verified at the safety gate \u2014 cylinder open, every chamber checked by sight and by touch. Count the empty chambers. Muzzle in a safe direction throughout.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Strip",title:"Swing out the cylinder",body:"Press the cylinder release and swing the cylinder out on its crane, supporting the cylinder with your off-hand fingers as it comes — the revolver's entire timing and alignment live in that one thin crane arm. That's the whole disassembly: a modern DA revolver cleans from exactly here.",warn:"Never remove the sideplate. Internal lockwork is fitted at the factory \u2014 sideplate removal is gunsmith work and can void your warranty.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Ready to clean",body:"With the cylinder open, the bore, every chamber, the cylinder face, and the frame window are all reachable. Two habits that keep a revolver honest: scrub the carbon rings off the cylinder face and the forcing cone where the flame cuts — buildup there is what degrades accuracy — and when you finish, close the cylinder with your hand. Flicking it shut movie-style bends the crane and ruins the timing you just protected.",t:{},hl:[],labels:[],arrow:null}
+        {phase:"Strip",title:"Ready to clean",body:"With the cylinder open, the bore, every chamber, the cylinder face, and the frame window are all reachable. Two habits that keep a revolver honest: scrub the carbon rings off the cylinder face and the forcing cone where the flame cuts — buildup there is what degrades accuracy — and when you finish, close the cylinder with your hand. Flicking it shut movie-style bends the crane and ruins the timing you just protected. Want to go deeper? The optional DEEP CLEAN path covers the ejector star, charge holes, and yoke.",t:{},hl:[],labels:[],arrow:null,branch:true}
+      ],
+      deepSteps:[
+        {phase:"Deep Clean",title:"Under the ejector star",body:"Press the ejector rod and hold it back, then brush out the crud packed under the ejector star \u2014 unburned powder here is why a cylinder that spun freely at home binds at the range. Let the star seat, wipe the ratchet faces, and leave it all dry: oil under the star glues grit in place.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Charge holes and forcing cone",body:"Scrub each charge hole from the rear until a patch comes through clean \u2014 a carbon ring in a .357 shooting .38s can stop magnums from seating. Then the forcing cone at the rear of the barrel: brush it until the leading's out. The cone does the dirtiest work in the gun.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Yoke, window, and grips",body:"Wipe the yoke barrel and put a single drop of oil where the cylinder spins. Scrub the cylinder window and breech face. If the grips come off easily, pull them and wipe underneath \u2014 sweat lives there and rusts frames from the inside out. Never remove the sideplate: the lockwork behind it is armorer territory.",t:{},hl:[],labels:[],arrow:null}
       ],
       cleaning:[
         {name:"BORE & FORCING CONE",tasks:["Solvent-wet patch through the bore from the muzzle \u2014 protect the crown","Bronze brush 8\u201310 passes; give the forcing cone extra attention, it collects lead and carbon","Dry patches until clean"]},
@@ -1398,7 +1403,12 @@
         {phase:"Strip",title:"Open the loading gate",body:"Swing the loading gate open on the right side of the frame, behind the cylinder. You'll feel its detent click as it lets go. With the gate open the cylinder turns freely for the clearing check, and on most guns the frame won't release the base pin in the next step until the gate is open."},
         {phase:"Strip",title:"Withdraw the base pin",body:"Press the base-pin latch \u2014 the spring button on the left side at the front of the frame \u2014 and pull the base pin straight forward out of the frame. On a screw-retained black-powder frame, back the front screw out a couple of turns instead. The pin slides free with light pressure once the latch is fully in; if you're fighting it the latch isn't depressed, and never drive it with a hammer \u2014 a burred pin never seats right again.",warn:"The base pin is small and rolls. Set it somewhere it can't get away \u2014 the gun will not go back together without it."},
         {phase:"Strip",title:"Roll the cylinder out",body:"With the base pin out and the gate open, tip the muzzle up and let the cylinder roll out the right side of the frame into your waiting hand. Support it as it comes \u2014 nothing else is holding it now. The cylinder is the one part that leaves the frame, and dropping it on a hard bench is how you nick a chamber mouth or bend the ejector."},
-        {phase:"Strip",title:"Field strip complete",body:"Frame with barrel and grip, cylinder, base pin \u2014 three pieces, no tools, exactly as these have come apart since 1873. Everything you need to clean is now in the open: the bore from the muzzle, each chamber, and the cylinder face where the carbon rings build."}
+        {phase:"Strip",title:"Field strip complete",body:"Frame with barrel and grip, cylinder, base pin \u2014 three pieces, no tools, exactly as these have come apart since 1873. Everything you need to clean is now in the open: the bore from the muzzle, each chamber, and the cylinder face where the carbon rings build. Want to go deeper? The optional DEEP CLEAN path covers the base pin, charge holes, and frame window.",branch:true}
+      ],
+      deepSteps:[
+        {phase:"Deep Clean",title:"Base pin and its channel",body:"Wipe the base pin bright and run a patch through its channel in the cylinder \u2014 this is the SAA's axle, and fouling here is why the cylinder drags. A thin film of oil on the pin going back in; the old-timers used one drop, and they were right.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Charge holes and cylinder faces",body:"Each charge hole from the rear until clean, then both cylinder faces \u2014 the rear ratchet and the front face that collects the cylinder-gap blast. Black powder loads? Hot soapy water first, then dry completely, then oil. Smokeless, solvent as usual.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Frame window and bushing surfaces",body:"Scrub the frame's cylinder window, the breech face, and the forcing cone. Wipe the loading gate's recess. Check the base pin's spring-catch (or crosspin screw) holds firm \u2014 a walking base pin under recoil ties up the gun. The action stays assembled: screws stay put unless you're at a bench with the right drivers and a reason.",t:{},hl:[],labels:[],arrow:null}
       ],
       cleaning:[
         {name:"BORE & FORCING CONE",tasks:["Solvent-wet patch through the bore from the muzzle \u2014 protect the crown","Bronze brush 8\u201310 passes; give the forcing cone extra attention where flame-cutting collects lead","Dry patches until the bore runs clean"]},
@@ -2867,7 +2877,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const REVDA_LSTEPS=[
     {pos:{frame:"a",cylinder:"a"},hl:null,m:null},
     {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:52,y:53,ch:"\u25bc"}},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:null,m:null}
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:null,m:null},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:41,y:79,ch:"\u27f2"}},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:45,y:70,ch:"\u25bc"}},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"frame",m:{x:47,y:26,ch:"\u25c0"}}
   ];
   /* ---- Single-action revolver layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const REVSA_LAYERS=[
@@ -2883,7 +2896,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:{x:50,y:20,ch:"\u25c0"}},
     {pos:{frame:"a",cylinder:"a",pin:"e"},hl:"pin",m:{x:67,y:35,ch:"\u25b6"}},
     {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"cylinder",m:{x:42,y:60,ch:"\u25bc"}},
-    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:null,m:null}
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:null,m:null},
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"pin",m:{x:79,y:35,ch:"\u25c0"}},
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"cylinder",m:{x:42,y:66,ch:"\u27f2"}},
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"frame",m:{x:40,y:22,ch:"\u25bc"}}
   ];
   /* ---- AR-15 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const AR15_LAYERS=[
