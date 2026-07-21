@@ -1490,9 +1490,16 @@
           {phase:"Strip",title:"Pull the bolt carrier group",body:"Draw the charging handle rearward and the BCG rides out the back of the upper with it. Catch the carrier as it clears and set it on the bench.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,ch:UP,bcg:[-110,-40]},hl:["bcg"],labels:["ar-lbl-bcg"],arrow:{x:200,y:92,rot:90,nx:"-8px",ny:"0px"}},
           {phase:"Strip",title:"Charging handle out",body:"Pull the charging handle back to its notch, then drop it down and out of its channel. That's the whole field strip: two parts out, receivers still married.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56]},hl:["ch"],labels:["ar-lbl-ch"],arrow:{x:110,y:106,rot:90,nx:"-8px",ny:"0px"}},
           {phase:"Clean",title:"Wipe and inspect",body:"Bore from the chamber end. Scrub the bolt face and the carrier's exterior, wipe the charging handle, and run a patch through the upper. Light oil on the carrier rails — the AR runs wet where steel meets steel.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:["bolt"],labels:["ar-lbl-bcg","ar-lbl-bolt"],arrow:{x:390,y:120,rot:-90,nx:"8px",ny:"0px"}},
-          {phase:"Reassemble",title:"Close it up",body:"Charging handle in first — into its channel, not fully seated. Bolt forward in the carrier, feed the BCG onto the handle and slide both home. Swing the upper closed, click the rear pin back left, and function check: charge, safety on, trigger dead.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:[],labels:["ar-lbl-upper","ar-lbl-lower","ar-lbl-bcg","ar-lbl-bolt","ar-lbl-ch","ar-lbl-mag"],arrow:null}
+          {phase:"Reassemble",title:"Close it up",body:"Charging handle in first — into its channel, not fully seated. Bolt forward in the carrier, feed the BCG onto the handle and slide both home. Swing the upper closed, click the rear pin back left, and function check: charge, safety on, trigger dead. That's the field strip. To go further, the optional DEEP CLEAN path separates the receivers and breaks the bolt carrier group down to bolt, cam pin, and firing pin — the baked carbon that field cleaning can't reach.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:[],labels:["ar-lbl-upper","ar-lbl-lower","ar-lbl-bcg","ar-lbl-bolt","ar-lbl-ch","ar-lbl-mag"],arrow:null,branch:true}
         ];
       })(),
+      deepSteps:[
+        {phase:"Deep Clean",title:"Separate the receivers",body:"Push the front pivot pin from left to right to its stop — captive, like the rear. Lift the upper off the lower and set the lower aside, safety on. You're now holding the half that gets dirty.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Free the firing pin",body:"Push the firing pin retaining pin out of the left side of the carrier — small, and it will vanish into carpet, so work over the bench. Tip the carrier up and let the firing pin slide out the rear into your hand.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Cam pin and bolt out",body:"Press the bolt back into the carrier, rotate the cam pin a quarter turn, and lift it straight out. The bolt now slides out the front of the carrier. Three parts, one order — reverse it exactly going back.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Scrape the carbon",body:"The bolt tail and the inside of the carrier's bolt tunnel carry baked carbon that solvent alone won't lift — scrape, then patch. Check the gas key's two screws are staked and immovable; a loose key is a rifle that short-strokes. Wipe the cam pin and firing pin dry.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Rebuild the group",body:"Bolt into the carrier, extractor to the right, then draw it forward. Cam pin in, quarter turn back. Firing pin in from the rear — it seats without force; if it doesn't, the cam pin's clocked wrong. Retaining pin in, then shake the group: rattle is normal, looseness is not. Reassemble the rifle per the standard guide's closing step.",t:{},hl:[],labels:[],arrow:null}
+      ],
       cleaning:[
         {name:"BOLT & CARRIER",tasks:["Scrape the carbon ring off the bolt tail — this is the job; a carbon scraper earns its keep here","Clean the carrier interior and wipe the gas key exterior (do not loosen the key screws)","Clean the bolt face, lugs, and under the extractor claw","Lube generously: carrier rails, bolt body, cam pin — a DI gun runs better wet than dry"]},
         {name:"UPPER & BARREL",tasks:["Chamber brush the chamber and locking-lug recess — grit here causes failures to extract","Bore: solvent patch, 5.56 bronze brush 8–10 passes, dry patches until clean","Wipe out the upper receiver interior","Leave the gas tube alone — it self-cleans in use"]},
@@ -2803,6 +2810,7 @@
   });
 const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"}];
   GUNS.m500sw = Object.assign({}, GUNS.m500);
+  delete GUNS.m500sw.deepSteps; /* suppress the Deep Clean branch: m500sw's layer slice has no internals art (branchBtn is hidden when gun.deepSteps is absent) */
   /* ---- Shockwave variant: Raptor grip receiver layer, shares m500 pump/barrel ---- */
   const M500SW_RECV = {n:"receiver",asm:[0,0],src:"assets/guns/m500sw/receiver.png"};
   const G19_CENTERS={slide:[54.6,2.3],barrel:[75.6,22.9],rsa:[90.7,20.8],frame:[52.9,40.3],mag:[15.9,86.8]};
@@ -2828,21 +2836,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const M500_LAYERS=[
     {n:"receiver",asm:[0,0],src:"assets/guns/m500/receiver.png"},
     {n:"pump",asm:[-9.43,-3.93],src:"assets/guns/m500/pump.png"},
-    {n:"barrel",asm:[-2.57,26.87],src:"assets/guns/m500/barrel.png"}
+    {n:"barrel",asm:[-2.57,26.87],src:"assets/guns/m500/barrel.png"},
+    /* deep-clean internals: eh:true keeps them out of the free Parts Diagram; appended so m500sw's M500_LAYERS[1]/[2] slice is unaffected */
+    {n:"trigger",asm:[0,0],eh:true,src:"assets/guns/m500/trigger.png"},
+    {n:"boltslide",asm:[0,0],eh:true,src:"assets/guns/m500/boltslide.png"},
+    {n:"elevator",asm:[0,0],eh:true,src:"assets/guns/m500/elevator.png"}
   ];
   const M500_CENTERS={barrel:[72.8,12.8],pump:[70.3,46.6],receiver:[42.6,50.6]};
-  const M500_NAMES={barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Stock"};
+  const M500_NAMES={barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Stock",trigger:"Trigger Group",boltslide:"Bolt & Slide",elevator:"Elevator"};
+  const M500X={trigger:"x",boltslide:"x",elevator:"x"}; /* R2 guard: internals hidden unless a deep step names them */
   const M500_LSTEPS=[
-    {pos:{receiver:"a",pump:"a",barrel:"a"},hl:null,m:null},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"pump",z:1.4,zc:60,m:{x:58,y:43,ch:"\u25c0"}},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a"},hl:"receiver",z:1.4,zc:70,m:{x:74,y:43,ch:"\u27f2"}},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e"},hl:"barrel",m:{x:63,y:6,ch:"\u25b2"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:null,m:null},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",z:1.4,zc:46,m:{x:24,y:50,ch:"\u25b2"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",z:1.4,zc:46,m:{x:31,y:45,ch:"\u25bc"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e"},hl:"receiver",z:1.4,zc:47,m:{x:48,y:37,ch:"\u25c0"}},
-    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:"pump",z:1.4,zc:54,m:{x:55,y:49,ch:"\u25c0"}},
-    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e"},hl:null,m:null}
+    {pos:{receiver:"a",pump:"a",barrel:"a",...M500X},hl:null,m:null},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"pump",z:1.4,zc:60,m:{x:58,y:43,ch:"\u25c0"}},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"receiver",z:1.4,zc:70,m:{x:74,y:43,ch:"\u27f2"}},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e",...M500X},hl:"barrel",m:{x:63,y:6,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:null,m:null},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:24,y:50,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",trigger:"e",boltslide:"x",elevator:"x"},hl:"trigger",z:1.4,zc:40,zcy:60,m:{x:33,y:73,ch:"\u25bc"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",trigger:"e",boltslide:"x",elevator:"x"},hl:"receiver",z:1.4,zc:42,zcy:48,m:[{x:45,y:44,ch:"\u25bc"},{x:37,y:46,ch:"\u25bc"}]},
+    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e"},hl:"boltslide",z:1.3,zc:66,zcy:68,m:{x:75,y:76,ch:"\u25c0"}},
+    {pos:{receiver:"a",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e"},hl:null,z:1.15,zc:50,zcy:56,m:null}
   ];
   /* ---- 1911 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const G1911_LAYERS=[
@@ -2903,26 +2916,38 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   ];
   /* ---- AR-15 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const AR15_LAYERS=[
-    {n:"bcg",asm:[26.06,17.91],src:"assets/guns/ar15/bcg.png"},
-    {n:"ch",asm:[24.08,17.86],src:"assets/guns/ar15/ch.png"},
+    {n:"bcg",asm:[21.37,17.9],src:"assets/guns/ar15/bcg.png"}, /* re-rendered real carrier; asm pulled 4.7% right of the old slab park */
+    {n:"ch",asm:[24.08,26.55],src:"assets/guns/ar15/ch.png"}, /* re-parked up to clear the taller bcg */
     {n:"mag",asm:[0,-18.63],src:"assets/guns/ar15/mag.png"},
     {n:"upper",asm:[0,17.90],src:"assets/guns/ar15/upper.png"},
     {n:"upper_open",asm:[0,0],eh:true,src:"assets/guns/ar15/upper_open.png"},
-    {n:"lower",asm:[0,0],src:"assets/guns/ar15/lower.png"}
+    {n:"lower",asm:[0,0],src:"assets/guns/ar15/lower.png"},
+    /* deep-clean BCG breakdown: eh:true (out of the free Parts Diagram); shown only in the Deep Clean branch */
+    {n:"carrier",asm:[0,0],eh:true,src:"assets/guns/ar15/carrier.png"},
+    {n:"bolt",asm:[0,0],eh:true,src:"assets/guns/ar15/bolt.png"},
+    {n:"campin",asm:[0,0],eh:true,src:"assets/guns/ar15/campin.png"}
   ];
-  const AR15_NAMES={upper:"Upper Receiver Group",upper_open:"Upper Receiver (open)",lower:"Lower Receiver Group",bcg:"Bolt Carrier Group",ch:"Charging Handle",mag:"Magazine"};
-  const AR15_CENTERS={upper:[61.8,14.4],lower:[25.2,50.7],bcg:[18.5,19.2],ch:[11.5,9.8],mag:[44.4,77.8]};
+  const AR15_NAMES={upper:"Upper Receiver Group",upper_open:"Upper Receiver (open)",lower:"Lower Receiver Group",bcg:"Bolt Carrier Group",ch:"Charging Handle",mag:"Magazine",carrier:"Carrier & Gas Key",bolt:"Bolt",campin:"Cam Pin"};
+  const AR15_CENTERS={upper:[61.8,14.4],lower:[25.2,50.7],bcg:[14.2,15.3],ch:[13.1,5.0],mag:[44.4,77.8],carrier:[64.0,80.0],bolt:[88.0,80.0],campin:[64.0,71.5]};
   const UPD=-17.86; /* upper separation delta, canvas %% */
+  const AR15X={carrier:"x",bolt:"x",campin:"x"}; /* R2 guard: BCG-breakdown layers hidden outside the Deep Clean branch */
+  const ARBCGP=["e",55.83,62.75]; /* assembled BCG offset into the park band [~70,78] for the deep steps (keeps marker inside the park zoom window per rule 6) */
   const AR15_LSTEPS=[
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"a"},hl:null,m:null},
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e"},hl:"mag",z:1.35,zc:45,zcy:65,m:{x:46,y:68,ch:"\u25bc"}},
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e"},hl:"upper",z:1.4,zc:37,zcy:30,m:{x:36,y:30,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e"},hl:"lower",z:1.4,zc:30,zcy:38,m:{x:28,y:41,ch:"\u25bc"}},
-    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e"},hl:"upper_open",m:{x:46,y:36,ch:"\u27f2"}},
-    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e"},hl:"bcg",z:1.35,zc:24,zcy:18,m:{x:25,y:17,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:"ch",z:1.35,zc:21,zcy:13,m:{x:21,y:9,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:"bcg",m:null},
-    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e"},hl:null,m:null}
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"a",...AR15X},hl:null,m:null},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"mag",z:1.35,zc:45,zcy:65,m:{x:46,y:68,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"upper",z:1.4,zc:37,zcy:30,m:{x:36,y:30,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"lower",z:1.4,zc:30,zcy:38,m:{x:28,y:41,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e",...AR15X},hl:"upper_open",m:{x:46,y:36,ch:"\u27f2"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e",...AR15X},hl:"bcg",z:1.35,zc:15,zcy:16,m:{x:13,y:16,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"ch",z:1.35,zc:15,zcy:5,m:{x:27,y:3,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"bcg",m:null},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:null,m:null},
+    /* ---- Deep Clean branch (BCG breakdown) ---- */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"lower",z:1.3,zc:40,zcy:42,m:{x:46,y:38,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"bcg",z:1.4,zc:68,zcy:78,m:{x:60,y:78,ch:"\u25c0"}},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"campin",z:1.35,zc:70,zcy:79,m:{x:64,y:66,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.35,zc:70,zcy:79,m:{x:69,y:75,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:null,z:1.4,zc:68,zcy:78,m:null}
   ];
   /* ---- Suppressor layer set (Fieldstrip 3D pipeline, muzzle-right standard) ----
      stack is listed first so it z-stacks UNDER the tube: assembled, the stack
