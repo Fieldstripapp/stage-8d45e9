@@ -2834,26 +2834,33 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
 
   /* ---- Mossberg 500 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const M500_LAYERS=[
+    /* deep-clean internals draw UNDER the receiver (front of the array = bottom of the
+       z-stack) so their SEATED "a" state is hidden behind it. asm seats each at its real
+       in-receiver position (derived from the fit-check seated renders), so a->e animates
+       the actual drop-out/slide-forward via the .lstage img transform transition.
+       eh:true keeps them out of the free Parts Diagram. m500sw slices [4]/[5] below. */
+    {n:"trigger",asm:[2.55,-31.85],eh:true,src:"assets/guns/m500/trigger.png"},
+    {n:"boltslide",asm:[-31.8,-37.0],eh:true,src:"assets/guns/m500/boltslide.png"},
+    {n:"elevator",asm:[-8.8,-36.0],eh:true,src:"assets/guns/m500/elevator.png"},
     {n:"receiver",asm:[0,0],src:"assets/guns/m500/receiver.png"},
     {n:"pump",asm:[-9.43,-3.93],src:"assets/guns/m500/pump.png"},
-    {n:"barrel",asm:[-2.57,26.87],src:"assets/guns/m500/barrel.png"},
-    /* deep-clean internals: eh:true keeps them out of the free Parts Diagram; appended so m500sw's M500_LAYERS[1]/[2] slice is unaffected */
-    {n:"trigger",asm:[0,0],eh:true,src:"assets/guns/m500/trigger.png"},
-    {n:"boltslide",asm:[0,0],eh:true,src:"assets/guns/m500/boltslide.png"},
-    {n:"elevator",asm:[0,0],eh:true,src:"assets/guns/m500/elevator.png"}
+    {n:"barrel",asm:[-2.57,26.87],src:"assets/guns/m500/barrel.png"}
   ];
   const M500_CENTERS={barrel:[72.8,12.8],pump:[70.3,46.6],receiver:[42.6,50.6]};
   const M500_NAMES={barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Stock",trigger:"Trigger Group",boltslide:"Bolt & Slide",elevator:"Elevator"};
-  const M500X={trigger:"x",boltslide:"x",elevator:"x"}; /* R2 guard: internals hidden unless a deep step names them */
+  /* internals SEATED ("a") wherever they are not being removed: hidden behind the receiver
+     (which now draws on top). Removal steps switch the named part to "e" so a->e animates
+     the drop. Same spread keeps m500sw untouched (its layer set has no internal imgs). */
+  const M500X={trigger:"a",boltslide:"a",elevator:"a"};
   const M500_LSTEPS=[
     {pos:{receiver:"a",pump:"a",barrel:"a",...M500X},hl:null,m:null},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"pump",z:1.4,zc:60,m:{x:58,y:43,ch:"\u25c0"}},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"receiver",z:1.4,zc:70,m:{x:74,y:43,ch:"\u27f2"}},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e",...M500X},hl:"barrel",m:{x:63,y:6,ch:"\u25b2"}},
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:null,m:null},
-    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:24,y:50,ch:"\u25b2"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e",trigger:"e",boltslide:"x",elevator:"x"},hl:"trigger",z:1.4,zc:40,zcy:60,m:{x:33,y:73,ch:"\u25bc"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e",trigger:"e",boltslide:"x",elevator:"x"},hl:"receiver",z:1.4,zc:42,zcy:48,m:[{x:45,y:44,ch:"\u25bc"},{x:37,y:46,ch:"\u25bc"}]},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:31,y:48,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X,trigger:"e"},hl:"trigger",z:1.4,zc:40,zcy:60,m:{x:33,y:73,ch:"\u25bc"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X,trigger:"e"},hl:"receiver",z:1.4,zc:42,zcy:48,m:[{x:44,y:46,ch:"\u25bc"},{x:38,y:47,ch:"\u25bc"}]},
     {pos:{receiver:"a",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e"},hl:"boltslide",z:1.3,zc:66,zcy:68,m:{x:75,y:76,ch:"\u25c0"}},
     {pos:{receiver:"a",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e"},hl:null,z:1.15,zc:50,zcy:56,m:null}
   ];
@@ -2980,7 +2987,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     g19:{layers:EXP_LAYERS,lsteps:G19_LSTEPS,centers:G19_CENTERS,names:PARTNAMES,nums:[["slide",1],["barrel",2],["rsa",3],["frame",4],["mag",5]],tags:["slide","rsa","barrel","frame","mag"],aspect:"985 / 1300",hRatio:1300/985},
     m500:{layers:M500_LAYERS,lsteps:M500_LSTEPS,centers:M500_CENTERS,names:M500_NAMES,nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1100 / 503",hRatio:503/1100},
     g1911:{layers:G1911_LAYERS,lsteps:G1911_LSTEPS,centers:G1911_CENTERS,names:G1911_NAMES,nums:[["slide",1],["barrel",2],["slidestop",3],["frame",4],["mag",5]],tags:["slide","barrel","slidestop","frame","mag"],aspect:"1200 / 830",hRatio:830/1200},
-    m500sw:{layers:[M500SW_RECV,M500_LAYERS[1],M500_LAYERS[2]],lsteps:M500_LSTEPS,centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",hRatio:330/1055},
+    m500sw:{layers:[M500SW_RECV,M500_LAYERS[4],M500_LAYERS[5]],lsteps:M500_LSTEPS,centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",hRatio:330/1055},
     revda:{layers:REVDA_LAYERS,lsteps:REVDA_LSTEPS,centers:REVDA_CENTERS,names:REVDA_NAMES,nums:[["cylinder",1],["frame",2]],tags:["cylinder","frame"],aspect:"1400 / 769",hRatio:769/1400},
     revsa:{layers:REVSA_LAYERS,lsteps:REVSA_LSTEPS,centers:REVSA_CENTERS,names:REVSA_NAMES,nums:[["frame",1],["cylinder",2],["pin",3]],tags:["frame","cylinder","pin"],aspect:"1500 / 682",hRatio:682/1500},
     ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1400 / 726",hRatio:726/1400}
