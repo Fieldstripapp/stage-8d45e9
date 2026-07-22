@@ -636,7 +636,7 @@
       </div>
       <div id="gateItems" style="display:flex;flex-direction:column;gap:14px"></div>
       <div class="spacer"></div>
-      <button class="btn primary full" id="gateGo" disabled>Begin Teardown</button>
+      <button class="btn primary full" id="gateGo" disabled>Begin Fieldstrip</button>
     </div>
   </section>
 
@@ -1051,7 +1051,7 @@
         </svg>
 
         <!-- ======== SILENCERCO SPARROW 22 ======== -->
-        <svg id="svg-rfsup" class="gun-svg" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg" aria-label="SilencerCo Sparrow 22 teardown diagram">
+        <svg id="svg-rfsup" class="gun-svg" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg" aria-label="SilencerCo Sparrow 22 field strip diagram">
           <defs>
             <linearGradient id="sps" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#5A6470"/><stop offset=".4" stop-color="#3C434E"/>
@@ -1517,13 +1517,13 @@
       steps:(function(){
         const A={base:[0,0],core:[0,0],slv1:[0,0],slv2:[0,0],tube:[0,0]};
         return [
-          {phase:"Clear",title:"Host cleared, can cool, gloves on",body:"You confirmed all three at the gate. A suppressor teardown starts at the muzzle of a firearm — the host gets the same respect as any other gun on the bench. Everything from here happens with gloves.",t:{...A},hl:[],labels:[],arrow:null},
+          {phase:"Clear",title:"Host cleared, can cool, gloves on",body:"You confirmed all three at the gate. A suppressor field strip starts at the muzzle of a firearm — the host gets the same respect as any other gun on the bench. Everything from here happens with gloves.",t:{...A},hl:[],labels:[],arrow:null},
           {phase:"Strip",title:"Unthread the suppressor from the host",body:"Muzzle in a safe direction, grip the can at the base and unthread it counterclockwise off the host's muzzle threads. If it's seized after a long session, a strap wrench beats pliers — never crush the tube.",t:{...A,base:[18,0],core:[18,0],slv1:[18,0],slv2:[18,0],tube:[18,0]},hl:["base"],labels:[],arrow:{x:100,y:200,rot:-90,nx:"8px",ny:"0px"}},
           {phase:"Strip",title:"Unscrew the tube from the base",body:"Hold the base — the rear section with the mounting threads — and unscrew the outer tube counterclockwise. After a lot of rimfire it can take real torque: SilencerCo's tool or a strap wrench on the knurling, and steady pressure.",t:{...A,base:[18,0],core:[18,0],slv1:[18,0],slv2:[18,0],tube:[26,0]},hl:["tube"],labels:[],arrow:{x:476,y:150,rot:-90,nx:"6px",ny:"0px"}},
           {phase:"Strip",title:"Slide the tube off",body:"Once the threads let go, slide the outer tube forward off the internals. Fouling makes everything a press fit — a few light taps with a nylon mallet are fine; steel hammers are not.",t:{...A,base:[18,0],core:[18,0],slv1:[18,0],slv2:[18,0],tube:[164,-108]},hl:["tube"],labels:["sp-lbl-tube"],arrow:{x:600,y:120,rot:-90,nx:"8px",ny:"0px"}},
           {phase:"Strip",title:"Remove the two half-sleeves",body:"The Multi-Part Containment sleeves are two half-shells wrapped around the core. Lift the top half off, then the bottom. They take the fouling squeeze so the tube doesn't — that's why this can survives rimfire.",t:{...A,base:[18,0],core:[18,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:["slv1","slv2"],labels:["sp-lbl-sleeves"],arrow:{x:310,y:126,rot:180,nx:"0px",ny:"-7px"}},
           {phase:"Strip",title:"Pull the monocore off the base",body:"The baffle core comes forward off the base as one machined piece — no baffle stack to keep in order, no alignment to lose. If it's cemented on with lead, soak the whole assembly first and come back to it.",t:{...A,base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:["core"],labels:["sp-lbl-core"],arrow:{x:560,y:200,rot:-90,nx:"8px",ny:"0px"}},
-          {phase:"Strip",title:"Teardown complete",body:"Base, monocore, two half-sleeves, tube. Five parts, no springs, nothing directional. Everything you're about to scrub is why serviceable rimfire cans exist.",t:{...A,base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:[],labels:["sp-lbl-base","sp-lbl-core","sp-lbl-sleeves","sp-lbl-tube"],arrow:null}
+          {phase:"Strip",title:"Field strip complete",body:"Base, monocore, two half-sleeves, tube. Five parts, no springs, nothing directional. Everything you're about to scrub is why serviceable rimfire cans exist.",t:{...A,base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:[],labels:["sp-lbl-base","sp-lbl-core","sp-lbl-sleeves","sp-lbl-tube"],arrow:null}
         ];
       })(),
       cleaning:[
@@ -1539,12 +1539,12 @@
       gate:SUPPRESSOR_GATE, layerMode:true, exploded:true, parts:{}, origins:{},
       cleanIntro:"A serviceable stack can opens into three things: tube, stack, cap. The stack is where the fouling lives. Gloves stay on for all of it — pistol-caliber fouling carries lead just like rimfire.",
       steps:[
-        {phase:"Clear",title:"Host cleared, can cool, gloves on",body:"You confirmed all three at the gate. A suppressor teardown starts at the muzzle of a firearm — the host gets the same respect as any other gun on the bench. Everything from here happens with gloves."},
+        {phase:"Clear",title:"Host cleared, can cool, gloves on",body:"You confirmed all three at the gate. A suppressor field strip starts at the muzzle of a firearm — the host gets the same respect as any other gun on the bench. Everything from here happens with gloves."},
         {phase:"Strip",title:"Unthread the suppressor from the host",body:"Muzzle in a safe direction, grip the can at the tube and unthread it counterclockwise off the host — direct-thread cans off the muzzle threads, QD cans per their mount's release. Seized after a long session? A strap wrench beats pliers — never crush the tube."},
         {phase:"Strip",title:"Unscrew the front cap",body:"The front cap threads off the muzzle end of the tube, counterclockwise. If it's carbon-locked, use the cap tool that shipped with the can — never pliers on the flats. Still stuck: a solvent soak overnight, then try again."},
         {phase:"Strip",title:"Slide the baffle stack out the front",body:"With the cap off, the stack slides forward out of the tube. Fouling makes it a press fit — tap the tube muzzle-down on a padded surface and let the stack walk itself out. Never pry on a baffle edge; a bent cone is a ruined can."},
         {phase:"Strip",title:"Check stack order and orientation",body:"Before anything gets scrubbed: the cones point toward the muzzle, blast baffle at the rear. If your baffles are indexed, note the witness marks now. Thirty seconds with your phone camera here saves a backwards stack later — and a backwards stack is a baffle strike waiting to happen."},
-        {phase:"Strip",title:"Teardown complete",body:"Tube with the mount, baffle stack, front cap. Three groups, one direction that matters. Everything you're about to scrub is why you bought a serviceable can."}
+        {phase:"Strip",title:"Field strip complete",body:"Tube with the mount, baffle stack, front cap. Three groups, one direction that matters. Everything you're about to scrub is why you bought a serviceable can."}
       ],
       cleaning:[
         {name:"BAFFLE STACK",tasks:["Soak the stack in mineral spirits or a dedicated suppressor cleaner — hours, not minutes","Scrub each baffle with a nylon brush; a brass pick for the cone apertures and clip points","Stubborn lead: extend the soak or wet-tumble — never dry-scrape lead dust into the air","Aluminum baffles: no aggressive alkaline cleaners and no guessing with ultrasonic chemistry — check the manufacturer's list first","Do NOT use the peroxide-and-vinegar 'dip' — it dissolves lead into lead acetate, which is genuinely toxic to handle and a hazardous waste to dispose of"]},
@@ -1588,7 +1588,7 @@
     mossbergmaverick88:{0:"Maverick 88: your safety is the crossbolt behind the trigger, not the Mossberg tang slider — everything else here matches the 500."},
     mossberg590:{0:"590-pattern: the barrel is retained by a nut at the muzzle end of the magazine tube, and the tube opens for cleaning — where this guide references the 500's takedown screw, work that barrel nut instead."},
     mossberg590a1:{0:"590A1: heavier barrel, metal trigger guard and safety, and the 590-pattern barrel nut at the end of an open magazine tube — where this guide references the 500's takedown screw, work that nut instead."},
-    mossberg590shockwave:{0:"Shockwave: 590-pattern retention — barrel nut at the muzzle end of the mag tube instead of the 500's takedown screw. The Raptor grip changes nothing about the teardown."},
+    mossberg590shockwave:{0:"Shockwave: 590-pattern retention — barrel nut at the muzzle end of the mag tube instead of the 500's takedown screw. The Raptor grip changes nothing about the field strip."},
     /* Revolver variants */
     rugerlcr38:{0:"LCR: the fire-control housing is polymer. Wipe it — don't hose it with solvent or let it soak."},
     rugerlcr357:{0:"LCR: the fire-control housing is polymer. Wipe it — don't hose it with solvent or let it soak."},
@@ -2808,27 +2808,28 @@
     document.getElementById("explodedOverlay").hidden=true;
     show("scr-safe");
   });
-const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"}];
+const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
   GUNS.m500sw = Object.assign({}, GUNS.m500);
   delete GUNS.m500sw.deepSteps; /* suppress the Deep Clean branch: m500sw's layer slice has no internals art (branchBtn is hidden when gun.deepSteps is absent) */
   /* ---- Shockwave variant: Raptor grip receiver layer, shares m500 pump/barrel ---- */
   const M500SW_RECV = {n:"receiver",asm:[0,0],src:"assets/guns/m500sw/receiver.png"};
   const G19_CENTERS={slide:[54.6,2.3],barrel:[75.6,22.9],rsa:[90.7,20.8],frame:[52.9,40.3],mag:[15.9,86.8]};
+  const G19X={det_backplate:"x",det_striker:"x",det_extractor:"x",det_breech:"x"}; /* det insets hidden except on their own DC step (full-swap) */
   const G19_LSTEPS=[
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:null,m:null},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",m:{x:20,y:76,ch:"\u25bc"}},
-    {pos:{slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",m:{x:28,y:26,ch:"\u25c0"}},
-    {pos:{slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:34,y:49,ch:"\u25b2"}},
-    {pos:{slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",m:{x:40,y:35,ch:"\u25bc"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:8,ch:"\u25b2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:26,ch:"\u25b2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:27,ch:"\u25c0"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:30,y:9,ch:"▼"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:42,y:9,ch:"◀"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:54,y:9,ch:"\u25c0"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:66,y:9,ch:"\u27f2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"frame",m:{x:45,y:30,ch:"▼"}}
+    {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:null,m:null},
+    {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",m:{x:20,y:76,ch:"\u25bc"}},
+    {pos:{...G19X,slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",m:{x:28,y:26,ch:"\u25c0"}},
+    {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:34,y:49,ch:"\u25b2"}},
+    {pos:{...G19X,slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",m:{x:40,y:35,ch:"\u25bc"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:8,ch:"\u25b2"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:26,ch:"\u25b2"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:27,ch:"\u25c0"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
+    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_backplate:"e"},hl:null,m:{x:50,y:50,ch:"\u25bc"}},
+    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_striker:"e"},hl:null,m:{x:50,y:40,ch:"\u25bc"}},
+    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_extractor:"e"},hl:null,m:{x:55,y:48,ch:"\u25c0"}},
+    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_breech:"e"},hl:null,m:{x:50,y:49,ch:"\u27f2"}},
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e",...G19X},hl:"frame",m:{x:45,y:30,ch:"▼"}} /* DC5 det_frame inset PENDING the primitives internals build — deliberate, not an oversight */
   ];
   const PARTNAMES={slide:"Slide",barrel:"Barrel",rsa:"Recoil Spring Assembly",frame:"Frame",mag:"Magazine"};
 
