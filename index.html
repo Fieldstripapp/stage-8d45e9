@@ -260,6 +260,8 @@
   .lstage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .85s cubic-bezier(.22,.9,.3,1),filter .3s;pointer-events:none}
   .lstage img.hl,.explayers img.hl{filter:drop-shadow(0 0 5px rgba(232,163,61,.9)) drop-shadow(0 0 14px rgba(232,163,61,.45)) brightness(1.35)}
   .lmark{position:absolute;z-index:8;font-size:24px;color:var(--amber);transform:translate(-50%,-50%);animation:markpulse 1.1s infinite;text-shadow:0 0 .42em rgba(232,163,61,.8);pointer-events:none}
+  /* RING marker prototype (m500): amber circle outline, no pulse; size/stroke set inline, counter-scaled by z */
+  .lmark.lring{border-style:solid;border-color:var(--amber);border-radius:50%;background:transparent;text-shadow:none;animation:none;box-sizing:border-box}
   @keyframes markpulse{0%,100%{opacity:1;margin-top:0}50%{opacity:.35;margin-top:3px}}
   .expnum{position:absolute;z-index:7;width:22px;height:22px;border-radius:50%;background:var(--amber);color:#14161A;font-family:var(--display);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);box-shadow:0 0 0 2px #14161A;transition:opacity .4s}
   .explayers.asmb .expnum{opacity:0}
@@ -2818,14 +2820,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const G19_LSTEPS=[
     {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:null,m:null},
     {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",m:{x:20,y:76,ch:"\u25bc"}},
-    {pos:{...G19X,slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",m:{x:28,y:26,ch:"\u25c0"}},
-    {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:34,y:49,ch:"\u25b2"}},
+    {pos:{...G19X,slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",m:{x:51,y:24.3,r:5.9}},
+    {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:53.6,y:36.3,r:4.5}},
     {pos:{...G19X,slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",m:{x:40,y:35,ch:"\u25bc"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:8,ch:"\u25b2"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:26,ch:"\u25b2"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:27,ch:"\u25c0"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
-    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_backplate:"e"},hl:null,m:{x:50,y:50,ch:"\u25bc"}},
+    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_backplate:"e"},hl:null,m:[{x:49.9,y:49.2,r:8.9},{x:50,y:64,ch:"\u25bc"}]},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_striker:"e"},hl:null,m:{x:50,y:40,ch:"\u25bc"}},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_extractor:"e"},hl:null,m:{x:55,y:48,ch:"\u25c0"}},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_breech:"e"},hl:null,m:{x:50,y:49,ch:"\u27f2"}},
@@ -2857,12 +2859,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const M500_LSTEPS=[
     {pos:{receiver:"a",pump:"a",barrel:"a",...M500X},hl:null,m:null},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"pump",z:1.4,zc:60,m:{x:58,y:43,ch:"\u25c0"}},
-    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"receiver",z:1.4,zc:70,m:{x:74,y:43,ch:"\u27f2"}},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"receiver",z:1.4,zc:70,m:[{x:76.5,y:42.9,r:2.1},{x:80,y:36,ch:"\u27f2"}]},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e",...M500X},hl:"barrel",m:{x:63,y:6,ch:"\u25b2"}},
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:null,m:null},
-    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:35,y:52,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:35,y:52,r:3}},
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X,trigger:"e"},hl:"trigger",z:1.4,zc:40,zcy:60,m:{x:33,y:73,ch:"\u25bc"}},
-    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X,trigger:"e",cartstop:"e"},hl:"receiver",z:1.4,zc:42,zcy:53,m:[{x:44,y:46,ch:"\u25bc"},{x:38,y:47,ch:"\u25bc"}]},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X,trigger:"e",cartstop:"e"},hl:"receiver",z:1.4,zc:42,zcy:53,m:[{x:44,y:46,r:2.5},{x:38,y:47,r:2.5}]},
     {pos:{receiver:"a",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:"boltslide",z:1.3,zc:50,zcy:56,m:{x:75,y:76,ch:"\u25c0"}},
     {pos:{receiver:"a",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:null,z:1.15,zc:50,zcy:56,m:null}
   ];
@@ -2879,14 +2881,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const G1911_LSTEPS=[
     {pos:{frame:"a",mag:"a",barrel:"a",slide:"a",slidestop:"a"},hl:null,m:null},
     {pos:{frame:"a",mag:"e",barrel:"a",slide:"a",slidestop:"a"},hl:"mag",m:{x:30,y:74,ch:"\u25bc"}},
-    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"a"},hl:"slide",m:{x:55,y:20,ch:"\u25c0"}},
-    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"e"},hl:"slidestop",m:{x:34,y:24,ch:"\u25b2"}},
+    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"a"},hl:"slide",m:{x:44.6,y:34.1,r:2.7}},
+    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"e"},hl:"slidestop",m:{x:29.2,y:26,r:5.8}},
     {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:{x:74,y:15,ch:"\u25b6"}},
     {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:10,ch:"\u25b6"}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:9,ch:"\u27f2"}},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"slide",m:{x:35,y:21,ch:"\u25c0"}},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"slide",m:{x:77.8,y:22.2,r:6.8}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"frame",m:{x:37,y:30,ch:"\u25bc"}}
   ];
   /* ---- DA revolver layer set (Fieldstrip 3D pipeline) ---- */
@@ -2898,11 +2900,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const REVDA_CENTERS={frame:[50.0,49.96],cylinder:[54.34,77.44]};
   const REVDA_LSTEPS=[
     {pos:{frame:"a",cylinder:"a"},hl:null,m:null},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:52,y:53,ch:"\u25bc"}},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:[{x:31.7,y:26.7,r:4.6},{x:52,y:53,ch:"\u25bc"}]},
     {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:null,m:null},
     {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:41,y:79,ch:"\u27f2"}},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:45,y:70,ch:"\u25bc"}},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"frame",m:{x:47,y:26,ch:"\u25c0"}}
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:48.6,y:78.6,r:5}},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"frame",m:{x:53.8,y:17.8,r:2.5}}
   ];
   /* ---- Single-action revolver layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const REVSA_LAYERS=[
@@ -2914,14 +2916,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const REVSA_CENTERS={frame:[72.0,20.0],cylinder:[41.9,66.1],pin:[67.1,35.3]};
   const REVSA_LSTEPS=[
     {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:null},
-    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:{x:25,y:9,ch:"\u25b2"}},
-    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:{x:50,y:20,ch:"\u25c0"}},
+    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:{x:24.4,y:10,r:5.8}},
+    {pos:{frame:"a",cylinder:"a",pin:"a"},hl:null,m:{x:50.8,y:18.3,r:3.7}},
     {pos:{frame:"a",cylinder:"a",pin:"e"},hl:"pin",m:{x:67,y:35,ch:"\u25b6"}},
     {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"cylinder",m:{x:42,y:60,ch:"\u25bc"}},
     {pos:{frame:"a",cylinder:"e",pin:"e"},hl:null,m:null},
-    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"pin",m:{x:79,y:35,ch:"\u25c0"}},
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"pin",m:{x:41.1,y:22.1,r:6}},
     {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"cylinder",m:{x:42,y:66,ch:"\u27f2"}},
-    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"frame",m:{x:40,y:22,ch:"\u25bc"}}
+    {pos:{frame:"a",cylinder:"e",pin:"e"},hl:"frame",m:{x:39.5,y:22.6,r:8.5}}
   ];
   /* ---- AR-15 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const AR15_LAYERS=[
@@ -2944,17 +2946,17 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const AR15_LSTEPS=[
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"a",...AR15X},hl:null,m:null},
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"mag",z:1.35,zc:45,zcy:65,m:{x:46,y:68,ch:"\u25bc"}},
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"upper",z:1.4,zc:37,zcy:30,m:{x:36,y:30,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"lower",z:1.4,zc:30,zcy:38,m:{x:28,y:41,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"upper",z:1.4,zc:37,zcy:30,m:{x:42.4,y:35.5,r:5.8}},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"lower",z:1.4,zc:30,zcy:38,m:{x:28.2,y:40.8,r:2}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e",...AR15X},hl:"upper_open",m:{x:46,y:36,ch:"\u27f2"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e",...AR15X},hl:"bcg",z:1.35,zc:15,zcy:16,m:{x:13,y:16,ch:"\u25c0"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"ch",z:1.35,zc:15,zcy:5,m:{x:27,y:3,ch:"\u25c0"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"bcg",m:null},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:null,m:null},
     /* ---- Deep Clean branch (BCG breakdown) ---- */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"lower",z:1.3,zc:40,zcy:42,m:{x:46,y:38,ch:"\u25bc"}},
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"bcg",z:1.4,zc:68,zcy:78,m:{x:60,y:78,ch:"\u25c0"}},
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"campin",z:1.35,zc:70,zcy:79,m:{x:64,y:66,ch:"\u25bc"}},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"lower",z:1.3,zc:40,zcy:42,m:{x:48.3,y:40.9,r:2}},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"bcg",z:1.4,zc:68,zcy:78,m:{x:59.8,y:78.6,r:2.1}},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"campin",z:1.35,zc:70,zcy:79,m:[{x:64,y:71.4,r:2.8},{x:64,y:66,ch:"\u27f2"}]},
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.35,zc:70,zcy:79,m:{x:69,y:75,ch:"\u25bc"}},
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:null,z:1.4,zc:68,zcy:78,m:null}
   ];
@@ -2980,7 +2982,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:null,z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:25,y:50,ch:"\u27f2"},z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:38,y:50,ch:"\u25bc"},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:8,y:50,ch:"\u25bc"},z:1.9,zc:27},
+    {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:6.5,y:49.6,r:3},z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:{x:16,y:65,ch:"\u25bc"},z:1.9,zc:27}
   ];
   const LAYER_SETS={
@@ -3042,14 +3044,22 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     [document.getElementById("lmark"),document.getElementById("lmark2")].forEach((mk,i)=>{
       if(!mk) return;
       const m=ms[i];
-      if(m){ mk.hidden=false; mk.style.left=m.x+"%"; mk.style.top=m.y+"%"; mk.textContent=m.ch;
-        /* Clamp the glyph on very short canvases: a fixed 24px marker is ~27% of the
-           suppressor stage's ~40px height, so it cannot sit on a feature without
-           obscuring it. No effect where the stage is tall enough (all other families). */
-        const vpH = (document.getElementById("layerViewport")||{}).clientHeight || 0;
-        const cb=(vpH ? Math.min(24, Math.max(9, Math.round(vpH*0.22))) : 24);
-        mk.style.fontSize = Math.max(cb/z, 0.6*cb) + "px"; }   /* floor rides the clamped base (not raw 24) */
-      else { mk.hidden=true; mk.textContent=""; }
+      if(m){ mk.hidden=false; mk.style.left=m.x+"%"; mk.style.top=m.y+"%";
+        const vp = document.getElementById("layerViewport")||{};
+        const vpH = vp.clientHeight||0, vpW = vp.clientWidth||0;
+        if(m.r!=null){ /* RING marker (prototype): amber circle at {x,y,r%}, counter-scaled by z */
+          mk.classList.add("lring"); mk.textContent=""; mk.style.fontSize="";
+          const d=(2*m.r/100*vpW)/z;                    /* diameter px (r% of stage width), counter-scaled */
+          mk.style.width=d+"px"; mk.style.height=d+"px";
+          mk.style.borderWidth=Math.max(1.3, 2/z)+"px";
+          mk.style.boxShadow=`0 0 ${(4/z).toFixed(1)}px rgba(232,163,61,.5)`;
+        } else { /* GLYPH marker: clamp on short canvases + zoom counter-scale + 0.6 floor */
+          mk.classList.remove("lring"); mk.textContent=m.ch;
+          mk.style.width=""; mk.style.height=""; mk.style.borderWidth=""; mk.style.boxShadow="";
+          const cb=(vpH ? Math.min(24, Math.max(9, Math.round(vpH*0.22))) : 24);
+          mk.style.fontSize = Math.max(cb/z, 0.6*cb) + "px";
+        } }
+      else { mk.hidden=true; mk.textContent=""; mk.classList.remove("lring"); mk.style.width=""; mk.style.height=""; }
     });
     /* viewport-crop zoom: .lviewport keeps the z=1 layout footprint (overflow:hidden) so the
        step text below can never be crushed; .lstage scales+pans INSIDE it from a FIXED origin
