@@ -259,7 +259,7 @@
   .lstage{position:absolute;inset:0;transform-origin:0 0;transition:transform .85s cubic-bezier(.22,.9,.3,1)}
   .lstage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .85s cubic-bezier(.22,.9,.3,1),filter .3s;pointer-events:none}
   .lstage img.hl,.explayers img.hl{filter:drop-shadow(0 0 5px rgba(232,163,61,.9)) drop-shadow(0 0 14px rgba(232,163,61,.45)) brightness(1.35)}
-  .lmark{position:absolute;z-index:8;font-size:24px;color:var(--amber);transform:translate(-50%,-50%);animation:markpulse 1.1s infinite;text-shadow:0 0 10px rgba(232,163,61,.8);pointer-events:none}
+  .lmark{position:absolute;z-index:8;font-size:24px;color:var(--amber);transform:translate(-50%,-50%);animation:markpulse 1.1s infinite;text-shadow:0 0 .42em rgba(232,163,61,.8);pointer-events:none}
   @keyframes markpulse{0%,100%{opacity:1;margin-top:0}50%{opacity:.35;margin-top:3px}}
   .expnum{position:absolute;z-index:7;width:22px;height:22px;border-radius:50%;background:var(--amber);color:#14161A;font-family:var(--display);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);box-shadow:0 0 0 2px #14161A;transition:opacity .4s}
   .explayers.asmb .expnum{opacity:0}
@@ -2860,7 +2860,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",...M500X},hl:"receiver",z:1.4,zc:70,m:{x:74,y:43,ch:"\u27f2"}},
     {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e",...M500X},hl:"barrel",m:{x:63,y:6,ch:"\u25b2"}},
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:null,m:null},
-    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:31,y:48,ch:"\u25b2"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:35,y:52,ch:"\u25b2"}},
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X,trigger:"e"},hl:"trigger",z:1.4,zc:40,zcy:60,m:{x:33,y:73,ch:"\u25bc"}},
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X,trigger:"e",cartstop:"e"},hl:"receiver",z:1.4,zc:42,zcy:53,m:[{x:44,y:46,ch:"\u25bc"},{x:38,y:47,ch:"\u25bc"}]},
     {pos:{receiver:"a",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:"boltslide",z:1.3,zc:50,zcy:56,m:{x:75,y:76,ch:"\u25c0"}},
@@ -3037,6 +3037,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
       im.style.transform=`translate(${tx}%,${ty}%) scale(${sc})`;
       im.classList.toggle("hl",cfg.hl===L.n);
     });
+    const z=cfg.z||1;   /* markers live inside .lstage (scale z); counter-scale so their visual size + glow stay CONSTANT across steps */
     const ms = cfg.m ? (Array.isArray(cfg.m)?cfg.m:[cfg.m]) : [];
     [document.getElementById("lmark"),document.getElementById("lmark2")].forEach((mk,i)=>{
       if(!mk) return;
@@ -3046,7 +3047,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
            suppressor stage's ~40px height, so it cannot sit on a feature without
            obscuring it. No effect where the stage is tall enough (all other families). */
         const vpH = (document.getElementById("layerViewport")||{}).clientHeight || 0;
-        mk.style.fontSize = (vpH ? Math.min(24, Math.max(9, Math.round(vpH*0.22))) : 24) + "px"; }
+        const cb=(vpH ? Math.min(24, Math.max(9, Math.round(vpH*0.22))) : 24);
+        mk.style.fontSize = Math.max(cb/z, 0.6*cb) + "px"; }   /* floor rides the clamped base (not raw 24) */
       else { mk.hidden=true; mk.textContent=""; }
     });
     /* viewport-crop zoom: .lviewport keeps the z=1 layout footprint (overflow:hidden) so the
@@ -3054,7 +3056,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
        (0 0, set in CSS). zc/zcy = the content point (x%,y%) parked at the viewport centre.
        Anchor changes animate as pans (transform transition); edge cropping is intended. */
     const st=document.getElementById("layerStage");
-    const z=cfg.z||1, zc=(cfg.zc!=null)?cfg.zc:50, zcy=(cfg.zcy!=null)?cfg.zcy:50;
+    const zc=(cfg.zc!=null)?cfg.zc:50, zcy=(cfg.zcy!=null)?cfg.zcy:50;   /* z declared above */
     st.style.transform=`translate(${(50-zc*z).toFixed(3)}%,${(50-zcy*z).toFixed(3)}%) scale(${z})`;
   }
 
