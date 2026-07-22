@@ -2831,7 +2831,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_striker:"e"},hl:null,m:{x:50,y:40,ch:"\u25bc"}},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_extractor:"e"},hl:null,m:{x:55,y:48,ch:"\u25c0"}},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_breech:"e"},hl:null,m:{x:50,y:49,ch:"\u27f2"}},
-    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e",...G19X},hl:"frame",m:{x:45,y:30,ch:"▼"}} /* DC5 det_frame inset PENDING the primitives internals build — deliberate, not an oversight */
+    {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e",...G19X},hl:"frame",m:{x:45.5,y:30.4,r:2.6}} /* DC5 frame-internals wipe: PROXY ring on the frame's rear fire-control pocket (trigger bar/connector/cruciform housed internally, not drawn on the side view). Ring grammar on a pins-stay-put wipe step; true feature ring + det_frame inset BLOCKED on an open-top frame mesh (see scratchpad/glock/DC5-README.md). fixture g19.json "13" carries the PROXY/AMBIGUOUS flag. */
   ];
   const PARTNAMES={slide:"Slide",barrel:"Barrel",rsa:"Recoil Spring Assembly",frame:"Frame",mag:"Magazine"};
 
