@@ -1802,8 +1802,13 @@
   let current="scr-safe";
 
   function show(id, push=true){
+    const prev=current;
     screens.forEach(s=>document.getElementById(s).classList.toggle("active",s===id));
     current=id;
+    /* leaving Add Firearm resets its search state so the next visit starts fresh
+       (covers back, home, and the post-add jump to detail — catalog or custom).
+       Prefill is safe: the sheets capture tokens on the picker, before this clear. */
+    if(prev==="scr-pick" && id!=="scr-pick") resetPicker();
     const el=document.getElementById(id);
     el.scrollTop=0;
     el.querySelectorAll(".step-info").forEach(x=>x.scrollTop=0);
@@ -2026,6 +2031,13 @@
     });
     chipsWrap.appendChild(b);
   });
+  /* clear search text + category + rendered list back to the default view */
+  function resetPicker(){
+    searchInput.value="";
+    pickGroup="All";
+    [...chipsWrap.children].forEach(x=>x.classList.toggle("on", x.textContent==="All"));
+    renderPicker();
+  }
 
   function renderPicker(){
     const q=searchInput.value.trim().toLowerCase();
