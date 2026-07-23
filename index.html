@@ -192,12 +192,25 @@
   .protag{display:inline-block;font-family:var(--display);font-size:10px;letter-spacing:1.5px;color:var(--amber);border:1px solid var(--amber-dim);border-radius:5px;padding:1px 7px;vertical-align:2px;margin-left:8px}
   .prosheet{position:fixed;inset:0;background:rgba(10,12,15,.72);z-index:60;display:none;align-items:flex-end;justify-content:center}
   .prosheet.open{display:flex}
-  .prosheet .sheet{width:100%;max-width:560px;background:var(--panel);border:1px solid var(--edge);border-bottom:none;border-radius:16px 16px 0 0;padding:22px 20px calc(20px + var(--sab))}
+  .prosheet .sheet{position:relative;width:100%;max-width:560px;background:var(--panel);border:1px solid var(--edge);border-bottom:none;border-radius:16px 16px 0 0;padding:22px 20px calc(20px + var(--sab));max-height:calc(100vh - 34px);max-height:calc(100svh - 34px);overflow-y:auto;overscroll-behavior:contain}
+  .prosheet .sheetx{position:sticky;top:-4px;float:right;z-index:3;background:none;border:none;color:var(--muted);font-size:24px;line-height:1;padding:2px 6px;margin:-6px -6px 0 8px;cursor:pointer}
+  .prosheet .sheetx:active{color:var(--text)}
+  .prosheet .proreason{background:rgba(232,163,61,.1);border:1px solid var(--amber-dim);border-radius:9px;padding:10px 12px;margin:0 0 14px;color:var(--text);font-size:13px;line-height:1.5}
   .prosheet h3{font-family:var(--display);font-size:17px;letter-spacing:1px;color:var(--text);margin:0 0 4px}
   .prosheet .pp{color:var(--muted);font-size:13px;line-height:1.55;margin:0 0 14px}
   .prosheet .feat{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:13.5px;color:var(--text)}
   .prosheet .feat .fx{color:var(--amber);font-weight:700}
   .prosheet .price{font-family:var(--display);color:var(--amber);font-size:15px;margin:14px 0 10px;letter-spacing:.5px}
+  /* ---- custom firearm + request-a-firearm ---- */
+  .protag.customtag{color:var(--muted);border-color:var(--edge)}
+  .prosheet pre.reqtext{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:var(--text);background:var(--bg);border:1px solid var(--edge);border-radius:10px;padding:12px;max-height:38vh;overflow:auto;margin:0}
+  .pickmore{border:1px dashed var(--edge);border-radius:12px;padding:14px;margin-top:6px;background:var(--panel)}
+  .pickmore .pmhd{font-family:var(--display);font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+  .pickmore .btn{margin-bottom:8px}
+  .pickmore .pmsub{font-size:12px;color:var(--muted);margin:-4px 0 10px}
+  .pickfoot{text-align:center;font-size:13px;color:var(--muted);padding:16px 8px 6px}
+  .pickfoot a{color:var(--amber);cursor:pointer;text-decoration:none;font-weight:600}
+  .pickfoot a:active{opacity:.6}
   /* ---- tax stamp photo ---- */
   .stampthumb{display:block;width:100%;max-height:180px;object-fit:cover;border:1px solid var(--edge);border-radius:10px;margin:10px 0;cursor:pointer;background:#0e1013}
   .stampthumb[hidden]{display:none!important}
@@ -410,7 +423,7 @@
   <!-- ============ DETAIL ============ -->
   <section class="screen" id="scr-detail">
     <div class="detail">
-      <div class="d-head"><div class="dname" id="dName"></div><div class="dsub" id="dSub"></div></div>
+      <div class="d-head"><div class="dname" id="dName"></div><div class="dsub" id="dSub"></div><span class="protag customtag" id="dCustomTag" hidden>CUSTOM</span></div>
       <div class="statgrid">
         <div class="stat"><div class="v" id="stTotal">0</div><div class="k">Total rounds</div></div>
         <div class="stat"><div class="v" id="stSince">0</div><div class="k">Since last clean</div></div>
@@ -479,7 +492,12 @@
           <div class="nf"><label for="magRole">Role</label><select id="magRole"><option>Range</option><option>Carry</option><option>Storage</option></select></div>
         </div>
         <button class="btn sm primary" id="magAdd" style="margin-top:10px">Add Magazine</button>
-        <div class="ivrow" style="margin-top:12px"><label for="magRotDays">Rotate carry mags every</label><input type="number" id="magRotDays" min="7" max="365" inputmode="numeric"><span style="font-size:12px;color:var(--muted)">days</span></div>
+        <div class="ivrow" id="magRotRow" style="margin-top:12px"><label for="magRotDays">Rotate carry mags every</label><input type="number" id="magRotDays" min="7" max="365" inputmode="numeric"><span style="font-size:12px;color:var(--muted)">days</span></div>
+        <div id="magRotLock" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--edge)">
+          <div class="lrow"><span class="lt">Carry-rotation timer</span><span class="protag">PRO</span></div>
+          <div class="lmsg" id="magRotMsg"></div>
+          <button class="btn sm primary" id="magRotBtn">Unlock Pro</button>
+        </div>
       </div>
       <div class="lifebox" id="careBox">
         <div class="lrow"><span class="lt">Care Reminders</span><span class="lv" id="careSummary"></span></div>
@@ -554,6 +572,7 @@
         <button class="btn primary" id="guideBtn">Clean — Guided</button>
         <button class="btn" id="quickClean">Log Clean Only</button>
       </div>
+      <button class="btn full" id="reqSupportBtn" hidden style="margin-top:8px">Request official support <span class="protag">PRO</span></button>
       <button class="btn full" id="ammoBtn">Ammo Performance</button>
       <div class="logbox">
         <div class="lt">Maintenance log</div>
@@ -1182,8 +1201,10 @@
   </div>
   <div class="prosheet" id="proSheet">
     <div class="sheet">
-      <h3>FIELDSTRIP <span style="color:var(--amber)">PRO</span></h3>
-      <p class="pp">One purchase, yours for good. No subscription, no account, and like everything here — nothing leaves your phone.</p>
+      <button class="sheetx" id="proX" aria-label="Close">✕</button>
+      <h3 id="proSheetHead">FIELDSTRIP <span style="color:var(--amber)">PRO</span></h3>
+      <div class="proreason" id="proReason" style="display:none"></div>
+      <p class="pp" id="proSheetIntro">One purchase, yours for good. No subscription, no account, and like everything here — nothing leaves your phone.</p>
       <div class="feat"><span class="fx">▸</span><span><b>Unlimited safe</b> — track every firearm and can you own, not just two.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>NFA Record</b> — Form 4/1 dates, stamp reference, and a stored photo of the stamp itself.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Fouling by weight</b> — baseline, weigh-ins, and a clean-due threshold for sealed cans.</span></div>
@@ -1191,10 +1212,60 @@
       <div class="feat"><span class="fx">▸</span><span><b>Zero Record</b> — distance, ammo, and optic notes, so a re-zero starts from facts.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Spring life</b> — round-count tracking against the service interval, with a replacement log.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, where a guide has one. Standard guides stay free.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Custom firearms</b> — add and <i>guide</i> firearms the catalog doesn't cover yet; assign any family's strip + parts diagram. One custom entry is free.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Request a Firearm</b> — ask us to add a model that's missing. Opens your email app; nothing leaves your phone on its own.</span></div>
       <div class="price" id="proPrice">$14.99 · one time</div>
       <button class="btn primary full" id="proBuy">Unlock Pro</button>
       <button class="btn full" id="proRestore" style="margin-top:8px">Restore Purchase</button>
       <button class="btn full" id="proClose" style="margin-top:8px">Not Now</button>
+    </div>
+  </div>
+  <!-- ============ CUSTOM FIREARM SHEET ============ -->
+  <div class="prosheet" id="customSheet">
+    <div class="sheet">
+      <button class="sheetx" id="cufX" aria-label="Close">✕</button>
+      <h3>Custom Firearm</h3>
+      <p class="pp">Add a firearm the catalog doesn't cover yet. It's a full entry — logs, round counts, reminders, and magazines all work.</p>
+      <div class="nfagrid">
+        <div class="nf"><label for="cufMk">Manufacturer</label><input type="text" id="cufMk" maxlength="40" autocomplete="off"></div>
+        <div class="nf"><label for="cufMd">Model</label><input type="text" id="cufMd" maxlength="40" autocomplete="off"></div>
+        <div class="nf"><label for="cufCh">Caliber (optional)</label><input type="text" id="cufCh" maxlength="30" autocomplete="off"></div>
+        <div class="nf"><label for="cufCt">Action type (optional)</label><select id="cufCt"></select></div>
+        <div class="nf"><label for="cufCap">Capacity (optional)</label><input type="number" id="cufCap" min="1" max="200" inputmode="numeric"></div>
+        <div class="nf wide" id="cufFamWrap"><label for="cufFam">Strips like… <span class="protag">PRO</span></label><select id="cufFam"></select><div class="pmsub" style="margin-top:5px">Borrow another platform's guide + parts diagram for this entry.</div></div>
+      </div>
+      <button class="btn primary full" id="cufAdd" style="margin-top:14px">Add to Safe</button>
+      <button class="btn full" id="cufCancel" style="margin-top:8px">Cancel</button>
+    </div>
+  </div>
+  <!-- ============ REQUEST A FIREARM SHEET ============ -->
+  <div class="prosheet" id="reqSheet">
+    <div class="sheet">
+      <button class="sheetx" id="reqX" aria-label="Close">✕</button>
+      <div id="reqFormView">
+        <h3>Request a Firearm</h3>
+        <p class="pp">This opens your email app — Fieldstrip has no servers and sends nothing itself.</p>
+        <div class="nfagrid">
+          <div class="nf"><label for="reqMk">Manufacturer</label><input type="text" id="reqMk" maxlength="40" autocomplete="off"></div>
+          <div class="nf"><label for="reqMd">Model</label><input type="text" id="reqMd" maxlength="40" autocomplete="off"></div>
+          <div class="nf"><label for="reqCh">Caliber (optional)</label><input type="text" id="reqCh" maxlength="30" autocomplete="off"></div>
+          <div class="nf"><label for="reqCt">Action type (optional)</label><select id="reqCt"></select></div>
+          <div class="nf wide"><label for="reqNotes">Notes (optional)</label><input type="text" id="reqNotes" maxlength="120" autocomplete="off"></div>
+        </div>
+        <button class="btn primary full" id="reqBuild" style="margin-top:14px">Build Request</button>
+        <button class="btn full" id="reqCancel" style="margin-top:8px">Cancel</button>
+      </div>
+      <div id="reqResultView" hidden>
+        <h3>Opening your email app…</h3>
+        <p class="pp">Your request is ready to send from your own email app. Nothing has left your phone.</p>
+        <button class="btn full" id="reqShowFallback">Didn't open? Copy the request</button>
+        <div id="reqFallback" hidden style="margin-top:12px">
+          <pre class="reqtext" id="reqText"></pre>
+          <button class="btn primary full" id="reqCopy" style="margin-top:10px">Copy request</button>
+          <div class="pp" style="margin-top:10px">Send to: <b>contact@fieldstripllc.com</b></div>
+        </div>
+        <button class="btn full" id="reqDone" style="margin-top:8px">Done</button>
+      </div>
     </div>
   </div>
 <script>
@@ -1252,11 +1323,41 @@
   function guideKey(k){ if(GUIDE_EXACT[k])return GUIDE_EXACT[k]; const c=catEntry(k); return (c&&GUIDE_FAM[c.fm])||null; }
   /* magazine gating by platform: revolvers/suppressors/most-shotguns/tube-fed & fixed-mag rifles have no detachable mags */
   const MAG_DENY_FM=new Set(["MARLIN60","SA22","LEVER-HENRY","LEVER-HENRY-CF","LEVER-MARLIN","LEVER-WIN94","LEVER-WIN92","LEVER-WIN73","LEVER-BL22","LEVER-SAV99","MOSIN","MAUSER98","BOLT-M70","GARAND","SKS","CRICKETT"]);
-  function hasMags(f){ const c=catEntry(f&&f.model); if(!c) return true; const gp=c.gp, fm=c.fm||""; if(gp==="Revolvers"||gp==="Suppressors") return false; if(gp==="Shotguns") return fm==="SEMI-AR-SG"; if(MAG_DENY_FM.has(fm)) return false; return true; }
+  function hasMags(f){ const c=fcat(f); if(!c) return true; const gp=c.gp, fm=c.fm||""; if(gp==="Revolvers"||gp==="Suppressors") return false; if(gp==="Shotguns") return fm==="SEMI-AR-SG"; if(MAG_DENY_FM.has(fm)) return false; return true; }
   const modelByKey=k=>{ const c=catEntry(k);
     if(!c) return {key:k,name:"Unknown model",sub:"",cat:"",guide:false,spring:0,springName:null};
     const sp=SPRINGS[c.fm]||[0,null];
     return {key:c.i,name:c.mk+" "+c.md,sub:c.ch+" \u00b7 "+c.ct,cat:c.gp,guide:!!guideKey(c.i),spring:sp[0],springName:sp[1]}; };
+
+  /* ---- custom firearms: an entry the catalog doesn't cover (f.custom, f.model null) ----
+     Identity comes from f.cmk/cmd/cch/cct/ccap/cnotes; guide + parts diagram are optionally
+     borrowed from an assigned family (f.cfam = a GUNS key), and that assignment is Pro-gated.
+     A pre-custom (v0.8) safe has no f.custom, so every check below defaults to false. */
+  const FAM_REP={}; CATALOG.forEach(c=>{ const g=guideKey(c.i); if(g && !FAM_REP[g]) FAM_REP[g]=c.i; });
+  const CUSTOM_FAMS=[
+    {v:"g19",   label:"Glock-pattern pistol"},
+    {v:"g1911", label:"1911-pattern pistol"},
+    {v:"ar15",  label:"AR-pattern rifle"},
+    {v:"m500",  label:"Mossberg 500-pattern shotgun"},
+    {v:"revda", label:"Double-action revolver"},
+    {v:"revsa", label:"Single-action revolver"},
+    {v:"sldsup",label:"Suppressor (sealed)"},
+    {v:"cfsup", label:"Suppressor (user-serviceable)"}
+  ];
+  const ACTION_TYPES=["Semi-auto pistol","Revolver","AR-pattern rifle","Semi-auto rifle","Bolt-action rifle","Rimfire rifle","Semi-auto shotgun","Pump shotgun","Break-action shotgun","Rimfire pistol","Lever-action rifle","AK-pattern rifle","Suppressor \u2014 sealed","Suppressor \u2014 user-serviceable","Other / not sure"];
+  /* effective guide key \u2014 custom entries resolve their assigned family, Pro-gated */
+  function fkey(f){ if(f&&f.custom) return (isPro()&&f.cfam)?f.cfam:null; return guideKey(f&&f.model); }
+  /* effective catalog-ish entry (drives gate type, mags, fm/gp) */
+  function fcat(f){ if(f&&f.custom){ const rep=(isPro()&&f.cfam)?FAM_REP[f.cfam]:null; return rep?catEntry(rep):null; } return catEntry(f&&f.model); }
+  /* identity/info (name/sub/spring/guide), custom-aware */
+  function faInfo(f){
+    if(f&&f.custom){
+      const name=((f.cmk||"")+" "+(f.cmd||"")).trim()||"Custom firearm";
+      const sub=[f.cch,f.cct].filter(Boolean).join(" \u00b7 ")||"Custom entry";
+      return {key:null,name,sub,cat:"",guide:!!fkey(f),spring:0,springName:null,custom:true};
+    }
+    return modelByKey(f&&f.model);
+  }
 
   /* =============== SAFETY GATES =============== */
   const DEFAULT_GATE = [
@@ -1614,7 +1715,7 @@
 
 
   let safe = store.get("fs_safe", []);
-  const defaultCleanIv = f => { const c=catEntry(f.model); return (c&&c.gp==="Suppressors")?400:500; };
+  const defaultCleanIv = f => { const c=fcat(f); return (c&&c.gp==="Suppressors")?400:500; };
   safe.forEach(f=>{ if(f.cleanInterval==null) f.cleanInterval=defaultCleanIv(f); if(!Array.isArray(f.mags)) f.mags=[]; if(f.magRotDays==null) f.magRotDays=90; if(!Array.isArray(f.reminders)) f.reminders=[]; if(!Array.isArray(f.service)) f.service=[]; if(!Array.isArray(f.zeros)) f.zeros=[]; });
   setTimeout(()=>queueNotifSync(), 3000);
   let activeId = null;
@@ -1631,8 +1732,23 @@
   const savePro = ()=> store.set("fs_pro", proState);
   function grantPro(src){ proState={on:true, src:src||"play", ts:Date.now()}; savePro(); updateProRow();
     if(document.getElementById("scr-detail").classList.contains("active")) renderDetail(); }
-  function openProSheet(){ document.getElementById("proPrice").textContent=PRO_PRICE_LABEL;
-    document.getElementById("proSheet").classList.add("open"); }
+  function openProSheet(reason){
+    const pro=isPro();
+    document.getElementById("proPrice").textContent=PRO_PRICE_LABEL;
+    /* context-aware line: names WHICH limit was hit on a capacity/custom fail */
+    const rr=document.getElementById("proReason");
+    if(reason && !pro){ rr.textContent=reason; rr.style.display="block"; } else { rr.textContent=""; rr.style.display="none"; }
+    /* status view when already unlocked (the proRow taps here) vs upsell when not */
+    document.getElementById("proSheetHead").innerHTML = 'FIELDSTRIP <span style="color:var(--amber)">PRO</span>' + (pro?' — unlocked':'');
+    document.getElementById("proSheetIntro").textContent = pro
+      ? "Everything below is unlocked on this device. One purchase, yours for good — and like everything here, nothing leaves your phone."
+      : "One purchase, yours for good. No subscription, no account, and like everything here — nothing leaves your phone.";
+    document.getElementById("proBuy").style.display = pro?"none":"";
+    document.getElementById("proRestore").style.display = pro?"none":"";
+    document.getElementById("proPrice").style.display = pro?"none":"";
+    document.getElementById("proClose").textContent = pro?"Close":"Not Now";
+    document.getElementById("proSheet").classList.add("open");
+  }
   function closeProSheet(){ document.getElementById("proSheet").classList.remove("open"); }
   function updateProRow(){
     const r=document.getElementById("proRow"); if(!r) return;
@@ -1640,8 +1756,9 @@
     if(isPro()){ r.className="prorow on"; r.innerHTML="<b>PRO</b> unlocked — the full safe is yours"; }
     else { r.className="prorow"; r.innerHTML="<b>Fieldstrip Pro</b> — unlimited safe + NFA suite · "+PRO_PRICE_LABEL.split(" ·")[0]; }
   }
-  document.getElementById("proRow").addEventListener("click",()=>{ if(!isPro()) openProSheet(); });
+  document.getElementById("proRow").addEventListener("click",()=> openProSheet());
   document.getElementById("proClose").addEventListener("click",closeProSheet);
+  document.getElementById("proX").addEventListener("click",closeProSheet);
   document.getElementById("proSheet").addEventListener("click",e=>{ if(e.target.id==="proSheet") closeProSheet(); });
   document.getElementById("proBuy").addEventListener("click",()=>{
     /* [SPLICE] Google Play Billing goes here once the listing + product exist:
@@ -1738,7 +1855,7 @@
       return;
     }
     safe.forEach(f=>{
-      const m=modelByKey(f.model);
+      const m=faInfo(f);
       const springDue = m.spring>0 && f.roundsSinceSpring>=m.spring;
       const cleanDue = f.cleanInterval>0 && f.roundsSinceClean>=f.cleanInterval;
       const hasAvoid = computeIntel(f).avoid.length>0;
@@ -1751,13 +1868,13 @@
         const g=+(f.wt.current-f.wt.base).toFixed(2), th=f.wt.thresh||(f.wt.unit==="g"?30:2);
         if(g>=th) dots.push('<div class="alertdot amber">CLEAN DUE (WT)</div>');
       }
-      if(hasMags(f) && Array.isArray(f.mags) && f.mags.some(m=>m.role==="Carry" && (!m.lastRot || (Date.now()-m.lastRot)/86400000 >= (f.magRotDays||90)))) dots.push('<div class="alertdot amber">ROTATE MAGS</div>');
+      if(isPro() && hasMags(f) && Array.isArray(f.mags) && f.mags.some(m=>m.role==="Carry" && (!m.lastRot || (Date.now()-m.lastRot)/86400000 >= (f.magRotDays||90)))) dots.push('<div class="alertdot amber">ROTATE MAGS</div>');
       if(Array.isArray(f.reminders) && f.reminders.some(r=>!r.last || (Date.now()-r.last)/86400000 >= r.everyDays)) dots.push('<div class="alertdot amber">CARE DUE</div>');
       const card=document.createElement("button");
       card.className="fa-card";
       card.innerHTML=`
         <div class="row1">
-          <div><div class="fname">${m.name}</div><div class="fsub">${m.sub}</div></div>
+          <div><div class="fname">${esc(m.name)}${f.custom?' <span class="protag customtag">CUSTOM</span>':""}</div><div class="fsub">${esc(m.sub)}</div></div>
           ${dots.length?`<div class="dots">${dots.slice(0,2).join("")}</div>`:""}
         </div>
         <div class="stats">
@@ -1770,6 +1887,126 @@
     });
   }
   document.getElementById("addBtn").addEventListener("click",()=> show("scr-pick"));
+
+  /* =============== CUSTOM FIREARM + REQUEST A FIREARM =============== */
+  /* real native version/build for the request body; falls back on web preview */
+  let APP_INFO={version:"0.8",build:"—"};
+  (async()=>{ try{ const A=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
+    if(A&&A.getInfo){ const i=await A.getInfo(); APP_INFO={version:i.version||APP_INFO.version, build:(i.build!=null&&i.build!=="")?String(i.build):APP_INFO.build}; } }catch(e){} })();
+
+  const custSheet=document.getElementById("customSheet");
+  const reqSheet=document.getElementById("reqSheet");
+  function closeCustomSheet(){ custSheet.classList.remove("open"); }
+  function closeReqSheet(){ reqSheet.classList.remove("open"); }
+  custSheet.addEventListener("click",e=>{ if(e.target.id==="customSheet") closeCustomSheet(); });
+  reqSheet.addEventListener("click",e=>{ if(e.target.id==="reqSheet") closeReqSheet(); });
+  document.getElementById("cufCancel").addEventListener("click",closeCustomSheet);
+  document.getElementById("cufX").addEventListener("click",closeCustomSheet);
+  document.getElementById("reqCancel").addEventListener("click",closeReqSheet);
+  document.getElementById("reqX").addEventListener("click",closeReqSheet);
+  document.getElementById("reqDone").addEventListener("click",closeReqSheet);
+
+  /* one custom entry is free (and it counts within FREE_MAX_GUNS); Pro = unlimited */
+  function canAddCustom(){ if(isPro()) return true; if(safe.filter(x=>x.custom).length>=1) return false; if(safe.length>=FREE_MAX_GUNS) return false; return true; }
+  /* names WHICH limit blocked the custom add, so the prosheet never reads as "custom isn't free" */
+  function customGateReason(){
+    if(isPro()) return "";
+    if(safe.filter(x=>x.custom).length>=1) return "Your free custom slot is used — Pro unlocks unlimited custom firearms.";
+    if(safe.length>=FREE_MAX_GUNS) return "You're at the free two-firearm limit. Pro unlocks an unlimited safe — your custom entry is included.";
+    return "";
+  }
+
+  function openCustomSheet(pref){
+    if(!canAddCustom()){ openProSheet(customGateReason()); return; }
+    document.getElementById("cufMk").value=(pref&&pref.mk)||"";
+    document.getElementById("cufMd").value=(pref&&pref.md)||"";
+    document.getElementById("cufCh").value="";
+    document.getElementById("cufCap").value="";
+    fillSel(document.getElementById("cufCt"),["— optional —"].concat(ACTION_TYPES),"— optional —");
+    /* strips-like guide assignment is Pro-only; free customs are tracker-only */
+    document.getElementById("cufFamWrap").style.display=isPro()?"":"none";
+    const famSel=document.getElementById("cufFam");
+    famSel.innerHTML='<option value="">— none (tracker only) —</option>'+CUSTOM_FAMS.map(fm=>`<option value="${fm.v}">${esc(fm.label)}</option>`).join("");
+    custSheet.classList.add("open");
+  }
+  document.getElementById("cufAdd").addEventListener("click",()=>{
+    if(!canAddCustom()){ const r=customGateReason(); closeCustomSheet(); openProSheet(r); return; }
+    const mk=document.getElementById("cufMk").value.trim();
+    const md=document.getElementById("cufMd").value.trim();
+    if(!mk && !md){ document.getElementById("cufMk").focus(); return; }
+    const ctv=document.getElementById("cufCt").value;
+    const capRaw=Math.floor(+document.getElementById("cufCap").value||0);
+    const fam=isPro()?(document.getElementById("cufFam").value||null):null;
+    const f={ id:Date.now().toString(36), custom:true, model:null,
+      cmk:mk, cmd:md, cch:document.getElementById("cufCh").value.trim(),
+      cct:(ctv&&ctv!=="— optional —")?ctv:"", ccap:capRaw>0?capRaw:null, cfam:fam,
+      totalRounds:0, roundsSinceClean:0, roundsSinceSpring:0, lastClean:null, lastChems:"",
+      cleanInterval:0, log:[{ts:Date.now(), type:"note", msg:"Custom entry added to safe"}],
+      mags:[], magRotDays:90, reminders:[], service:[], zeros:[] };
+    f.cleanInterval=defaultCleanIv(f);
+    safe.unshift(f); saveSafe();
+    activeId=f.id; closeCustomSheet(); show("scr-detail");
+  });
+
+  function openReqSheet(pref){
+    document.getElementById("reqFormView").hidden=false;
+    document.getElementById("reqResultView").hidden=true;
+    document.getElementById("reqFallback").hidden=true;
+    document.getElementById("reqMk").value=(pref&&pref.mk)||"";
+    document.getElementById("reqMd").value=(pref&&pref.md)||"";
+    document.getElementById("reqCh").value=(pref&&pref.ch)||"";
+    fillSel(document.getElementById("reqCt"),["— optional —"].concat(ACTION_TYPES),(pref&&pref.ct)||"— optional —");
+    document.getElementById("reqNotes").value="";
+    document.getElementById("reqCopy").textContent="Copy request";
+    reqSheet.classList.add("open");
+  }
+  function composeRequest(d){
+    const subject=("FS-REQ: "+((d.mk||"")+" "+(d.md||"")).trim()).trim();
+    const body=[
+      "Fieldstrip — firearm request",
+      "Manufacturer: "+((d.mk||"").trim()||"—"),
+      "Model: "+((d.md||"").trim()||"—"),
+      "Caliber: "+((d.ch||"").trim()||"—"),
+      "Action type: "+((d.ct||"").trim()||"—"),
+      "Notes: "+((d.notes||"").trim()||"—"),
+      "—",
+      "App: "+APP_INFO.version+" (build "+APP_INFO.build+")"
+    ].join("\n");
+    return {to:"contact@fieldstripllc.com", subject, body};
+  }
+  async function copyText(t){
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
+    try{ const ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); const ok=document.execCommand("copy"); ta.remove(); return ok; }catch(e){ return false; }
+  }
+  document.getElementById("reqBuild").addEventListener("click",()=>{
+    const btn=document.getElementById("reqBuild");
+    const d={ mk:document.getElementById("reqMk").value, md:document.getElementById("reqMd").value,
+      ch:document.getElementById("reqCh").value, notes:document.getElementById("reqNotes").value };
+    const ctv=document.getElementById("reqCt").value; d.ct=(ctv&&ctv!=="— optional —")?ctv:"";
+    if(!d.mk.trim() && !d.md.trim()){ btn.textContent="Enter a manufacturer or model"; setTimeout(()=>btn.textContent="Build Request",2200); return; }
+    const r=composeRequest(d);
+    document.getElementById("reqText").textContent="To: "+r.to+"\nSubject: "+r.subject+"\n\n"+r.body;
+    /* fire the mailto handoff (ACTION_SENDTO — no INTERNET permission needed) */
+    const href="mailto:"+r.to+"?subject="+encodeURIComponent(r.subject)+"&body="+encodeURIComponent(r.body);
+    try{ const a=document.createElement("a"); a.href=href; a.rel="noopener"; document.body.appendChild(a); a.click(); a.remove(); }
+    catch(e){ try{ window.location.href=href; }catch(_){}}
+    document.getElementById("reqFormView").hidden=true;
+    document.getElementById("reqResultView").hidden=false;
+    document.getElementById("reqFallback").hidden=true;
+  });
+  document.getElementById("reqShowFallback").addEventListener("click",()=>{ document.getElementById("reqFallback").hidden=false; });
+  document.getElementById("reqCopy").addEventListener("click",async()=>{
+    const btn=document.getElementById("reqCopy");
+    const ok=await copyText(document.getElementById("reqText").textContent);
+    btn.textContent= ok?"Copied ✓":"Copy failed — select the text above";
+    setTimeout(()=>{ btn.textContent="Copy request"; },2600);
+  });
+
+  document.getElementById("reqSupportBtn").addEventListener("click",()=>{
+    if(!isPro()){ openProSheet(); return; }
+    const f=byId(activeId); if(!f) return;
+    openReqSheet({ mk:f.cmk||"", md:f.cmd||"", ch:f.cch||"", ct:f.cct||"" });
+  });
 
   /* =============== PICKER (search) =============== */
   const pickList=document.getElementById("pickList");
@@ -1828,6 +2065,34 @@
       });
       pickList.appendChild(b);
     });
+    if(list.length===0) pickList.appendChild(buildPickMore());
+    else if(q.length>=2) pickList.appendChild(buildPickFooter());
+  }
+  function buildPickFooter(){
+    const row=document.createElement("div");
+    row.className="pickfoot";
+    row.innerHTML=`Not finding it? <a data-pf="custom">Add custom</a> · <a data-pf="request">Request</a>`;
+    row.querySelector('[data-pf="custom"]').addEventListener("click",()=> openCustomSheet(pickPrefill()));
+    row.querySelector('[data-pf="request"]').addEventListener("click",()=>{ if(!isPro()){ openProSheet(); return; } openReqSheet(pickPrefill()); });
+    return row;
+  }
+  function pickPrefill(){
+    const s=searchInput.value.trim();
+    if(!s) return {mk:"",md:""};
+    const parts=s.split(/\s+/);
+    return {mk:parts[0]||"", md:parts.slice(1).join(" ")};
+  }
+  function buildPickMore(){
+    const wrap=document.createElement("div");
+    wrap.className="pickmore";
+    wrap.innerHTML=`<div class="pmhd">NOT IN THE CATALOG?</div>
+      <button class="btn primary full" data-pm="custom">+ Add it as a custom firearm</button>
+      <div class="pmsub">Track it now — logs, rounds, reminders, mags.</div>
+      <button class="btn full" data-pm="request">✉ Request we add it officially <span class="protag">PRO</span></button>
+      <div class="pmsub" style="margin-bottom:0">We'll build the guide + parts diagram.</div>`;
+    wrap.querySelector('[data-pm="custom"]').addEventListener("click",()=> openCustomSheet(pickPrefill()));
+    wrap.querySelector('[data-pm="request"]').addEventListener("click",()=>{ if(!isPro()){ openProSheet(); return; } openReqSheet(pickPrefill()); });
+    return wrap;
   }
   searchInput.addEventListener("input",renderPicker);
   renderPicker();
@@ -1837,9 +2102,12 @@
 
   function renderDetail(){
     const f=byId(activeId); if(!f){ show("scr-safe"); return; }
-    const m=modelByKey(f.model);
+    const m=faInfo(f);
     document.getElementById("dName").textContent=m.name;
     document.getElementById("dSub").textContent=m.sub;
+    document.getElementById("dCustomTag").hidden=!f.custom;
+    /* custom entries can request an official guide (Pro); free customs are tracker-only */
+    document.getElementById("reqSupportBtn").hidden=!f.custom;
     document.getElementById("stTotal").textContent=fmtN(f.totalRounds);
     document.getElementById("stSince").textContent=fmtN(f.roundsSinceClean);
     document.getElementById("stLast").textContent=f.lastClean?fmtDate(f.lastClean):"—";
@@ -1882,7 +2150,7 @@
     cb.classList.toggle("warn",cdue);
     document.getElementById("cleanVal").textContent=`${fmtN(f.roundsSinceClean)} / ${fmtN(iv)}`;
     document.getElementById("cleanBar").style.width=(100-Math.min(cpct,100))+"%";
-    const fmNew=(catEntry(f.model)||{}).fm||"";
+    const fmNew=(fcat(f)||{}).fm||"";
     const neverCleaned = !f.lastClean && (f.totalRounds||0)===0;
     const glockNew = fmNew.indexOf("GLOCK")===0 && neverCleaned && !f.factoryNoteAck;
     cb.classList.toggle("warn", cdue || glockNew);
@@ -1916,7 +2184,7 @@
 
     /* ---- NFA record (suppressors) — Pro feature ---- */
     const nfaBoxEl=document.getElementById("nfaBox");
-    const isNFA=(catEntry(f.model)||{}).gp==="Suppressors";
+    const isNFA=(fcat(f)||{}).gp==="Suppressors";
     const nfaLocked = isNFA && !isPro();
     document.getElementById("proNfaLock").style.display = nfaLocked ? "block" : "none";
     nfaBoxEl.style.display=(isNFA&&!nfaLocked)?"block":"none";
@@ -1972,9 +2240,17 @@
     if(!isNFA && !zeroLocked) renderZero(f);
 
     const g=document.getElementById("guideBtn");
-    const gk=guideKey(f.model);
-    g.textContent = gk ? "Clean — Guided" : "Guide Coming Soon";
-    g.disabled = !gk;
+    const gk=fkey(f);
+    if(f.custom){
+      /* tracker-only custom (no assigned family / not Pro) hides the guide button entirely */
+      g.style.display = gk ? "" : "none";
+      g.textContent = "Clean — Guided";
+      g.disabled = !gk;
+    } else {
+      g.style.display = "";
+      g.textContent = gk ? "Clean — Guided" : "Guide Coming Soon";
+      g.disabled = !gk;
+    }
 
     const ll=document.getElementById("logList");
     ll.innerHTML="";
@@ -2246,25 +2522,37 @@
     if(!Array.isArray(f.mags)) f.mags=[];
     if(f.magRotDays==null) f.magRotDays=90;
     const sum=document.getElementById("magSummary"), msg=document.getElementById("magMsg"), list=document.getElementById("magList");
+    /* Carry-rotation TIMER is Pro (reversed by Darren pre-launch); mag records stay free.
+       Locked-visible: the interval input swaps for a PRO row; per-mag rotate controls +
+       due status are Pro-only. Stored magRotDays/lastRot are never deleted. */
+    const rotPro=isPro();
     document.getElementById("magRotDays").value=f.magRotDays||90;
+    document.getElementById("magRotRow").style.display = rotPro ? "" : "none";
+    document.getElementById("magRotLock").style.display = rotPro ? "none" : "";
+    if(!rotPro){
+      const carryN=f.mags.filter(m=>m.role==="Carry").length;
+      document.getElementById("magRotMsg").textContent =
+        (carryN?`${carryN} carry mag${carryN===1?"":"s"} tracked — `:"")
+        + "Carry-rotation reminders and the rotation timer are part of Fieldstrip Pro. Your mags — capacity and role — stay free.";
+    }
     const carry=f.mags.filter(m=>m.role==="Carry");
     sum.textContent = f.mags.length ? `${f.mags.length} mag${f.mags.length===1?"":"s"}${carry.length?` · ${carry.length} carry`:""}` : "None tracked";
-    const overdue=f.mags.filter(m=>magOverdue(f,m));
+    const overdue=rotPro ? f.mags.filter(m=>magOverdue(f,m)) : [];
     if(overdue.length){ msg.textContent=`${overdue.length} carry mag${overdue.length===1?"":"s"} due for rotation — unload, rest the spring, load a fresh one.`; msg.style.color="var(--amber)"; }
-    else if(!f.mags.length){ msg.textContent="Track your mags per firearm — capacity, role, and carry-rotation timing. Springs wear whether you shoot or not."; msg.style.color=""; }
+    else if(!f.mags.length){ msg.textContent="Track your mags per firearm — capacity and role. Springs wear whether you shoot or not."; msg.style.color=""; }
     else { msg.textContent=""; msg.style.color=""; }
     list.innerHTML="";
     f.mags.forEach((m,i)=>{
       const row=document.createElement("div"); row.className="magrow";
       let rot="";
-      if(m.role==="Carry"){
+      if(rotPro && m.role==="Carry"){
         const due=magOverdue(f,m);
         rot = m.lastRot
           ? `<span class="rot${due?' due':''}">rotated ${daysBetween(m.lastRot,Date.now())}d ago${due?' — DUE':''}</span>`
           : `<span class="rot due">never rotated — log first rotation</span>`;
       }
       row.innerHTML=`<div class="maginfo"><b>${m.cap}-rd</b> · ${esc(m.role)}${rot}</div>`
-        + (m.role==="Carry"?`<button class="magbtn" data-i="${i}" data-rot="1">Rotate</button>`:"")
+        + (rotPro && m.role==="Carry"?`<button class="magbtn" data-i="${i}" data-rot="1">Rotate</button>`:"")
         + `<button class="magbtn del" data-i="${i}" data-del="1">${magDelArm===i?"Confirm":"×"}</button>`;
       list.appendChild(row);
     });
@@ -2303,6 +2591,7 @@
     const v=Math.max(7,Math.min(365,Math.floor(+e.target.value||0)));
     if(v>0){ f.magRotDays=v; saveSafe(); renderDetail(); }
   });
+  document.getElementById("magRotBtn").addEventListener("click",openProSheet);
 
   /* ---- care reminders ---- */
   const CARE_PRESETS=[["Defensive ammo swap",180],["Optic battery check",180],["Light battery check",90],["Rust / storage inspection",60],["Desiccant recharge",90],["Custom",90]];
@@ -2482,7 +2771,7 @@
   document.getElementById("logSkip").addEventListener("click",()=> commitClean("",""));
 
   document.getElementById("springReset").addEventListener("click",()=>{
-    const f=byId(activeId); const m=modelByKey(f.model);
+    const f=byId(activeId); const m=faInfo(f);
     f.roundsSinceSpring=0;
     addLog(f,"spring",`${m.springName} replaced`);
     saveSafe(); renderDetail();
@@ -2568,9 +2857,9 @@
   }
   function openSession(prefRounds){
     const f=byId(activeId); if(!f) return;
-    const c=catEntry(f.model);
+    const c=fcat(f);
     const last=f.lastAmmo||{};
-    const cal=last.cal||calGuess(c?c.ch:"");
+    const cal=last.cal||calGuess(c?c.ch:(f.custom?(f.cch||""):""));
     document.getElementById("ammoRounds").value = prefRounds>0 ? prefRounds : "";
     fillSel(ammoMkSel,AMMO_MAKERS,last.mk||AMMO_MAKERS[0]);
     fillSel(ammoCalSel,CAL_LIST,cal);
@@ -2633,8 +2922,8 @@
       const now=Date.now();
       const list=[]; let nid=1;
       safe.forEach(f=>{
-        const name=(modelByKey(f.model)||{}).name||"Firearm";
-        if(hasMags(f)) (f.mags||[]).forEach(m=>{
+        const name=(faInfo(f)||{}).name||"Firearm";
+        if(isPro() && hasMags(f)) (f.mags||[]).forEach(m=>{
           if(m.role!=="Carry"||!m.lastRot) return;
           const due=m.lastRot + (f.magRotDays||90)*86400000;
           if(due>now){
@@ -2794,7 +3083,7 @@
   const gateWrap=document.getElementById("gateItems");
   const gateGo=document.getElementById("gateGo");
   function buildGate(){
-    const gun=GUNS[guideKey(byId(activeId).model)];
+    const gun=GUNS[fkey(byId(activeId))];
     gateWrap.innerHTML="";
     gateGo.disabled=true;
     gun.gate.forEach(item=>{
@@ -2999,7 +3288,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     revsa:{layers:REVSA_LAYERS,lsteps:REVSA_LSTEPS,centers:REVSA_CENTERS,names:REVSA_NAMES,nums:[["frame",1],["cylinder",2],["pin",3]],tags:["frame","cylinder","pin"],aspect:"1500 / 682",hRatio:682/1500},
     ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1400 / 726",hRatio:726/1400}
   };
-  const activeLayerKey=()=>{ const k=guideKey(byId(activeId).model); return LAYER_SETS[k]?k:"g19"; };
+  const activeLayerKey=()=>{ const k=fkey(byId(activeId)); return LAYER_SETS[k]?k:"g19"; };
 
   let lstKey=null;
   function buildLayerStage(){
@@ -3142,7 +3431,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
   const progressEl=document.getElementById("progress");
   const stepInfo=document.getElementById("stepInfo");
   let stepIndex=0, branched=false;
-  const activeGuide=()=> GUNS[guideKey(byId(activeId).model)];
+  const activeGuide=()=> GUNS[fkey(byId(activeId))];
   const curSteps=()=>{ const g=activeGuide(); return (branched&&g.deepSteps)? g.steps.concat(g.deepSteps) : g.steps; };
   function buildProgress(){ progressEl.innerHTML=""; curSteps().forEach(()=>progressEl.appendChild(document.createElement("i"))); }
 
