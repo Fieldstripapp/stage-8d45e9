@@ -67,10 +67,12 @@
   .intelrow .tag.avoid{background:rgba(212,85,63,.13);color:var(--safe-red);border:1px solid rgba(212,85,63,.4)}
   .intelrow .tag.malf{background:var(--panel2);color:var(--muted);border:1px solid var(--edge)}
   .ivrow{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .ivrow[hidden]{display:none!important}
   .ivrow label{font-size:12px;color:var(--muted);flex:1}
   .ivrow input{width:76px;background:var(--panel2);border:1px solid var(--edge);border-radius:8px;color:var(--text);font-family:var(--body);font-size:13px;padding:7px 10px;text-align:center}
   .ivrow input:focus{outline:none;border-color:var(--amber)}
   .nfagrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+  .nfagrid[hidden]{display:none!important}
   .nfagrid .nf label{display:block;font-family:var(--display);font-size:9.5px;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
   .nfagrid .nf select,.nfagrid .nf input{width:100%;background:var(--panel2);border:1px solid var(--edge);border-radius:8px;color:var(--text);font-family:var(--body);font-size:13px;padding:8px 10px;color-scheme:dark}
   .nfagrid .nf select{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
@@ -198,6 +200,7 @@
   .prosheet .price{font-family:var(--display);color:var(--amber);font-size:15px;margin:14px 0 10px;letter-spacing:.5px}
   /* ---- tax stamp photo ---- */
   .stampthumb{display:block;width:100%;max-height:180px;object-fit:cover;border:1px solid var(--edge);border-radius:10px;margin:10px 0;cursor:pointer;background:#0e1013}
+  .stampthumb[hidden]{display:none!important}
   .stampview{position:fixed;inset:0;background:rgba(5,6,8,.95);z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;padding:18px}
   .stampview.open{display:flex}
   .stampview img{max-width:100%;max-height:78vh;object-fit:contain;border:1px solid var(--edge);border-radius:8px}
@@ -2077,7 +2080,7 @@
       else { th.hidden=true; st.textContent="Photo missing — re-attach"; st.style.color="var(--safe-red)"; }
     } else {
       st.textContent="None attached"; st.style.color="";
-      at.textContent="Attach Stamp Photo"; rm.hidden=true; th.hidden=true; th.src=""; msg.style.display="";
+      at.textContent="Attach Stamp Photo"; rm.hidden=true; th.hidden=true; th.removeAttribute("src"); msg.style.display="";
     }
   }
   document.getElementById("stampAttach").addEventListener("click",()=> document.getElementById("stampFile").click());
