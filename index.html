@@ -3155,7 +3155,7 @@
     document.getElementById("explodedOverlay").hidden=true;
     show("scr-safe");
   });
-const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
+const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,3],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],exp:[0,-5.5],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],exp:[0,-6],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],exp:[0,-5.5],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
   GUNS.m500sw = Object.assign({}, GUNS.m500);
   delete GUNS.m500sw.deepSteps; /* suppress the Deep Clean branch: m500sw's layer slice has no internals art (branchBtn is hidden when gun.deepSteps is absent) */
   /* ---- Shockwave variant: Raptor grip receiver layer, shares m500 pump/barrel ---- */
@@ -3442,7 +3442,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     });
     set.nums.forEach(([n,i])=>{
       const dot=document.createElement("div");
-      dot.className="expnum"; dot.textContent=i;
+      dot.className="expnum"; dot.textContent=i; dot.dataset.p=n;
       dot.style.left=set.centers[n][0]+"%"; dot.style.top=set.centers[n][1]+"%";
       wrap.appendChild(dot);
     });
@@ -3468,8 +3468,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],src:"assets/guns/glock/mag.png"},{
     set.layers.forEach(L=>{
       const im=document.getElementById("expl-"+L.n);
       if(!im) return;
-      im.style.transform = exploded? "translate(0%,0%)" : `translate(${L.asm[0]}%,${L.asm[1]}%)`;
+      im.style.transform = exploded? `translate(${L.exp?L.exp[0]:0}%,${L.exp?L.exp[1]:0}%)` : `translate(${L.asm[0]}%,${L.asm[1]}%)`;
     });
+    document.querySelectorAll("#expLayers .expnum").forEach(d=>{ const L=set.layers.find(l=>l.n===d.dataset.p); const ex=(exploded&&L&&L.exp)?L.exp:[0,0]; d.style.left=(set.centers[d.dataset.p][0]+ex[0])+"%"; d.style.top=(set.centers[d.dataset.p][1]+ex[1])+"%"; });
     /* viewport-crop zoom for long/thin sets (suppressors): .expviewport holds the z=1
        footprint, .explayers scales+pans inside from the fixed origin (0 0). */
     const wrap=document.getElementById("expLayers");
