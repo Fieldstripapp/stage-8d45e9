@@ -3156,7 +3156,7 @@
     document.getElementById("explodedOverlay").hidden=true;
     show("scr-safe");
   });
-const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,3],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],exp:[0,6.5],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],exp:[0,-8],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],exp:[0,0],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
+const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],exp:[0,-7.5],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],exp:[0,-2],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],exp:[0,-3],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
   GUNS.m500sw = Object.assign({}, GUNS.m500);
   delete GUNS.m500sw.deepSteps; /* suppress the Deep Clean branch: m500sw's layer slice has no internals art (branchBtn is hidden when gun.deepSteps is absent) */
   /* ---- Shockwave variant: Raptor grip receiver layer, shares m500 pump/barrel ---- */
@@ -3165,13 +3165,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,3],src:"assets/guns/glock/m
   const G19X={det_backplate:"x",det_striker:"x",det_extractor:"x",det_breech:"x"}; /* det insets hidden except on their own DC step (full-swap) */
   const G19_LSTEPS=[
     {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"a"},hl:null,m:null},
-    {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",m:{x:20,y:76,ch:"\u25bc"}},
+    {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"mag",m:{x:20,y:78,ch:"\u25bc"}},
     {pos:{...G19X,slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",m:{x:51,y:24.3,r:5.9}},
     {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:53.6,y:36.3,r:4.5}},
     {pos:{...G19X,slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",m:{x:40,y:35,ch:"\u25bc"}},
-    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:8,ch:"\u25b2"}},
-    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:26,ch:"\u25b2"}},
-    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:27,ch:"\u25c0"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:5,ch:"\u25b2"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:18.5,ch:"\u25b2"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:25,ch:"\u25c0"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_backplate:"e"},hl:null,m:[{x:49.9,y:49.2,r:8.9},{x:50,y:64,ch:"\u25bc"}]},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_striker:"e"},hl:null,m:{x:50,y:40,ch:"\u25bc"}},
@@ -3385,9 +3385,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,3],src:"assets/guns/glock/m
       if(p==="x"){im.style.visibility="hidden";im.classList.remove("hl");return;} /* "x" = hide this layer on this step */
       im.style.visibility="";
       let tx,ty,sc=1;
-      if(p==="e"){tx=0;ty=0;}
+      if(p==="e"){tx=L.exp?L.exp[0]:0;ty=L.exp?L.exp[1]:0;}
       else if(p==="a"){tx=L.asm[0];ty=L.asm[1];}
-      else{const base=p[0]==="e"?[0,0]:L.asm;tx=base[0]+p[1];ty=base[1]+p[2];if(p.length>3)sc=p[3];}
+      else{const base=p[0]==="e"?(L.exp||[0,0]):L.asm;tx=base[0]+p[1];ty=base[1]+p[2];if(p.length>3)sc=p[3];}
       im.style.transform=`translate(${tx}%,${ty}%) scale(${sc})`;
       im.classList.toggle("hl",cfg.hl===L.n);
     });
