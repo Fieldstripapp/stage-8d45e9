@@ -3218,8 +3218,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* ---- 1911 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const G1911_LAYERS=[
     {n:"frame",asm:[0.0,0.0],src:"assets/guns/g1911/frame.png"},
-    {n:"mag",asm:[-2.92,-13.86],src:"assets/guns/g1911/mag.png"},
-    {n:"barrel",asm:[-19.58,19.28],src:"assets/guns/g1911/barrel.png"},
+    {n:"mag",asm:[-2.92,-13.86],exp:[8,2],src:"assets/guns/g1911/mag.png"},
+    {n:"barrel",asm:[-19.58,19.28],exp:[0,-5],src:"assets/guns/g1911/barrel.png"},
     {n:"slide",asm:[-10.83,10.84],src:"assets/guns/g1911/slide.png"},
     {n:"slidestop",asm:[9.58,10.84],src:"assets/guns/g1911/slidestop.png"}
   ];
@@ -3227,14 +3227,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const G1911_CENTERS={slide:[57.9,20.7],barrel:[76.0,10.0],slidestop:[29.2,26.0],frame:[37.0,53.2],mag:[28.0,71.0]};
   const G1911_LSTEPS=[
     {pos:{frame:"a",mag:"a",barrel:"a",slide:"a",slidestop:"a"},hl:null,m:null},
-    {pos:{frame:"a",mag:"e",barrel:"a",slide:"a",slidestop:"a"},hl:"mag",m:{x:30,y:74,ch:"\u25bc"}},
+    {pos:{frame:"a",mag:"e",barrel:"a",slide:"a",slidestop:"a"},hl:"mag",m:{x:38,y:76,ch:"\u25bc"}},
     {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"a"},hl:"slide",m:{x:44.6,y:34.1,r:2.7}},
     {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"e"},hl:"slidestop",m:{x:29.2,y:26,r:5.8}},
-    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:{x:74,y:15,ch:"\u25b6"}},
-    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,5.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:10,ch:"\u25b6"}},
+    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,10.5],slide:"e",slidestop:"e"},hl:"slide",m:{x:74,y:15,ch:"\u25b6"}},
+    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,10.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:5,ch:"\u25b6"}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:9,ch:"\u27f2"}},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:4,ch:"\u27f2"}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"slide",m:{x:77.8,y:22.2,r:6.8}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"frame",m:{x:37,y:30,ch:"\u25bc"}}
   ];
