@@ -3475,7 +3475,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     /* viewport-crop zoom for long/thin sets (suppressors): .expviewport holds the z=1
        footprint, .explayers scales+pans inside from the fixed origin (0 0). */
     const wrap=document.getElementById("expLayers");
-    const z=(!exploded&&set.zAsm)?set.zAsm:1, zc=(set.zAsmC!=null)?set.zAsmC:50;
+    const z=(!exploded&&set.zAsm)?set.zAsm:1, zc=(!exploded&&set.zAsmC!=null)?set.zAsmC:50;
     wrap.style.transform=`translate(${(50-zc*z).toFixed(3)}%,${(50-50*z).toFixed(3)}%) scale(${z})`;
     document.getElementById("expToggle").textContent = exploded? "\u25c2 Assemble" : "Field Strip \u25b8";
   }
