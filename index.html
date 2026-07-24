@@ -190,6 +190,7 @@
   .prorow.on{border-style:solid;cursor:default}
   .prolock .lmsg{margin-bottom:10px}
   .protag{display:inline-block;font-family:var(--display);font-size:10px;letter-spacing:1.5px;color:var(--amber);border:1px solid var(--amber-dim);border-radius:5px;padding:1px 7px;vertical-align:2px;margin-left:8px}
+  .protag[hidden]{display:none!important} /* class sets display:inline-block, so the hidden attr needs this override (e.g. #dCustomTag on non-custom detail pages) */
   .prosheet{position:fixed;inset:0;background:rgba(10,12,15,.72);z-index:60;display:none;align-items:flex-end;justify-content:center}
   .prosheet.open{display:flex}
   .prosheet .sheet{position:relative;width:100%;max-width:560px;background:var(--panel);border:1px solid var(--edge);border-bottom:none;border-radius:16px 16px 0 0;padding:22px 20px calc(20px + var(--sab));max-height:calc(100vh - 34px);max-height:calc(100svh - 34px);overflow-y:auto;overscroll-behavior:contain}
@@ -3155,7 +3156,7 @@
     document.getElementById("explodedOverlay").hidden=true;
     show("scr-safe");
   });
-const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,3],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],exp:[0,-5.5],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],exp:[0,-6],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],exp:[0,-5.5],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
+const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,3],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],exp:[0,6.5],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],exp:[0,-8],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],exp:[0,0],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
   GUNS.m500sw = Object.assign({}, GUNS.m500);
   delete GUNS.m500sw.deepSteps; /* suppress the Deep Clean branch: m500sw's layer slice has no internals art (branchBtn is hidden when gun.deepSteps is absent) */
   /* ---- Shockwave variant: Raptor grip receiver layer, shares m500 pump/barrel ---- */
