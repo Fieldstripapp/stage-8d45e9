@@ -3471,7 +3471,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       if(!im) return;
       im.style.transform = exploded? `translate(${L.exp?L.exp[0]:0}%,${L.exp?L.exp[1]:0}%)` : `translate(${L.asm[0]}%,${L.asm[1]}%)`;
     });
-    document.querySelectorAll("#expLayers .expnum").forEach(d=>{ const L=set.layers.find(l=>l.n===d.dataset.p); const ex=(exploded&&L&&L.exp)?L.exp:[0,0]; d.style.left=(set.centers[d.dataset.p][0]+ex[0])+"%"; d.style.top=(set.centers[d.dataset.p][1]+ex[1])+"%"; });
+    document.querySelectorAll("#expLayers .expnum").forEach(d=>{ const L=set.layers.find(l=>l.n===d.dataset.p); const ex=(exploded&&L&&L.exp)?L.exp:[0,0]; d.style.left=(set.centers[d.dataset.p][0]+ex[0])+"%"; d.style.top=Math.max(2.5,set.centers[d.dataset.p][1]+ex[1])+"%"; });
     /* viewport-crop zoom for long/thin sets (suppressors): .expviewport holds the z=1
        footprint, .explayers scales+pans inside from the fixed origin (0 0). */
     const wrap=document.getElementById("expLayers");
