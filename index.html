@@ -3313,14 +3313,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const CFSUP_LAYERS=[
     {n:"stack",asm:[-26.52,0],src:"assets/guns/cfsup/stack.png"},
     {n:"tube",asm:[0,0],src:"assets/guns/cfsup/tube.png"},
-    {n:"cap",asm:[-45.08,0],exp:[-8,0],src:"assets/guns/cfsup/cap.png"}
+    {n:"cap",asm:[-45.08,0],exp:[-18,0],src:"assets/guns/cfsup/cap.png"}
   ];
   const CFSUP_NAMES={tube:"Tube, Mount & Threads",stack:"Baffle Stack",cap:"Front Cap"};
   const CFSUP_CENTERS={tube:[26.0,50],stack:[57.6,50],cap:[93.1,50]};
   const CFSUP_LSTEPS=[
     {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:null,z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:25,y:50,ch:"\u27f2"},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"e"},hl:"cap",m:{x:85,y:20,ch:"\u25b6"}},
+    {pos:{stack:"a",tube:"a",cap:"e"},hl:"cap",m:{x:75,y:36.5,ch:"\u25b6"}},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:"stack",m:{x:58,y:50,ch:"\u25b6"}},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:"stack",m:null},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:null,m:null}
@@ -3330,11 +3330,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:25,y:50,ch:"\u27f2"},z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:38,y:50,ch:"\u25bc"},z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:6.5,y:49.6,r:3},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:{x:16,y:65,ch:"\u25bc"},z:1.9,zc:27}
+    {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:{x:16,y:57,ch:"\u25bc"},z:1.9,zc:27}
   ];
   const LAYER_SETS={
-    cfsup:{layers:CFSUP_LAYERS,lsteps:CFSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 137",hRatio:137/1400,zAsm:1.9,zAsmC:27},
-    sldsup:{layers:CFSUP_LAYERS,lsteps:SLDSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 137",hRatio:137/1400,zAsm:1.9,zAsmC:27},
+    cfsup:{layers:CFSUP_LAYERS,lsteps:CFSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 300",hRatio:300/1400,zAsm:1.9,zAsmC:27},
+    sldsup:{layers:CFSUP_LAYERS,lsteps:SLDSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 300",hRatio:300/1400,zAsm:1.9,zAsmC:27},
     g19:{layers:EXP_LAYERS,lsteps:G19_LSTEPS,centers:G19_CENTERS,names:PARTNAMES,nums:[["slide",1],["barrel",2],["rsa",3],["frame",4],["mag",5]],tags:["slide","rsa","barrel","frame","mag"],aspect:"985 / 1300",hRatio:1300/985},
     m500:{layers:M500_LAYERS,lsteps:M500_LSTEPS,centers:M500_CENTERS,names:M500_NAMES,nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1100 / 503",hRatio:503/1100},
     g1911:{layers:G1911_LAYERS,lsteps:G1911_LSTEPS,centers:G1911_CENTERS,names:G1911_NAMES,nums:[["slide",1],["barrel",2],["slidestop",3],["frame",4],["mag",5]],tags:["slide","barrel","slidestop","frame","mag"],aspect:"1200 / 830",hRatio:830/1200},
