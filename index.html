@@ -3392,8 +3392,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* m590 shares m500 art: same barrel/pump/receiver PNGs, same markers. The idx2 ring
      sits on the magazine tube's terminal cap — where BOTH the 500 takedown screw and the
      590 barrel nut live — so it re-anchors by NAME only, no coordinate change. Art gap:
-     the receiver PNG models a CLOSED 500 tube end (logged in CLAUDE.md, not a blocker). */
-  LAYER_SETS.m590 = LAYER_SETS.m500;
+     the receiver PNG models a CLOSED 500 tube end (logged in CLAUDE.md, not a blocker).
+     Markers are shared EXCEPT idx3 (barrel): m500 lifts (▲), m590 slides forward (▶) — minimal
+     lsteps fork below; layers + centers stay aliased to m500 (no art divergence, no new layers). */
+  const M590_LSTEPS = M500_LSTEPS.map((s,i)=> i===3 ? {...s, m:{...s.m, ch:"▶"}} : s);
+  LAYER_SETS.m590 = Object.assign({}, LAYER_SETS.m500, {lsteps:M590_LSTEPS});
   const activeLayerKey=()=>{ const k=fkey(byId(activeId)); return LAYER_SETS[k]?k:"g19"; };
 
   let lstKey=null;
