@@ -3215,14 +3215,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{...G19X,slide:["a",-5,0],barrel:["a",-5,0],rsa:["a",-5,0],frame:"a",mag:"e"},hl:"slide",m:{x:51,y:24.3,r:5.9}},
     {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:53.6,y:36.3,r:4.5}},
     {pos:{...G19X,slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",m:{x:40,y:35,ch:"\u25bc"}},
-    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:5,ch:"\u25b2"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:5,ch:"\u25b6"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:18.5,ch:"\u25b2"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:25,ch:"\u25c0"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_backplate:"e"},hl:null,m:[{x:49.9,y:49.2,r:8.9},{x:50,y:64,ch:"\u25bc"}]},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_striker:"e"},hl:null,m:{x:50,y:40,ch:"\u25bc"}},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_extractor:"e"},hl:null,m:{x:55,y:48,ch:"\u25c0"}},
-    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_breech:"e"},hl:null,m:{x:50,y:49,ch:"\u27f2"}},
+    {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_breech:"e"},hl:null,m:{x:50,y:49,r:4.5}},
     {pos:{slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e",...G19X},hl:"frame",m:{x:45.5,y:30.4,r:2.6}} /* DC5 frame-internals wipe: PROXY ring on the frame's rear fire-control pocket (trigger bar/connector/cruciform housed internally, not drawn on the side view). Ring grammar on a pins-stay-put wipe step; true feature ring + det_frame inset BLOCKED on an open-top frame mesh (see scratchpad/glock/DC5-README.md). fixture g19.json "13" carries the PROXY/AMBIGUOUS flag. */
   ];
   const PARTNAMES={slide:"Slide",barrel:"Barrel",rsa:"Recoil Spring Assembly",frame:"Frame",mag:"Magazine"};
@@ -3258,7 +3258,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:35,y:52,r:3}},
     {pos:{receiver:"x",receiver_strip:"e",pump:"a",barrel:"e",...M500X,trigger:"e"},hl:"trigger",z:1.4,zc:40,zcy:60,m:{x:33,y:73,ch:"\u25bc"}},
     {pos:{receiver:"x",receiver_strip:"e",pump:"a",barrel:"e",...M500X,trigger:"e",cartstop:"e"},hl:"receiver",z:1.4,zc:42,zcy:53,m:[{x:44,y:46,r:2.5},{x:38,y:47,r:2.5}]},
-    {pos:{receiver:"x",receiver_strip:"e",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:"boltslide",z:1.3,zc:50,zcy:56,m:{x:75,y:76,ch:"\u25c0"}},
+    {pos:{receiver:"x",receiver_strip:"e",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:"boltslide",z:1.3,zc:50,zcy:56,m:{x:75,y:76,ch:"\u25b6"}},
     {pos:{receiver:"x",receiver_strip:"e",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:null,z:1.15,zc:50,zcy:56,m:null}
   ];
   /* ---- 1911 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
@@ -3280,7 +3280,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{frame:"a",mag:"e",barrel:["e",-8.5,10.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:5,ch:"\u25b6"}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:4,ch:"\u27f2"}},
+    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:4,r:5.8}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"slide",m:{x:77.8,y:22.2,r:6.8}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"frame",m:{x:37,y:30,ch:"\u25bc"}}
   ];
@@ -3293,9 +3293,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const REVDA_CENTERS={frame:[50.0,49.96],cylinder:[54.34,77.44]};
   const REVDA_LSTEPS=[
     {pos:{frame:"a",cylinder:"a"},hl:null,m:null},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:[{x:31.7,y:26.7,r:4.6},{x:52,y:53,ch:"\u25bc"}]},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:[{x:31.7,y:26.7,r:4.6},{x:52,y:53,r:4.6}]},
     {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:null,m:null},
-    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:41,y:79,ch:"\u27f2"}},
+    {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:41,y:79,r:4.6}},
     {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"cylinder",m:{x:48.6,y:78.6,r:5}},
     {pos:{frame:"a",cylinder:["e",0,0,1.24]},hl:"frame",m:{x:53.8,y:17.8,r:2.5}}
   ];
@@ -3341,7 +3341,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"mag",z:1.35,zc:45,zcy:65,m:{x:46,y:68,ch:"\u25bc"}},
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"upper",z:1.4,zc:37,zcy:30,m:{x:42.4,y:35.5,r:5.8}},
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"lower",z:1.4,zc:30,zcy:38,m:{x:28.2,y:40.8,r:2}},
-    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e",...AR15X},hl:"upper_open",m:{x:46,y:36,ch:"\u27f2"}},
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e",...AR15X},hl:"upper_open",m:{x:46,y:36,ch:"\u27f3"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e",...AR15X},hl:"bcg",z:1.35,zc:15,zcy:16,m:{x:13,y:16,ch:"\u25c0"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"ch",z:1.35,zc:15,zcy:5,m:{x:27,y:3,ch:"\u25c0"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"bcg",m:null},
@@ -3366,7 +3366,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const CFSUP_LSTEPS=[
     {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:null,z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:25,y:50,ch:"\u27f2"},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"e"},hl:"cap",m:{x:75,y:36.5,ch:"\u25b6"}},
+    {pos:{stack:"a",tube:"a",cap:"e"},hl:"cap",m:{x:75,y:36.5,ch:"\u27f2"}},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:"stack",m:{x:58,y:50,ch:"\u25b6"}},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:"stack",m:null},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:null,m:null}
