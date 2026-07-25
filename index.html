@@ -364,6 +364,38 @@
     .hl,.arrow.show,.step-info.anim > *{animation:none}
     .step-info.anim > *{opacity:1;transform:none}
   }
+
+  /* ===== Tablet landscape: two-pane guide + wider centered columns. Fully scoped — a
+     portrait phone (PART 1 locks phones to portrait) never matches this query, so all
+     phone-portrait CSS above is byte-identically unaffected. ===== */
+  @media (orientation:landscape) and (min-width:900px){
+    /* [.phone] wider frame; rounded corners kept (the <=460px fullscreen rule can't apply here) */
+    .phone{max-width:1100px}
+
+    /* [guide] two-pane: stage LEFT (58%), Parts-Diagram btn + progress + step-info + controls RIGHT.
+       Controls pinned to the bottom row; step-info takes the 1fr row and scrolls if long. */
+    #scr-player{overflow:hidden}
+    #scr-player .player{display:grid;grid-template-columns:58% 1fr;grid-template-rows:auto auto 1fr auto;column-gap:8px;height:100%;min-height:0}
+    #scr-player .stage{grid-column:1;grid-row:1 / -1;display:flex;align-items:center;justify-content:center;height:100%;min-height:0;border-bottom:none;border-right:1px solid var(--edge)}
+    #scr-player .expbtn{grid-column:2;grid-row:1;margin:10px auto 2px}
+    #scr-player .progress{grid-column:2;grid-row:2;padding-top:4px}
+    #scr-player .step-info{grid-column:2;grid-row:3;min-height:0;overflow-y:auto}
+    #scr-player .controls{grid-column:2;grid-row:4}
+
+    /* [.lviewport] height-driven. aspect-ratio (inline, per-family) is preserved so %-based markers
+       stay put; the browser transfers max-height through aspect-ratio to cap WIDTH -> no horizontal
+       clip on the wide suppressor 1400/300. !important overrides the JS-inline width/height. */
+    .lviewport{width:auto!important;height:auto!important;max-width:100%!important;max-height:78svh!important;margin:auto!important}
+    .stage svg.gun-svg.active{max-height:78svh}
+
+    /* [.expviewport] exploded overlay is a fixed full-screen modal; same aspect-preserving height fit */
+    .expviewport{width:auto!important;height:auto!important;max-width:96vw!important;max-height:80svh!important;margin:auto!important}
+    .explegend{max-width:min(90vw,900px)}
+
+    /* [non-guide screens] single column, centered at ~700px (not a phone strip in a black void) */
+    .detail,.clean,.gate{width:100%;max-width:700px;margin-inline:auto}
+    .prosheet .sheet{max-width:700px}
+  }
 </style>
 </head>
 <body>
