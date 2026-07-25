@@ -389,15 +389,19 @@
        positioned .lstage/imgs have a box to fill (flex-shrink collapsed it to 0x0 -> blank art,
        reproduced headlessly at 1400x800). max-height transfers through the inline per-family
        aspect-ratio to cap WIDTH -> aspect preserved (markers stay), no clip on wide 1400/300. */
-    .lviewport{width:auto!important;height:auto!important;max-width:100%!important;max-height:82svh!important;margin:0 auto!important}
+    /* vertically centered: abspos inset:0 gives a definite reducible basis (renders + aspect-safe
+       via max-height->aspect->max-width transfer), margin:auto centers both axes. */
+    .lviewport{position:absolute!important;inset:0!important;margin:auto!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:82svh!important}
     .stage svg.gun-svg.active{max-height:82svh}
 
     /* [.expviewport] exploded overlay is a fixed full-screen modal; same aspect-preserving height fit */
     /* exploded overlay is a fixed full-screen flex-center modal -> same collapse; make it block so
        the expviewport (width:auto) gets a definite basis. overflow:auto scrolls if the diagram + chrome exceed. */
-    .expoverlay{display:block!important;overflow:auto;text-align:center}
-    .expviewport{width:auto!important;height:auto!important;max-width:96vw!important;max-height:82svh!important;margin:12px auto!important}
-    .explegend{max-width:min(90vw,900px);margin:0 auto}
+    /* overlay: legend/tags/ASSEMBLE/CLOSE/cap flow as one centered cluster pinned to the bottom;
+       the art is abspos-centered in the region ABOVE that cluster (renders + aspect-safe + no clip). */
+    .expoverlay{display:flex!important;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;padding:14px 14px 22px}
+    .expviewport{position:absolute!important;left:14px;right:14px;top:14px;bottom:132px;margin:auto!important;width:auto!important;height:auto!important;max-width:calc(100% - 28px)!important;max-height:calc(100% - 150px)!important}
+    .explegend{max-width:520px;margin:0 auto}
 
     /* [non-guide screens] single column, centered at ~700px (not a phone strip in a black void) */
     .detail,.clean,.gate,.safe,.logform,.searchwrap{width:100%;max-width:700px;margin-inline:auto}
