@@ -3056,8 +3056,11 @@
     document.getElementById("lkTeach").hidden=true;
     document.getElementById("lkScanMsg").textContent="";
     const sb=document.getElementById("lkScanBtn");
-    sb.hidden = !scannerPlugin();
+    sb.hidden = false;
+    const nativeScan = !!scannerPlugin();
     sb.innerHTML = "▥ Scan Barcode to Check In" + (isPro() ? "" : ' <span class="protag">PRO</span>');
+    sb.disabled = isPro() && !nativeScan;
+    sb.title = !nativeScan ? "Scanning uses the camera — available in the installed app" : "";
     renderLocker(); show("scr-ammoinv");
   }
   document.getElementById("lockerBtn").addEventListener("click",openLocker);
