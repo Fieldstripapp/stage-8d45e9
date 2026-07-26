@@ -403,14 +403,22 @@
     .expviewport{position:absolute!important;left:14px;right:14px;top:14px;bottom:132px;margin:auto!important;width:auto!important;height:auto!important;max-width:calc(100% - 28px)!important;max-height:calc(100% - 150px)!important}
     .explegend{max-width:520px;margin:0 auto}
 
-    /* [non-guide screens] single column, centered at ~700px (not a phone strip in a black void) */
-    .detail,.clean,.gate,.safe,.logform,.searchwrap{width:100%;max-width:700px;margin-inline:auto}
+    /* [non-guide screens] single column, centered at ~700px (not a phone strip in a black void).
+       ⛔ NEVER set `display` on a screen (#scr-*) here. `.screen{display:none}` /
+       `.screen.active{display:flex}` is what shows exactly one screen at a time, and an ID selector
+       outranks that class, so the screen becomes permanently visible: `#scr-pick{display:flex}` is
+       what stacked the picker under My Safe and left the chips row up after a select. Other
+       properties are fine (#scr-player takes `overflow:hidden` above) — it is `display` that breaks
+       navigation. Prefer styling the INNER wrapper over the <section>. */
+    .detail,.clean,.gate,.safe,.logform{width:100%;max-width:700px;margin-inline:auto}
     .prosheet .sheet{max-width:700px}
-    /* [picker] dock the search/chips header (base is position:sticky, which floated over the list in
-       landscape) and let the model list scroll beneath it — every row reachable */
-    #scr-pick{display:flex;flex-direction:column;overflow:hidden}
-    #scr-pick .searchwrap{position:static;flex:none}
-    #scr-pick #pickList{flex:1;min-height:0;overflow-y:auto;width:100%;max-width:700px;margin-inline:auto}
+    /* [picker] ONE scroll context — the `.screen` itself scrolls (base rule); no inner fixed-height
+       list box. The search+chips header stays the only sticky element: full-bleed so it reads as a
+       bar docking under the app header, with its contents and the model list sharing one 700px
+       centered column (the header used to be capped at 700 while the list ran full width, so rows
+       slid past it on both sides — that was the "floats over the list" symptom). */
+    .searchwrap > *{max-width:700px;margin-inline:auto}
+    .catalog{width:100%;max-width:700px;margin-inline:auto}
   }
 </style>
 </head>
@@ -2163,7 +2171,10 @@
                  cleanInterval:(c.gp==="Suppressors"?400:((c.fm==="PUMP-500"||c.fm==="PUMP-590")?200:500)),
                  log:[{ts:Date.now(), type:"note", msg:"Added to safe", mags:[], magRotDays:90, reminders:[], service:[], zeros:[]}]};
         safe.unshift(f); saveSafe();
-        activeId=f.id; show("scr-detail");
+        /* land back on My Safe with the new card at the top (safe.unshift). show() IS the picker's
+           open/close state — it deactivates #scr-pick and calls resetPicker(), so the search field,
+           chips and count line collapse with it; no separate close path. */
+        activeId=f.id; show("scr-safe");
       });
       pickList.appendChild(b);
     });
