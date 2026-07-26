@@ -267,11 +267,18 @@
     radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);
     background-size:28px 28px,28px 28px,100% 100%;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px 14px}
-  .expviewport{position:relative;overflow:hidden;height:min(66vh,66svh);aspect-ratio:985/1300;max-width:100vw;margin:0 auto}
+  /* max-width:100% (not 100vw) — 100vw ignores the overlay's own padding, so the diagram
+     overflowed the screen by the pad on each side. A % max-height against an auto-height
+     parent computes to none, so it is a safe cap to state on both axes. */
+  .expviewport{position:relative;overflow:hidden;height:min(66vh,66svh);aspect-ratio:985/1300;max-width:100%;max-height:100%;margin:0 auto}
   .explayers{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.22,.9,.3,1)}
-  .explayers img{position:absolute;inset:0;width:100%;transition:transform .9s cubic-bezier(.22,.9,.3,1),filter .3s}
+  /* height:100%+contain matches .lstage img so BOTH stages letterbox the art identically —
+     width:100% with auto height top-ANCHORED the art, so any family whose stage aspect
+     differed from its art aspect had its numbered dots land below the artwork. */
+  .explayers img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .9s cubic-bezier(.22,.9,.3,1),filter .3s}
   .explayers img.hl{filter:drop-shadow(0 0 5px rgba(232,163,61,.9)) drop-shadow(0 0 14px rgba(232,163,61,.45)) brightness(1.35)}
-  .lviewport{position:relative;overflow:hidden;height:min(38vh,calc(88vw*1300/985));height:min(38svh,calc(88vw*1300/985));aspect-ratio:985/1300;margin:0 auto;pointer-events:none}
+  /* the stage may never exceed its pane on either axis; margin auto centres it in both. */
+  .lviewport{position:relative;overflow:hidden;height:min(38vh,calc(88vw*1300/985));height:min(38svh,calc(88vw*1300/985));aspect-ratio:985/1300;margin:0 auto;max-width:100%;max-height:100%;pointer-events:none}
   .lviewport[hidden]{display:none!important}
   .lstage{position:absolute;inset:0;transform-origin:0 0;transition:transform .85s cubic-bezier(.22,.9,.3,1)}
   .lstage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .85s cubic-bezier(.22,.9,.3,1),filter .3s;pointer-events:none}
@@ -3429,7 +3436,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const CFSUP_LSTEPS=[
     {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:null,z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:25,y:50,ch:"\u27f2"},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"e"},hl:"cap",m:{x:75,y:36.5,ch:"\u27f2"}},
+    {pos:{stack:"a",tube:"a",cap:"e"},hl:"cap",m:{x:75,y:20.44,ch:"\u27f2"}},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:"stack",m:{x:58,y:50,ch:"\u25b6"}},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:"stack",m:null},
     {pos:{stack:"e",tube:"a",cap:"e"},hl:null,m:null}
@@ -3438,41 +3445,55 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:null,z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:25,y:50,ch:"\u27f2"},z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:38,y:50,ch:"\u25bc"},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:6.5,y:49.6,r:3},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:{x:16,y:57,ch:"\u25bc"},z:1.9,zc:27}
+    {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:6.5,y:49.12,r:3},z:1.9,zc:27},
+    {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:{x:16,y:65.33,ch:"\u25bc"},z:1.9,zc:27}
   ];
   /* ---- bolt-action rifle layer set (Fieldstrip 3D pipeline, muzzle-right standard) ----
-     Art canvas is 1400x393 (3.56:1) framed to content for max pixel density; the DISPLAY
-     stage is 1400/560 (2.50:1), so the art letterboxes centred (83.5px top and bottom).
-     .lstage img is inset:0/100%/object-fit:contain, so translate% and marker % resolve
-     against the STAGE box, not the art: every vertical value below is stage-%, converted
-     as y_stage = 14.911 + y_art * 0.701786 (dy_stage = dy_art * 0.701786). Horizontal %
-     and ring radii (canvas-WIDTH %) are unconverted. Re-tuning the display aspect is free
-     for the art but silently shifts every value below — redo the conversion if it changes. */
+     Art canvas 1400x393 (3.56:1), framed to content for max pixel density.
+     ALL coordinates below are ART-% — percentages of that canvas. They are projected into
+     whatever box the layout renders by artFit()/aX()/aY() on every render and resize.
+     Do NOT pre-convert anything here to a display box: that is exactly the baked math
+     that put the Parts Diagram dots off the gun. Ring `r` stays % of ART width. */
   const BOLTR_LAYERS=[
     {n:"rifle",asm:[0,0],src:"assets/guns/boltr/rifle.png"},
-    {n:"bolt",asm:[8.37,22.44],src:"assets/guns/boltr/bolt.png"}
+    {n:"bolt",asm:[8.37,31.97],src:"assets/guns/boltr/bolt.png"}
   ];
   const BOLTR_NAMES={rifle:"Stock & Barreled Action",bolt:"Bolt Assembly"};
-  const BOLTR_CENTERS={rifle:[50,60.84],bolt:[30.61,29.01]};
+  /* ART-% label points, measured ON the part's ink — a bbox centre is NOT usable here:
+     the rifle's bbox centre (50,65.4) falls in the hollow under the receiver and the
+     bolt's (30.6,20.1) falls in the gap between body and handle knob, so both dots
+     rendered off the gun. rifle -> receiver body (700,200)px; bolt -> bolt body (428,60)px. */
+  const BOLTR_CENTERS={rifle:[50,50.89],bolt:[30.57,15.27]};
   const BOLTR_LSTEPS=[
-    {pos:{rifle:"a",bolt:"a"},hl:null,z:1.6,zc:53,zcy:52,m:null},
-    {pos:{rifle:"a",bolt:"a"},hl:"bolt",z:1.7,zc:38,zcy:51,m:{x:30.36,y:47.95,ch:"◀"}},
-    {pos:{rifle:"a",bolt:"e"},hl:"bolt",z:1.05,zc:50,zcy:47,m:null},
-    {pos:{rifle:"a",bolt:"e"},hl:null,z:1.5,zc:75,zcy:46,m:{x:77.14,y:43.48,ch:"▶"}},
-    {pos:{rifle:"a",bolt:"e"},hl:"bolt",z:1.5,zc:43.6,zcy:37,m:[{x:36.82,y:25.63,r:2.2},{x:54.29,y:47.95,r:2.5}]}
+    {pos:{rifle:"a",bolt:"a"},hl:null,z:1.6,zc:53,zcy:52.85,m:null},
+    {pos:{rifle:"a",bolt:"a"},hl:"bolt",z:1.7,zc:38,zcy:51.42,m:{x:30.36,y:47.07,ch:"◀"}},
+    {pos:{rifle:"a",bolt:"e"},hl:"bolt",z:1.05,zc:50,zcy:45.72,m:null},
+    {pos:{rifle:"a",bolt:"e"},hl:null,z:1.5,zc:75,zcy:44.30,m:{x:77.14,y:40.71,ch:"▶"}},
+    {pos:{rifle:"a",bolt:"e"},hl:"bolt",z:1.5,zc:43.6,zcy:31.48,m:[{x:36.82,y:15.27,r:2.2},{x:54.29,y:47.07,r:2.5}]}
   ];
   const LAYER_SETS={
-    cfsup:{layers:CFSUP_LAYERS,lsteps:CFSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 300",hRatio:300/1400,zAsm:1.9,zAsmC:27},
-    sldsup:{layers:CFSUP_LAYERS,lsteps:SLDSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 300",hRatio:300/1400,zAsm:1.9,zAsmC:27},
-    g19:{layers:EXP_LAYERS,lsteps:G19_LSTEPS,centers:G19_CENTERS,names:PARTNAMES,nums:[["slide",1],["barrel",2],["rsa",3],["frame",4],["mag",5]],tags:["slide","rsa","barrel","frame","mag"],aspect:"985 / 1300",hRatio:1300/985},
-    m500:{layers:M500_LAYERS,lsteps:M500_LSTEPS,centers:M500_CENTERS,names:M500_NAMES,nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1100 / 503",hRatio:503/1100},
-    g1911:{layers:G1911_LAYERS,lsteps:G1911_LSTEPS,centers:G1911_CENTERS,names:G1911_NAMES,nums:[["slide",1],["barrel",2],["slidestop",3],["frame",4],["mag",5]],tags:["slide","barrel","slidestop","frame","mag"],aspect:"1200 / 830",hRatio:830/1200},
-    m500sw:{layers:[M500SW_RECV,M500_LAYERS[6],M500_LAYERS[7]],lsteps:M500_LSTEPS,centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",hRatio:330/1055},
-    revda:{layers:REVDA_LAYERS,lsteps:REVDA_LSTEPS,centers:REVDA_CENTERS,names:REVDA_NAMES,nums:[["cylinder",1],["frame",2]],tags:["cylinder","frame"],aspect:"1400 / 769",hRatio:769/1400},
-    revsa:{layers:REVSA_LAYERS,lsteps:REVSA_LSTEPS,centers:REVSA_CENTERS,names:REVSA_NAMES,nums:[["frame",1],["cylinder",2],["pin",3]],tags:["frame","cylinder","pin"],aspect:"1500 / 682",hRatio:682/1500},
-    ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1400 / 726",hRatio:726/1400},
-    boltr:{layers:BOLTR_LAYERS,lsteps:BOLTR_LSTEPS,centers:BOLTR_CENTERS,names:BOLTR_NAMES,nums:[["rifle",1],["bolt",2]],tags:["rifle","bolt"],aspect:"1400 / 560",hRatio:560/1400}
+    /* `art` = the layer PNGs' real pixel size. Stored coordinates are percentages of THIS,
+       and artFit() projects them into whatever box the layout actually renders. Where
+       `art` matches `aspect` the projection is the identity. cfsup/sldsup are the two
+       families that deliberately declare a taller stage than their art. */
+    cfsup:{layers:CFSUP_LAYERS,lsteps:CFSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 300",art:[1400,137],hRatio:300/1400,zAsm:1.9,zAsmC:27},
+    sldsup:{layers:CFSUP_LAYERS,lsteps:SLDSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 300",art:[1400,137],hRatio:300/1400,zAsm:1.9,zAsmC:27},
+    g19:{layers:EXP_LAYERS,lsteps:G19_LSTEPS,centers:G19_CENTERS,names:PARTNAMES,nums:[["slide",1],["barrel",2],["rsa",3],["frame",4],["mag",5]],tags:["slide","rsa","barrel","frame","mag"],aspect:"985 / 1300",art:[985,1300],hRatio:1300/985},
+    m500:{layers:M500_LAYERS,lsteps:M500_LSTEPS,centers:M500_CENTERS,names:M500_NAMES,nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1100 / 503",art:[1100,503],hRatio:503/1100},
+    g1911:{layers:G1911_LAYERS,lsteps:G1911_LSTEPS,centers:G1911_CENTERS,names:G1911_NAMES,nums:[["slide",1],["barrel",2],["slidestop",3],["frame",4],["mag",5]],tags:["slide","barrel","slidestop","frame","mag"],aspect:"1200 / 830",art:[1200,830],hRatio:830/1200},
+    /* m500sw is UNREACHABLE (nothing maps to it) and its art is inconsistent: its own
+       receiver.png is 1055x330 while the barrel/pump it borrows from m500 are 1100x503.
+       `art` matches its declared aspect so the projection stays the identity; the mixed
+       art is a pre-existing defect to fix if it is ever activated. */
+    m500sw:{layers:[M500SW_RECV,M500_LAYERS[6],M500_LAYERS[7]],lsteps:M500_LSTEPS,centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",art:[1055,330],hRatio:330/1055},
+    revda:{layers:REVDA_LAYERS,lsteps:REVDA_LSTEPS,centers:REVDA_CENTERS,names:REVDA_NAMES,nums:[["cylinder",1],["frame",2]],tags:["cylinder","frame"],aspect:"1400 / 769",art:[1400,769],hRatio:769/1400},
+    revsa:{layers:REVSA_LAYERS,lsteps:REVSA_LSTEPS,centers:REVSA_CENTERS,names:REVSA_NAMES,nums:[["frame",1],["cylinder",2],["pin",3]],tags:["frame","cylinder","pin"],aspect:"1500 / 682",art:[1500,682],hRatio:682/1500},
+    ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1400 / 726",art:[1400,726],hRatio:726/1400},
+    /* boltr: the 2.50:1 padded display stage is REMOVED — with runtime projection the pad
+       bought nothing (the art is width-bound either way, so the rifle rendered the same
+       size) and it was the dead band above/below the gun in Darren's walk. Stage aspect
+       now equals art aspect; the pad remains available as a knob that now works. */
+    boltr:{layers:BOLTR_LAYERS,lsteps:BOLTR_LSTEPS,centers:BOLTR_CENTERS,names:BOLTR_NAMES,nums:[["rifle",1],["bolt",2]],tags:["rifle","bolt"],aspect:"1400 / 393",art:[1400,393],hRatio:393/1400}
   };
   /* m590 shares m500 art: same barrel/pump/receiver PNGs, same markers. The idx2 ring
      sits on the magazine tube's terminal cap — where BOTH the 500 takedown screw and the
@@ -3483,6 +3504,30 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const M590_LSTEPS = M500_LSTEPS.map((s,i)=> i===3 ? {...s, m:{...s.m, ch:"▶"}} : s);
   LAYER_SETS.m590 = Object.assign({}, LAYER_SETS.m500, {lsteps:M590_LSTEPS});
   const activeLayerKey=()=>{ const k=fkey(byId(activeId)); return LAYER_SETS[k]?k:"g19"; };
+
+  /* ================= RUNTIME LETTERBOX PROJECTION =================
+     Markers, centers, asm offsets and zoom anchors are STORED IN ART COORDINATES
+     (percentages of the art canvas, set.art = [w,h] px). They are NEVER pre-converted
+     to the display box — that baked math silently went wrong the moment the rendered
+     box was not the box the conversion assumed.
+
+     Both stages contain-fit the art, so the art occupies a centred sub-rectangle of the
+     element. artFit() measures the LIVE element box and returns that sub-rectangle as
+     offset+scale in element-%; aX/aY project an art coordinate into it. Deltas (asm,
+     exp) scale by sx/sy without the offset. Recomputed on every render AND on resize.
+
+     When the stage aspect equals the art aspect, ox=oy=0 and sx=sy=1 — the projection is
+     the identity, which is exactly why the families whose PNGs match their declared
+     aspect are untouched by this change. */
+  function artFit(boxEl,set){
+    const aw=(set&&set.art&&set.art[0])||1, ah=(set&&set.art&&set.art[1])||1;
+    const r=boxEl?boxEl.getBoundingClientRect():null;
+    if(!r||!r.width||!r.height) return {ox:0,oy:0,sx:1,sy:1,dw:0,dh:0};
+    const s=Math.min(r.width/aw,r.height/ah), dw=aw*s, dh=ah*s;
+    return {ox:(r.width-dw)/2/r.width*100, oy:(r.height-dh)/2/r.height*100,
+            sx:dw/r.width, sy:dh/r.height, dw:dw, dh:dh};
+  }
+  const aX=(f,x)=>f.ox+x*f.sx, aY=(f,y)=>f.oy+y*f.sy;
 
   let lstKey=null;
   function buildLayerStage(){
@@ -3512,6 +3557,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function renderLayerStep(){
     const set=LAYER_SETS[lstKey||activeLayerKey()];
     const cfg=set.lsteps[Math.min(stepIndex,set.lsteps.length-1)];
+    const vpEl=document.getElementById("layerViewport");
+    const f=artFit(vpEl,set);          /* live box -> art sub-rectangle, every render */
     set.layers.forEach(L=>{
       const im=document.getElementById("lst-"+L.n);
       if(!im) return;
@@ -3522,7 +3569,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       if(p==="e"){tx=L.exp?L.exp[0]:0;ty=L.exp?L.exp[1]:0;}
       else if(p==="a"){tx=L.asm[0];ty=L.asm[1];}
       else{const base=p[0]==="e"?(L.exp||[0,0]):L.asm;tx=base[0]+p[1];ty=base[1]+p[2];if(p.length>3)sc=p[3];}
-      im.style.transform=`translate(${tx}%,${ty}%) scale(${sc})`;
+      /* asm/exp are art-% deltas: a translate % on the img resolves against the ELEMENT
+         box, so scale by the art's share of it (identity when aspects match). */
+      im.style.transform=`translate(${(tx*f.sx).toFixed(3)}%,${(ty*f.sy).toFixed(3)}%) scale(${sc})`;
       im.classList.toggle("hl",cfg.hl===L.n);
     });
     const z=cfg.z||1;   /* markers live inside .lstage (scale z); counter-scale so their visual size + glow stay CONSTANT across steps */
@@ -3530,19 +3579,21 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     [document.getElementById("lmark"),document.getElementById("lmark2")].forEach((mk,i)=>{
       if(!mk) return;
       const m=ms[i];
-      if(m){ mk.hidden=false; mk.style.left=m.x+"%"; mk.style.top=m.y+"%";
-        const vp = document.getElementById("layerViewport")||{};
-        const vpH = vp.clientHeight||0, vpW = vp.clientWidth||0;
-        if(m.r!=null){ /* RING marker (prototype): amber circle at {x,y,r%}, counter-scaled by z */
+      if(m){ mk.hidden=false;
+        /* marker coords are ART-% -> project into the live box */
+        mk.style.left=aX(f,m.x).toFixed(3)+"%"; mk.style.top=aY(f,m.y).toFixed(3)+"%";
+        if(m.r!=null){ /* RING marker: amber circle at {x,y,r%}, counter-scaled by z */
           mk.classList.add("lring"); mk.textContent=""; mk.style.fontSize="";
-          const d=(2*m.r/100*vpW)/z;                    /* diameter px (r% of stage width), counter-scaled */
+          const d=(2*m.r/100*f.dw)/z;                   /* diameter px (r% of ART width), counter-scaled */
           mk.style.width=d+"px"; mk.style.height=d+"px";
           mk.style.borderWidth=Math.max(1.3, 2/z)+"px";
           mk.style.boxShadow=`0 0 ${(4/z).toFixed(1)}px rgba(232,163,61,.5)`;
         } else { /* GLYPH marker: clamp on short canvases + zoom counter-scale + 0.6 floor */
           mk.classList.remove("lring"); mk.textContent=m.ch;
           mk.style.width=""; mk.style.height=""; mk.style.borderWidth=""; mk.style.boxShadow="";
-          const cb=(vpH ? Math.min(24, Math.max(9, Math.round(vpH*0.22))) : 24);
+          /* clamp tracks the ART height, not the padded box, so a letterboxed stage does
+             not inflate the glyph relative to the gun it points at */
+          const cb=(f.dh ? Math.min(24, Math.max(9, Math.round(f.dh*0.22))) : 24);
           mk.style.fontSize = Math.max(cb/z, 0.6*cb) + "px";
         } }
       else { mk.hidden=true; mk.textContent=""; mk.classList.remove("lring"); mk.style.width=""; mk.style.height=""; }
@@ -3553,7 +3604,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        Anchor changes animate as pans (transform transition); edge cropping is intended. */
     const st=document.getElementById("layerStage");
     const zc=(cfg.zc!=null)?cfg.zc:50, zcy=(cfg.zcy!=null)?cfg.zcy:50;   /* z declared above */
-    st.style.transform=`translate(${(50-zc*z).toFixed(3)}%,${(50-zcy*z).toFixed(3)}%) scale(${z})`;
+    /* zc/zcy are ART-% anchors -> project before the zoom maths */
+    const zcE=aX(f,zc), zcyE=aY(f,zcy);
+    st.style.transform=`translate(${(50-zcE*z).toFixed(3)}%,${(50-zcyE*z).toFixed(3)}%) scale(${z})`;
   }
 
   let expKey=null, expExploded=false, expHl=null;
@@ -3578,8 +3631,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     set.nums.forEach(([n,i])=>{
       const dot=document.createElement("div");
       dot.className="expnum"; dot.textContent=i; dot.dataset.p=n;
-      dot.style.left=set.centers[n][0]+"%"; dot.style.top=set.centers[n][1]+"%";
-      wrap.appendChild(dot);
+      wrap.appendChild(dot);   /* placed by setExp(), which projects art-% -> live box */
     });
     document.getElementById("expLegend").innerHTML=set.nums.map(([n,i])=>`<span><b>${i}</b>${set.names[n]}</span>`).join("");
     expHl=null;
@@ -3600,12 +3652,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     expExploded=exploded;
     const set=LAYER_SETS[expKey||activeLayerKey()];
     document.getElementById("expLayers").classList.toggle("asmb",!exploded);
+    const fx=artFit(document.getElementById("expViewport"),set);   /* live box, every call */
     set.layers.forEach(L=>{
       const im=document.getElementById("expl-"+L.n);
       if(!im) return;
-      im.style.transform = exploded? `translate(${L.exp?L.exp[0]:0}%,${L.exp?L.exp[1]:0}%)` : `translate(${L.asm[0]}%,${L.asm[1]}%)`;
+      const tx=exploded?(L.exp?L.exp[0]:0):L.asm[0], ty=exploded?(L.exp?L.exp[1]:0):L.asm[1];
+      im.style.transform=`translate(${(tx*fx.sx).toFixed(3)}%,${(ty*fx.sy).toFixed(3)}%)`;
     });
-    document.querySelectorAll("#expLayers .expnum").forEach(d=>{ const L=set.layers.find(l=>l.n===d.dataset.p); const ex=(exploded&&L&&L.exp)?L.exp:[0,0]; d.style.left=(set.centers[d.dataset.p][0]+ex[0])+"%"; d.style.top=Math.max(2.5,set.centers[d.dataset.p][1]+ex[1])+"%"; });
+    /* dots carry ART-% centers; project, then clamp so none rides off the top edge */
+    document.querySelectorAll("#expLayers .expnum").forEach(d=>{
+      const L=set.layers.find(l=>l.n===d.dataset.p); const ex=(exploded&&L&&L.exp)?L.exp:[0,0];
+      const c=set.centers[d.dataset.p];
+      d.style.left=aX(fx,c[0]+ex[0]).toFixed(3)+"%";
+      d.style.top=Math.max(2.5,aY(fx,c[1]+ex[1])).toFixed(3)+"%";
+    });
     /* viewport-crop zoom for long/thin sets (suppressors): .expviewport holds the z=1
        footprint, .explayers scales+pans inside from the fixed origin (0 0). */
     const wrap=document.getElementById("expLayers");
@@ -3621,6 +3681,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   });
   document.getElementById("expToggle").addEventListener("click",()=>setExp(!expExploded,true));
   document.getElementById("expClose").addEventListener("click",()=>{ setExp(false,false); document.getElementById("explodedOverlay").hidden=true; });
+  /* the art->box projection depends on the RENDERED box, so it must be recomputed whenever
+     that box can change: rotation, window resize, or the on-screen keyboard resizing svh. */
+  let _reflow=null;
+  window.addEventListener("resize",()=>{
+    clearTimeout(_reflow);
+    _reflow=setTimeout(()=>{
+      try{
+        if(current==="scr-player" && lstKey) renderLayerStep();
+        const ov=document.getElementById("explodedOverlay");
+        if(ov && !ov.hidden && expKey) setExp(expExploded,false);
+      }catch(e){/* never let a reflow break the guide */}
+    },120);
+  });
 
   /* =============== STEP PLAYER =============== */
   const progressEl=document.getElementById("progress");
