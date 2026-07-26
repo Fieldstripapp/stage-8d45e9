@@ -1435,6 +1435,15 @@
     {t:"Every chamber verified empty — look AND feel", s:"Look into each chamber, then run a fingertip across the rear of the cylinder. Count the empty chambers — all of them."},
     {t:"No ammunition at the bench", s:"Cartridges in a different room or a closed container. Muzzle in a safe direction throughout."}
   ];
+  /* Bolt guns hide rounds differently from a box-mag semi-auto, so boltr gets its own
+     gate rather than sharing DEFAULT_GATE (which 4 other guides use). Line 1 is
+     Darren-approved verbatim, split at its own sentence boundary into the checkbox
+     label + sub-line; lines 2 and 3 are DEFAULT_GATE's, unchanged. */
+  const BOLT_GATE = [
+    {t:"Magazine empty — hinged floorplate swung open, detachable mag out, or rounds picked from the top.", s:"No round under the follower."},
+    {t:"Chamber verified empty — look AND feel", s:"Lock the action open. Visually inspect the chamber, then physically check it with your finger."},
+    {t:"No ammunition at the bench", s:"All ammo in a different room or a closed container. Muzzle pointed in a safe direction throughout."}
+  ];
   const SUPPRESSOR_GATE = [
     {t:"Host firearm cleared", s:"The can comes off a firearm. Magazine out, chamber verified empty by sight and feel, before your hands go anywhere near the muzzle."},
     {t:"Suppressor completely cool", s:"Suppressors hold heat long after the last shot. If it's been fired in the last hour, check with the back of your hand near — not on — the tube."},
@@ -1619,7 +1628,7 @@
        text only, pending Darren's staging read. No deepSteps in v1 — pass-2 deep clean
        adds them together with the branch:true flag on the step it hangs off. */
     boltr: {
-      gate:DEFAULT_GATE, exploded:true, layerMode:true,
+      gate:BOLT_GATE, exploded:true, layerMode:true,
       parts:{}, origins:{},
       cleanIntro:"Three groups on a bolt gun. Solvent first, then dry patches, then a light film of oil on steel — bolt guns run nearly dry, so keep it thin.",
       steps:[
