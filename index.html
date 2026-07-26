@@ -1296,7 +1296,7 @@
       <div class="proreason" id="proReason" style="display:none"></div>
       <p class="pp" id="proSheetIntro">One purchase, yours for good. No subscription, no account, and like everything here — nothing leaves your phone.</p>
       <div class="feat"><span class="fx">▸</span><span><b>Unlimited safe</b> — track every firearm and can you own, not just two.</span></div>
-      <div class="feat"><span class="fx">▸</span><span><b>NFA Record</b> — Form 4/1 dates, stamp reference, and a stored photo of the stamp itself.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>NFA Record</b> — SBR/SBS/AOW classification, Form 4/1 dates, stamp reference, and a stored photo of the stamp itself.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Fouling by weight</b> — baseline, weigh-ins, and a clean-due threshold for sealed cans.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Barcode check-in</b> — scan an ammo box and it lands in the locker, no typing.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Zero Record</b> — distance, ammo, and optic notes, so a re-zero starts from facts.</span></div>
@@ -2045,8 +2045,7 @@
       if(springDue) dots.push('<div class="alertdot">SPRING DUE</div>');
       if(cleanDue) dots.push('<div class="alertdot amber">CLEAN DUE</div>');
       if(!springDue && hasAvoid) dots.push('<div class="alertdot">AMMO FLAG</div>');
-      /* typeof guard: a classified firearm stores f.nfa as a STRING, not a form record */
-      if(f.nfa && typeof f.nfa==="object" && f.nfa.sub && !f.nfa.app) dots.push(`<div class="alertdot amber">NFA ${daysBetween(new Date(f.nfa.sub).getTime(),Date.now())}D</div>`);
+      if(f.nfa && f.nfa.sub && !f.nfa.app) dots.push(`<div class="alertdot amber">NFA ${daysBetween(new Date(f.nfa.sub).getTime(),Date.now())}D</div>`);
       if(f.wt && f.wt.base!=null && f.wt.current!=null){
         const g=+(f.wt.current-f.wt.base).toFixed(2), th=f.wt.thresh||(f.wt.unit==="g"?30:2);
         if(g>=th) dots.push('<div class="alertdot amber">CLEAN DUE (WT)</div>');
@@ -2377,11 +2376,9 @@
     } else { ib.style.display="none"; }
 
     /* ---- NFA record — Pro feature ----
-       Suppressors keep the Form 1/4 record (f.nfa is an OBJECT there). Firearms get the
-       SBR/SBS/AOW classification instead (f.nfa is a STRING there). The two never land on
-       the same entry — a suppressor is never offered the toggle and a firearm is never
-       offered the form — but every object access below is typeof-guarded so a string can
-       never be mistaken for a record. */
+       Suppressors keep the Form 1/4 record in f.nfa; firearms get the SBR/SBS/AOW
+       classification in its OWN key, f.nfaClass. Separate keys, separate shapes, so no
+       reader anywhere has to disambiguate them. */
     const nfaBoxEl=document.getElementById("nfaBox");
     const isNFA=(fcat(f)||{}).gp==="Suppressors";
     const nfaOptions=isNFA?[]:nfaOpts(f);
@@ -2406,7 +2403,7 @@
       /* match the other gated rows: say what is already stored, so the lock never
          reads as data loss. f.nfa, f.nfaDate and f.stamp are untouched while locked. */
       const has=[];
-      if(isNFA && f.nfa && typeof f.nfa==="object" && Object.keys(f.nfa).some(k=>f.nfa[k])) has.push("form details");
+      if(f.nfa && Object.keys(f.nfa).some(k=>f.nfa[k])) has.push("form details");
       if(nfaCls) has.push(NFA_LABEL[nfaCls]+" classification");
       if(f.nfaDate) has.push("a stamp date");
       if(f.stamp) has.push("a stamp photo");
@@ -2605,14 +2602,15 @@
   /* ---- NFA classification (SBR/SBS/AOW) ----
      Eligibility is by catalog gp: Rifles -> SBR, Shotguns -> SBS + AOW, Pistols -> AOW.
      Revolvers get no toggle; Suppressors are already NFA and are excluded at the call site.
-     Storage: f.nfa = "sbr"|"sbs"|"aow" (absent = none) + f.nfaDate for the stamp date, both
-     on the safe entry, so saveSafe() mirrors them to Preferences with fs_safe. Guides never
-     read either one — NFA status cannot affect guide routing or content. */
+     Storage: f.nfaClass = "sbr"|"sbs"|"aow" (absent = none) + f.nfaDate for the stamp date,
+     both on the safe entry, so saveSafe() mirrors them to Preferences with fs_safe. Its own
+     key, deliberately NOT f.nfa — that belongs to the suppressor Form 1/4 record object, and
+     one key holding two shapes needed guards everywhere it was read. Guides never read
+     either one — NFA status cannot affect guide routing or content. */
   const NFA_CLASS_OPTS={Rifles:["sbr"],Shotguns:["sbs","aow"],Pistols:["aow"]};
   const NFA_LABEL={sbr:"SBR",sbs:"SBS",aow:"AOW"};
   function nfaOpts(f){ const c=fcat(f); return (c && NFA_CLASS_OPTS[c.gp]) || []; }
-  /* string-only: a suppressor's f.nfa is a record OBJECT and must never read as a class */
-  function nfaClassOf(f){ return (f && typeof f.nfa==="string" && NFA_LABEL[f.nfa]) ? f.nfa : null; }
+  function nfaClassOf(f){ return (f && NFA_LABEL[f.nfaClass]) ? f.nfaClass : null; }
   function renderNfaClass(f){
     const seg=document.getElementById("nfaSeg"), st=document.getElementById("nfaClassStatus"),
           msg=document.getElementById("nfaClassMsg"), dw=document.getElementById("nfaClassDate");
@@ -2636,8 +2634,8 @@
   function setNfaClass(f,v){
     if(!isPro()){ openProSheet("nfa"); return; }   /* locked-visible: tap opens the upsell */
     const prev=nfaClassOf(f);
-    if(v==="none"){ if(!prev) return; delete f.nfa; addLog(f,"nfa","NFA classification cleared"); }
-    else { if(prev===v) return; f.nfa=v; addLog(f,"nfa","Classified as "+NFA_LABEL[v]); }
+    if(v==="none"){ if(!prev) return; delete f.nfaClass; addLog(f,"nfa","NFA classification cleared"); }
+    else { if(prev===v) return; f.nfaClass=v; addLog(f,"nfa","Classified as "+NFA_LABEL[v]); }
     saveSafe(); renderDetail();
   }
   document.getElementById("nfaStampDate").addEventListener("change",e=>{
