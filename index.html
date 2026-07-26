@@ -1435,14 +1435,17 @@
     {t:"Every chamber verified empty — look AND feel", s:"Look into each chamber, then run a fingertip across the rear of the cylinder. Count the empty chambers — all of them."},
     {t:"No ammunition at the bench", s:"Cartridges in a different room or a closed container. Muzzle in a safe direction throughout."}
   ];
-  /* Bolt guns hide rounds differently from a box-mag semi-auto, so boltr gets its own
-     gate rather than sharing DEFAULT_GATE (which 4 other guides use). Line 1 is
-     Darren-approved verbatim, split at its own sentence boundary into the checkbox
-     label + sub-line; lines 2 and 3 are DEFAULT_GATE's, unchanged. */
+  /* Bolt-specific make-safe gate. boltr does NOT share DEFAULT_GATE (4 other guides use
+     it, and a floorplate instruction would be wrong for a Glock/1911/AR). All three
+     checks are Darren-approved verbatim. Check 1 carries two sentences, so it splits at
+     its own sentence boundary into label + sub-line; checks 2 and 3 are single sentences
+     that stay whole in the label (the house style already puts an em-dash clause in `t`,
+     cf. "Chamber verified empty — look AND feel"), with an empty sub-line. `s` must be a
+     string, never undefined — buildGate interpolates it straight into innerHTML. */
   const BOLT_GATE = [
     {t:"Magazine empty — hinged floorplate swung open, detachable mag out, or rounds picked from the top.", s:"No round under the follower."},
-    {t:"Chamber verified empty — look AND feel", s:"Lock the action open. Visually inspect the chamber, then physically check it with your finger."},
-    {t:"No ammunition at the bench", s:"All ammo in a different room or a closed container. Muzzle pointed in a safe direction throughout."}
+    {t:"Bolt handle up, bolt drawn back — action open.", s:""},
+    {t:"Look AND feel — eyes on the chamber, finger on the follower.", s:""}
   ];
   const SUPPRESSOR_GATE = [
     {t:"Host firearm cleared", s:"The can comes off a firearm. Magazine out, chamber verified empty by sight and feel, before your hands go anywhere near the muzzle."},
@@ -1643,7 +1646,10 @@
         {name:"BOLT",tasks:["Scrub the bolt face","Scrub behind both locking lugs — brass shavings and primer soot collect there and change headspace feel","Light oil on the lugs and bolt body; bolt guns run nearly dry"]},
         {name:"RECEIVER & RACEWAYS",tasks:["Wipe the raceways in the receiver with a patch over a finger","Keep the bolt on the mat lugs up while you work"]}
       ],
-      reassembly:["Feed the bolt into the raceway, press home, handle down.","Safety on — trigger dead.","Safety off, dry-fire click, lift the handle to confirm cocking.","Smooth as it went out, smooth as it goes back."]
+      /* approved S6 prose, re-split into list items; the safety/dry-fire sentences rejoin
+         under the house <strong>Function check:</strong> label (formatting only — no words
+         added, removed or reordered). */
+      reassembly:["Feed the bolt into the raceway, press home, handle down.","<strong>Function check:</strong> Safety on — trigger dead. Safety off, dry-fire click, lift the handle to confirm cocking.","Smooth as it went out, smooth as it goes back."]
     },
 
     x95: {
