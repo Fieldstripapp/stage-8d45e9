@@ -266,11 +266,18 @@
     linear-gradient(90deg,rgba(200,205,212,.05) 1px,transparent 1px),
     radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);
     background-size:28px 28px,28px 28px,100% 100%;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px 14px}
-  /* max-width:100% (not 100vw) — 100vw ignores the overlay's own padding, so the diagram
-     overflowed the screen by the pad on each side. A % max-height against an auto-height
-     parent computes to none, so it is a safe cap to state on both axes. */
-  .expviewport{position:relative;overflow:hidden;height:min(66vh,66svh);aspect-ratio:985/1300;max-width:100%;max-height:100%;margin:0 auto}
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:12px;padding:18px 14px}
+  /* The art region absorbs ALL slack, so the control cluster is pinned to the bottom of the
+     stage at the SAME offset in every family and both orientations. Previously the overlay
+     centred the whole group, so the cluster's position tracked the art's height — boltr's
+     3.56:1 art left it floating mid-screen. Cluster children never grow or shrink. */
+  .explegend,.exptags,.exprow,.expcap{flex:0 0 auto}
+  /* The art REGION = whatever vertical space the cluster leaves, full padded width.
+     No aspect-ratio and no magic height: the art is contain-fitted and centred inside it by
+     .explayers img, and artFit() projects art coords into whatever box results. This is what
+     lets one rule serve all 8 families in both orientations — a family's art proportions can
+     no longer move the cluster, and the cluster can no longer overlap the art. */
+  .expviewport{position:relative;overflow:hidden;flex:1 1 auto;min-height:0;align-self:stretch;width:auto;height:auto;max-width:100%;margin:0}
   .explayers{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.22,.9,.3,1)}
   /* height:100%+contain matches .lstage img so BOTH stages letterbox the art identically —
      width:100% with auto height top-ANCHORED the art, so any family whose stage aspect
@@ -401,13 +408,14 @@
     .lviewport{position:absolute!important;inset:0!important;margin:auto!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:82svh!important}
     .stage svg.gun-svg.active{max-height:82svh}
 
-    /* [.expviewport] exploded overlay is a fixed full-screen modal; same aspect-preserving height fit */
-    /* exploded overlay is a fixed full-screen flex-center modal -> same collapse; make it block so
-       the expviewport (width:auto) gets a definite basis. overflow:auto scrolls if the diagram + chrome exceed. */
-    /* overlay: legend/tags/ASSEMBLE/CLOSE/cap flow as one centered cluster pinned to the bottom;
-       the art is abspos-centered in the region ABOVE that cluster (renders + aspect-safe + no clip). */
-    .expoverlay{display:flex!important;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;padding:14px 14px 22px}
-    .expviewport{position:absolute!important;left:14px;right:14px;top:14px;bottom:132px;margin:auto!important;width:auto!important;height:auto!important;max-width:calc(100% - 28px)!important;max-height:calc(100% - 150px)!important}
+    /* [.expviewport] NO landscape override any more. The base rules already pin the cluster
+       to the bottom and give the art the remaining space, so portrait and landscape share
+       one layout. The old override reserved a FIXED 132px for a cluster that is really
+       137px (and 155px on ar15, whose legend wraps) — measured, so the art overlapped the
+       label row on g19/g1911/revda/ar15. Do not reintroduce a magic reserve: measure with
+       flex, never guess. The overlay's own padding/gap are NOT overridden either — landscape
+       used 14/22 and portrait 18, which put the cluster 2px differently between orientations.
+       Only the legend's max-width is landscape-specific. */
     .explegend{max-width:520px;margin:0 auto}
 
     /* [non-guide screens] single column, centered at ~700px (not a phone strip in a black void).
@@ -734,7 +742,7 @@
       <div class="stage" id="gunStage">
       <div class="lviewport" id="layerViewport" hidden><div class="lstage" id="layerStage"></div></div>
       <div id="explodedOverlay" class="expoverlay" hidden>
-        <div class="expviewport" id="expViewport" style="aspect-ratio:985/1300"><div class="explayers" id="expLayers"></div></div>
+        <div class="expviewport" id="expViewport"><div class="explayers" id="expLayers"></div></div>
         <div class="explegend" id="expLegend"></div>
         <div class="exptags" id="expTags"></div>
         <div class="exprow">
@@ -3630,11 +3638,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const vp=document.getElementById("expViewport");
     const wrap=document.getElementById("expLayers"), tags=document.getElementById("expTags");
     wrap.innerHTML=""; tags.innerHTML="";
-    vp.style.aspectRatio=set.aspect;
-    vp.style.height="auto";
-    vp.style.width=`min(100vw, calc(66vh / ${set.hRatio}))`;
-    vp.style.width=`min(100vw, calc(66svh / ${set.hRatio}))`; /* upgrades if supported */
-    vp.style.maxHeight="none";
+    /* the art region is flex-sized by CSS now — no inline aspect/width/height, which would
+       fight it. Clear anything a previous build left behind. */
+    vp.style.aspectRatio=""; vp.style.height=""; vp.style.width=""; vp.style.maxHeight="";
     set.layers.forEach(L=>{
       if(L.eh) return; /* eh = exp-hide: skip in the Parts Diagram (e.g. ar15 upper_open) */
       const im=document.createElement("img");
@@ -3683,7 +3689,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        footprint, .explayers scales+pans inside from the fixed origin (0 0). */
     const wrap=document.getElementById("expLayers");
     const z=(!exploded&&set.zAsm)?set.zAsm:1, zc=(!exploded&&set.zAsmC!=null)?set.zAsmC:50;
-    wrap.style.transform=`translate(${(50-zc*z).toFixed(3)}%,${(50-50*z).toFixed(3)}%) scale(${z})`;
+    /* zAsmC is an ART-% anchor like zc/zcy, so it projects through artFit too. It used to be
+       read as a raw % of the box, which only matched while the box carried the art's own
+       aspect; the region is now flex-sized, so the projection is what keeps the suppressor
+       push-in parked on the same point. */
+    const zcE=aX(fx,zc), zcyE=aY(fx,50);
+    wrap.style.transform=`translate(${(50-zcE*z).toFixed(3)}%,${(50-zcyE*z).toFixed(3)}%) scale(${z})`;
     document.getElementById("expToggle").textContent = exploded? "\u25c2 Assemble" : "Field Strip \u25b8";
   }
   document.getElementById("explodedBtn").addEventListener("click",()=>{
@@ -3697,7 +3708,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* the art->box projection depends on the RENDERED box, so it must be recomputed whenever
      that box can change: rotation, window resize, or the on-screen keyboard resizing svh. */
   let _reflow=null;
-  window.addEventListener("resize",()=>{
+  function reproject(){
     clearTimeout(_reflow);
     _reflow=setTimeout(()=>{
       try{
@@ -3706,7 +3717,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         if(ov && !ov.hidden && expKey) setExp(expExploded,false);
       }catch(e){/* never let a reflow break the guide */}
     },120);
-  });
+  }
+  window.addEventListener("resize",reproject);
+  /* Android Chrome does not reliably fire a window resize when the URL bar collapses or on
+     rotation settle, and an svh-driven box can change size with no resize event — which
+     would leave the projection stale. Listen to the viewport itself as well. */
+  window.addEventListener("orientationchange",()=>{ reproject(); setTimeout(reproject,350); });
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",reproject);
+    window.visualViewport.addEventListener("scroll",reproject);
+  }
 
   /* =============== STEP PLAYER =============== */
   const progressEl=document.getElementById("progress");
