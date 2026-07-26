@@ -1437,15 +1437,18 @@
   ];
   /* Bolt-specific make-safe gate. boltr does NOT share DEFAULT_GATE (4 other guides use
      it, and a floorplate instruction would be wrong for a Glock/1911/AR). All three
-     checks are Darren-approved verbatim. Check 1 carries two sentences, so it splits at
-     its own sentence boundary into label + sub-line; checks 2 and 3 are single sentences
+     four checks are Darren-approved verbatim. Check 1 carries two sentences, so it splits
+     at its own sentence boundary into label + sub-line; checks 2-4 are single sentences
      that stay whole in the label (the house style already puts an em-dash clause in `t`,
-     cf. "Chamber verified empty — look AND feel"), with an empty sub-line. `s` must be a
-     string, never undefined — buildGate interpolates it straight into innerHTML. */
+     cf. "Chamber verified empty — look AND feel"), with an EMPTY sub-line — deliberate
+     per Darren, the labels carry it. `s` must still be a string, never undefined —
+     buildGate interpolates it straight into innerHTML, so undefined would print the word.
+     Check 4 is the ammunition check, last, matching its house position in every gate. */
   const BOLT_GATE = [
     {t:"Magazine empty — hinged floorplate swung open, detachable mag out, or rounds picked from the top.", s:"No round under the follower."},
     {t:"Bolt handle up, bolt drawn back — action open.", s:""},
-    {t:"Look AND feel — eyes on the chamber, finger on the follower.", s:""}
+    {t:"Look AND feel — eyes on the chamber, finger on the follower.", s:""},
+    {t:"No ammunition at the bench — rounds boxed and away from the cleaning area.", s:""}
   ];
   const SUPPRESSOR_GATE = [
     {t:"Host firearm cleared", s:"The can comes off a firearm. Magazine out, chamber verified empty by sight and feel, before your hands go anywhere near the muzzle."},
