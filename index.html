@@ -2171,10 +2171,11 @@
                  cleanInterval:(c.gp==="Suppressors"?400:((c.fm==="PUMP-500"||c.fm==="PUMP-590")?200:500)),
                  log:[{ts:Date.now(), type:"note", msg:"Added to safe", mags:[], magRotDays:90, reminders:[], service:[], zeros:[]}]};
         safe.unshift(f); saveSafe();
-        /* land back on My Safe with the new card at the top (safe.unshift). show() IS the picker's
-           open/close state — it deactivates #scr-pick and calls resetPicker(), so the search field,
-           chips and count line collapse with it; no separate close path. */
-        activeId=f.id; show("scr-safe");
+        /* straight into the new firearm's detail page (Darren, 2026-07-26 — a My Safe landing was
+           tried and reverted). show() IS the picker's open/close state: it deactivates #scr-pick and
+           calls resetPicker(), so the search field, chips and count line collapse on the way out
+           regardless of destination. No separate close path. */
+        activeId=f.id; show("scr-detail");
       });
       pickList.appendChild(b);
     });
