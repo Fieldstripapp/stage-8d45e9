@@ -406,6 +406,11 @@
     /* [non-guide screens] single column, centered at ~700px (not a phone strip in a black void) */
     .detail,.clean,.gate,.safe,.logform,.searchwrap{width:100%;max-width:700px;margin-inline:auto}
     .prosheet .sheet{max-width:700px}
+    /* [picker] dock the search/chips header (base is position:sticky, which floated over the list in
+       landscape) and let the model list scroll beneath it — every row reachable */
+    #scr-pick{display:flex;flex-direction:column;overflow:hidden}
+    #scr-pick .searchwrap{position:static;flex:none}
+    #scr-pick #pickList{flex:1;min-height:0;overflow-y:auto;width:100%;max-width:700px;margin-inline:auto}
   }
 </style>
 </head>
@@ -1667,7 +1672,7 @@
           {phase:"Strip",title:"Pull the bolt carrier group",body:"Draw the charging handle rearward and the BCG rides out the back of the upper with it. Catch the carrier as it clears and set it on the bench.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,ch:UP,bcg:[-110,-40]},hl:["bcg"],labels:["ar-lbl-bcg"],arrow:{x:200,y:92,rot:90,nx:"-8px",ny:"0px"}},
           {phase:"Strip",title:"Charging handle out",body:"Pull the charging handle back to its notch, then drop it down and out of its channel. That's the whole field strip: two parts out, receivers still married.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56]},hl:["ch"],labels:["ar-lbl-ch"],arrow:{x:110,y:106,rot:90,nx:"-8px",ny:"0px"}},
           {phase:"Clean",title:"Wipe and inspect",body:"Bore from the chamber end. Scrub the bolt face and the carrier's exterior, wipe the charging handle, and run a patch through the upper. Light oil on the carrier rails — the AR runs wet where steel meets steel.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:["bolt"],labels:["ar-lbl-bcg","ar-lbl-bolt"],arrow:{x:390,y:120,rot:-90,nx:"8px",ny:"0px"}},
-          {phase:"Reassemble",title:"Close it up",body:"Cleaning comes first — hit START CLEANING below and work the checklist. Then bring it home: Charging handle in first — into its channel, not fully seated. Bolt forward in the carrier, feed the BCG onto the handle and slide both home. Swing the upper closed, click the rear pin back left, and function check: charge, safety on, trigger dead. That's the field strip. To go further, the optional DEEP CLEAN path separates the receivers and breaks the bolt carrier group down to bolt, cam pin, and firing pin — the baked carbon that field cleaning can't reach.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:[],labels:["ar-lbl-upper","ar-lbl-lower","ar-lbl-bcg","ar-lbl-bolt","ar-lbl-ch","ar-lbl-mag"],arrow:null,branch:true}
+          {phase:"Strip",title:"Field strip complete",body:"Bolt carrier group and charging handle out, receivers still married on the front pivot pin — that's the whole field strip, and it's all routine cleaning needs. To go further, the optional DEEP CLEAN path separates the receivers and breaks the bolt carrier group down to bolt, cam pin, and firing pin — the baked carbon that field cleaning can't reach.",t:{...A,mag:[-14,122],pins:[0,42],upper:UP,bcg:[-110,-40],ch:[-160,-56],bolt:[96,40]},hl:[],labels:["ar-lbl-upper","ar-lbl-lower","ar-lbl-bcg","ar-lbl-bolt","ar-lbl-ch","ar-lbl-mag"],arrow:null,branch:true}
         ];
       })(),
       deepSteps:[
@@ -1683,7 +1688,7 @@
         {name:"CHARGING HANDLE",tasks:["Wipe it down; brush the latch area","Thin film of oil along the shaft where it rides the channel"]},
         {name:"LOWER & BUFFER",tasks:["Wipe out the lower receiver and magwell","Pull the buffer and spring, wipe them DRY, reinstall","One drop of oil on the fire-control pivot pins","Magazine stays dry — wipe, check the follower, done"]}
       ],
-      reassembly:["Rebuild the bolt into the carrier: bolt in, cam pin in and quarter-turned, firing pin dropped in from the rear, retaining pin through.","Bolt pulled forward to its extended position, then seat the charging handle partway into its channel and ride the BCG in on it — push both home together.","Set the upper onto the lower, front pivot pin first, then close and push the rear takedown pin through.","Both pins flush, rack the charging handle a few times — smooth, no binding.","<strong>Function check:</strong> point safe, safety ON — trigger dead. Safety OFF, pull (click), hold it, charge the rifle, release the trigger to the reset click."]
+      reassembly:["If you took the deep-clean path, rebuild the bolt into the carrier first: bolt in, cam pin in and quarter-turned, firing pin dropped in from the rear, retaining pin through.","Charging handle in first — seat it partway into its channel, not fully home.","Bolt pulled forward to its extended position, then feed the BCG onto the handle and slide both home together.","Swing the upper closed — front pivot pin first if you separated the receivers — and click the rear takedown pin back through, left to right, until it's flush.","Both pins flush, rack the charging handle a few times — smooth, no binding.","<strong>Function check:</strong> point safe, safety ON — trigger dead. Safety OFF, pull (click), hold it, charge the rifle, release the trigger to the reset click."]
     },
 
     rfsup: {
@@ -3216,7 +3221,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{...G19X,slide:"a",barrel:"a",rsa:"a",frame:"a",mag:"e"},hl:"frame",m:{x:53.6,y:36.3,r:4.5}},
     {pos:{...G19X,slide:["a",-1.5,0],barrel:["a",-1.5,0],rsa:["a",-1.5,0],frame:"a",mag:"e"},hl:"frame",m:{x:40,y:35,ch:"\u25bc"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"slide",m:{x:55,y:5,ch:"\u25b6"}},
-    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:18.5,ch:"\u25b2"}},
+    {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"rsa",m:{x:91,y:15.5,ch:"\u25b2"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:"barrel",m:{x:69,y:25,ch:"\u25c0"}},
     {pos:{...G19X,slide:"e",barrel:"e",rsa:"e",frame:"a",mag:"e"},hl:null,m:null},
     {pos:{slide:"x",barrel:"x",rsa:"x",frame:"x",mag:"x",...G19X,det_backplate:"e"},hl:null,m:[{x:49.9,y:49.2,r:8.9},{x:50,y:64,ch:"\u25bc"}]},
@@ -3258,7 +3263,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{receiver:"a",pump:"a",barrel:"e",...M500X},hl:"receiver",z:1.4,zc:46,m:{x:35,y:52,r:3}},
     {pos:{receiver:"x",receiver_strip:"e",pump:"a",barrel:"e",...M500X,trigger:"e"},hl:"trigger",z:1.4,zc:40,zcy:60,m:{x:33,y:73,ch:"\u25bc"}},
     {pos:{receiver:"x",receiver_strip:"e",pump:"a",barrel:"e",...M500X,trigger:"e",cartstop:"e"},hl:"receiver",z:1.4,zc:42,zcy:53,m:[{x:44,y:46,r:2.5},{x:38,y:47,r:2.5}]},
-    {pos:{receiver:"x",receiver_strip:"e",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:"boltslide",z:1.3,zc:50,zcy:56,m:{x:75,y:76,ch:"\u25b6"}},
+    {pos:{receiver:"x",receiver_strip:"e",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:"boltslide",z:1.3,zc:50,zcy:56,m:{x:75,y:76,r:2.5}},
     {pos:{receiver:"x",receiver_strip:"e",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:null,z:1.15,zc:50,zcy:56,m:null}
   ];
   /* ---- 1911 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
@@ -3280,7 +3285,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{frame:"a",mag:"e",barrel:["e",-8.5,10.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:5,ch:"\u25b6"}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:4,r:5.8}},
+    {pos:{frame:"a",mag:"e",barrel:["e",0,5],slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:9,r:5.8}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"slide",m:{x:77.8,y:22.2,r:6.8}},
     {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"frame",m:{x:37,y:30,ch:"\u25bc"}}
   ];
