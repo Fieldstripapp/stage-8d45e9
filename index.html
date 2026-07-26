@@ -1912,9 +1912,15 @@
   function openProSheet(reason){
     const pro=isPro();
     document.getElementById("proPrice").textContent=PRO_PRICE_LABEL;
-    /* context-aware line: names WHICH limit was hit on a capacity/custom fail */
+    /* context-aware line: names WHICH limit was hit on a capacity/custom fail.
+       GUARD: this function is also bound directly to taps in places, which hands the
+       PointerEvent in as `reason` — rendering "[object PointerEvent]" into the sheet.
+       Only a non-empty STRING is ever a reason; anything else (Event, object, number)
+       falls back to no line at all. The direct bindings are wrapped too, but the guard
+       is what makes a future `onclick = openProSheet` harmless. */
+    const why = (typeof reason === "string" && reason.trim()) ? reason.trim() : "";
     const rr=document.getElementById("proReason");
-    if(reason && !pro){ rr.textContent=reason; rr.style.display="block"; } else { rr.textContent=""; rr.style.display="none"; }
+    if(why && !pro){ rr.textContent=why; rr.style.display="block"; } else { rr.textContent=""; rr.style.display="none"; }
     /* status view when already unlocked (the proRow taps here) vs upsell when not */
     document.getElementById("proSheetHead").innerHTML = 'FIELDSTRIP <span style="color:var(--amber)">PRO</span>' + (pro?' — unlocked':'');
     document.getElementById("proSheetIntro").textContent = pro
@@ -2021,13 +2027,19 @@
   const safeList=document.getElementById("safeList");
   function renderSafe(){
     updateProRow();
-    document.getElementById("proNfaBtn").onclick = openProSheet;
-    document.getElementById("proWtBtn").onclick = openProSheet;
-    document.getElementById("proWtLock").onclick = openProSheet;
-    document.getElementById("proZeroBtn").onclick = openProSheet;
-    document.getElementById("proZeroLock").onclick = openProSheet;
-    document.getElementById("proSpringBtn").onclick = openProSheet;
-    document.getElementById("proSpringLock").onclick = openProSheet;
+    /* wrapped, not bound directly: a bare `onclick = openProSheet` passes the PointerEvent
+       in as the reason string and the sheet renders "[object PointerEvent]". */
+    document.getElementById("proNfaBtn").onclick = ()=> openProSheet();
+    /* the ROW is tappable too, matching proWtLock/proZeroLock/proSpringLock and the
+       house locked-visible pattern ("the box opens openProSheet() on tap"). This one was
+       missing — only its button responded. */
+    document.getElementById("proNfaLock").onclick = ()=> openProSheet();
+    document.getElementById("proWtBtn").onclick = ()=> openProSheet();
+    document.getElementById("proWtLock").onclick = ()=> openProSheet();
+    document.getElementById("proZeroBtn").onclick = ()=> openProSheet();
+    document.getElementById("proZeroLock").onclick = ()=> openProSheet();
+    document.getElementById("proSpringBtn").onclick = ()=> openProSheet();
+    document.getElementById("proSpringLock").onclick = ()=> openProSheet();
     safeList.innerHTML="";
     document.getElementById("safeSub").textContent = safe.length
       ? "Your firearms, their round counts, and what's due."
@@ -2632,7 +2644,9 @@
     document.getElementById("nfaStampDate").value=(cls&&f.nfaDate)?f.nfaDate:"";
   }
   function setNfaClass(f,v){
-    if(!isPro()){ openProSheet("nfa"); return; }   /* locked-visible: tap opens the upsell */
+    /* no reason string: `reason` is a human sentence naming a limit that was hit (see
+       customGateReason), not a feature token — the NFA lock row already says what it is. */
+    if(!isPro()){ openProSheet(); return; }   /* locked-visible: tap opens the upsell */
     const prev=nfaClassOf(f);
     if(v==="none"){ if(!prev) return; delete f.nfaClass; addLog(f,"nfa","NFA classification cleared"); }
     else { if(prev===v) return; f.nfaClass=v; addLog(f,"nfa","Classified as "+NFA_LABEL[v]); }
@@ -2640,7 +2654,7 @@
   }
   document.getElementById("nfaStampDate").addEventListener("change",e=>{
     const f=byId(activeId); if(!f) return;
-    if(!isPro()){ e.target.value=f.nfaDate||""; openProSheet("nfa"); return; }
+    if(!isPro()){ e.target.value=f.nfaDate||""; openProSheet(); return; }
     if(e.target.value) f.nfaDate=e.target.value; else delete f.nfaDate;
     saveSafe();
   });
@@ -2851,7 +2865,7 @@
     const v=Math.max(7,Math.min(365,Math.floor(+e.target.value||0)));
     if(v>0){ f.magRotDays=v; saveSafe(); renderDetail(); }
   });
-  document.getElementById("magRotBtn").addEventListener("click",openProSheet);
+  document.getElementById("magRotBtn").addEventListener("click",()=> openProSheet());
 
   /* ---- care reminders ---- */
   const CARE_PRESETS=[["Defensive ammo swap",180],["Optic battery check",180],["Light battery check",90],["Rust / storage inspection",60],["Desiccant recharge",90],["Custom",90]];
