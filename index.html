@@ -1663,9 +1663,11 @@
     /* Bolt-action rifle. Step text is Darren-approved verbatim (S1-S5 walkable; the
        approved S6 "Bolt in, function check" is the reassembly list below, since the flow
        is checklist-then-reassembly and reassembly never lives in a walkable step).
-       cleanIntro + cleaning + reassembly are AGENT-DRAFT, derived from the approved step
-       text only, pending Darren's staging read. No deepSteps in v1 — pass-2 deep clean
-       adds them together with the branch:true flag on the step it hangs off. */
+       cleanIntro + cleaning + reassembly were drafted from the approved step text and are
+       now DARREN-APPROVED AS-IS (2026-07-26) — the content gate is satisfied, so treat
+       this text like any other approved guide copy: no edits without a fresh ruling.
+       No deepSteps in v1 — pass-2 deep clean adds them together with the branch:true flag
+       on the step it hangs off. */
     boltr: {
       gate:BOLT_GATE, exploded:true, layerMode:true,
       parts:{}, origins:{},
@@ -3444,28 +3446,46 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{receiver:"x",receiver_strip:"e",pump:["a",-6,4],barrel:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:null,z:1.15,zc:50,zcy:56,m:null}
   ];
   /* ---- 1911 layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
+  /* ---- 1911 layer set — RE-RENDERED 2026-07-26 from the banked m1911 all-parts model
+     (_GI canonical set). Canvas 1200x1580, ART-% throughout (see the artFit doctrine).
+     Draw order = array order: mag under the frame; barrel/recoilasm/bushing under the
+     slide (they live inside it); slidestop on top.
+     Trademark: the model's Slide_GI carries an engraved COLT rollmark + rampant colt, so
+     the undecorated Slide_solid variant is used instead — same profile, no marking. */
   const G1911_LAYERS=[
+    {n:"mag",asm:[0.0,-33.78],src:"assets/guns/g1911/mag.png"},
+    {n:"recoilasm",asm:[39.7,32.74],src:"assets/guns/g1911/recoilasm.png"},
+    {n:"barrel",asm:[0.0,30.75],src:"assets/guns/g1911/barrel.png"},
+    {n:"bushing",asm:[-16.54,29.53],src:"assets/guns/g1911/bushing.png"},
     {n:"frame",asm:[0.0,0.0],src:"assets/guns/g1911/frame.png"},
-    {n:"mag",asm:[-2.92,-13.86],exp:[8,2],src:"assets/guns/g1911/mag.png"},
-    {n:"barrel",asm:[-19.58,19.28],exp:[0,-5],src:"assets/guns/g1911/barrel.png"},
-    {n:"slide",asm:[-10.83,10.84],src:"assets/guns/g1911/slide.png"},
-    {n:"slidestop",asm:[9.58,10.84],src:"assets/guns/g1911/slidestop.png"}
+    {n:"slide",asm:[0.0,14.42],src:"assets/guns/g1911/slide.png"},
+    {n:"slidestop",asm:[29.78,17.96],src:"assets/guns/g1911/slidestop.png"}
   ];
-  const G1911_NAMES={slide:"Slide",barrel:"Barrel",slidestop:"Slide Stop",frame:"Frame",mag:"Magazine"};
-  /* frame 53.2->42.35: the bbox centre sat just under the frame's ink (col 444 ink 268..435). */
-  const G1911_CENTERS={slide:[57.9,20.7],barrel:[76.0,10.0],slidestop:[29.2,26.0],frame:[37.0,42.35],mag:[28.0,71.0]};
+  const G1911_NAMES={slide:"Slide",barrel:"Barrel",slidestop:"Slide Stop",frame:"Frame",mag:"Magazine",
+                     recoilasm:"Recoil Spring Assembly",bushing:"Barrel Bushing"};
+  /* ART-% label points, every one verified alpha=255 on its own layer. The barrel's bbox
+     centre lands in the gap between the tube and the link that hangs below it (alpha 165),
+     so it is moved up onto the tube; the other six bbox centres were already on ink. */
+  const G1911_CENTERS={frame:[38.58,48.19],mag:[27.69,83.44],barrel:[58.84,4.81],slide:[48.58,21.85],
+                       slidestop:[10.69,21.85],recoilasm:[22.58,6.59],bushing:[91.45,6.59]};
+  /* 11 lsteps = 8 walkable + 3 Deep Clean. ART-% coords, all anchors alpha-verified.
+     Barrel / recoilasm / bushing live INSIDE the slide, so until each is individually
+     removed they ride with it: ["a",0,-14.42] is the slide's own exploded offset, which
+     keeps them seated in the slide as it comes off the frame (idx4-5).
+     Rotation glyphs follow the step text directly: idx5 "rotate the bushing clockwise" =
+     CW, idx6 "rotate the bushing counter-clockwise" = CCW, both as faced from the muzzle. */
   const G1911_LSTEPS=[
-    {pos:{frame:"a",mag:"a",barrel:"a",slide:"a",slidestop:"a"},hl:null,m:null},
-    {pos:{frame:"a",mag:"e",barrel:"a",slide:"a",slidestop:"a"},hl:"mag",m:{x:38,y:76,ch:"\u25bc"}},
-    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"a"},hl:"slide",m:{x:44.6,y:34.1,r:2.7}},
-    {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"e"},hl:"slidestop",m:{x:29.2,y:26,r:5.8}},
-    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,10.5],slide:"e",slidestop:"e"},hl:"slide",m:{x:74,y:15,ch:"\u25b6"}},
-    {pos:{frame:"a",mag:"e",barrel:["e",-8.5,10.5],slide:"e",slidestop:"e"},hl:"slide",m:null},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"barrel",m:{x:88,y:5,ch:"\u25b6"}},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:null,m:null},
-    {pos:{frame:"a",mag:"e",barrel:["e",0,5],slide:"e",slidestop:"e"},hl:"barrel",m:{x:63,y:9,r:5.8}},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"slide",m:{x:77.8,y:22.2,r:6.8}},
-    {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e"},hl:"frame",m:{x:37,y:30,ch:"\u25bc"}}
+    /* 0 clear */            {pos:{frame:"a",mag:"a",barrel:"a",slide:"a",slidestop:"a",recoilasm:"a",bushing:"a"},hl:null,z:1.4,zc:45,zcy:47.5,m:null},
+    /* 1 magazine */         {pos:{frame:"a",mag:"e",barrel:"a",slide:"a",slidestop:"a",recoilasm:"a",bushing:"a"},hl:"mag",z:1.25,zc:42,zcy:64,m:{x:27.7,y:76,ch:"\u25bc"}},
+    /* 2 takedown notch */   {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"a",recoilasm:["a",-2.5,0],bushing:["a",-2.5,0]},hl:"slide",z:1.8,zc:45,zcy:40,m:{x:44.67,y:39.75,r:2.5}},
+    /* 3 slide stop out */   {pos:{frame:"a",mag:"e",barrel:["a",-2.5,0],slide:["a",-2.5,0],slidestop:"e",recoilasm:["a",-2.5,0],bushing:["a",-2.5,0]},hl:"slidestop",z:1.5,zc:32,zcy:30,m:{x:10.69,y:21.85,r:3.5}},
+    /* 4 slide off */        {pos:{frame:"a",mag:"e",barrel:["a",0,-14.42],slide:"e",slidestop:"e",recoilasm:["a",0,-14.42],bushing:["a",0,-14.42]},hl:"slide",z:1.5,zc:55,zcy:25,m:{x:79.5,y:21.85,ch:"\u25b6"}},
+    /* 5 recoil spring+plug */{pos:{frame:"a",mag:"e",barrel:["a",0,-14.42],slide:"e",slidestop:"e",recoilasm:"e",bushing:["a",0,-14.42]},hl:"recoilasm",z:1.4,zc:45,zcy:16,m:[{x:22.58,y:6.59,r:3},{x:75,y:21.7,ch:"\u27f3"}]},
+    /* 6 barrel + bushing */ {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e",recoilasm:"e",bushing:"e"},hl:"barrel",z:1.5,zc:68,zcy:8,m:[{x:91.45,y:6.59,ch:"\u27f2"},{x:80.3,y:4.81,ch:"\u25b6"}]},
+    /* 7 strip complete */   {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e",recoilasm:"e",bushing:"e"},hl:null,z:1.0,zc:50,zcy:50,m:null},
+    /* 8 barrel lugs */      {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e",recoilasm:"e",bushing:"e"},hl:"barrel",z:1.9,zc:52,zcy:8,m:{x:51.33,y:3.29,r:2.2}},
+    /* 9 extractor tunnel */ {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e",recoilasm:"e",bushing:"e"},hl:"slide",z:1.9,zc:30,zcy:22,m:{x:25,y:20.89,r:3}},
+    /* 10 rails+lockwork */  {pos:{frame:"a",mag:"e",barrel:"e",slide:"e",slidestop:"e",recoilasm:"e",bushing:"e"},hl:"frame",z:1.6,zc:40,zcy:42,m:{x:37.5,y:38.61,r:3}}
   ];
   /* ---- DA revolver layer set (Fieldstrip 3D pipeline) ---- */
   const REVDA_LAYERS=[
@@ -3600,7 +3620,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     sldsup:{layers:CFSUP_LAYERS,lsteps:SLDSUP_LSTEPS,centers:CFSUP_CENTERS,names:CFSUP_NAMES,nums:[["tube",1],["stack",2],["cap",3]],tags:["tube","stack","cap"],aspect:"1400 / 300",art:[1400,137],hRatio:300/1400,zAsm:1.9,zAsmC:27},
     g19:{layers:EXP_LAYERS,lsteps:G19_LSTEPS,centers:G19_CENTERS,names:PARTNAMES,nums:[["slide",1],["barrel",2],["rsa",3],["frame",4],["mag",5]],tags:["slide","rsa","barrel","frame","mag"],aspect:"985 / 1300",art:[985,1300],hRatio:1300/985},
     m500:{layers:M500_LAYERS,lsteps:M500_LSTEPS,centers:M500_CENTERS,names:M500_NAMES,nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1100 / 503",art:[1100,503],hRatio:503/1100},
-    g1911:{layers:G1911_LAYERS,lsteps:G1911_LSTEPS,centers:G1911_CENTERS,names:G1911_NAMES,nums:[["slide",1],["barrel",2],["slidestop",3],["frame",4],["mag",5]],tags:["slide","barrel","slidestop","frame","mag"],aspect:"1200 / 830",art:[1200,830],hRatio:830/1200},
+    g1911:{layers:G1911_LAYERS,lsteps:G1911_LSTEPS,centers:G1911_CENTERS,names:G1911_NAMES,nums:[["slide",1],["barrel",2],["bushing",3],["recoilasm",4],["slidestop",5],["frame",6],["mag",7]],tags:["slide","barrel","bushing","recoilasm","slidestop","frame","mag"],aspect:"1200 / 1580",art:[1200,1580],hRatio:1580/1200},
     /* m500sw is UNREACHABLE (nothing maps to it) and its art is inconsistent: its own
        receiver.png is 1055x330 while the barrel/pump it borrows from m500 are 1100x503.
        `art` matches its declared aspect so the projection stays the identity; the mixed
