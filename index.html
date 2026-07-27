@@ -1678,7 +1678,12 @@
         {phase:"Strip",title:"Release the bolt",body:"Hold the trigger guard's bolt release — the lever at the front left of the trigger guard — and draw the bolt straight back out of the receiver. It comes free in one motion; no twisting, no force. If it hangs, the release isn't fully pressed.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Strip",title:"Bolt out, set it down",body:"That's the field strip. One part in your hand, and every surface that matters is now reachable. Set the bolt on the mat, lugs up.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Clean",title:"Bore from the chamber end",body:"Rod or pull-through, always chamber to muzzle — the crown at the muzzle decides accuracy and doesn't forgive steel dragged across it. Patch until clean, then dry patch the chamber; a wet chamber invites a stuck case.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Clean",title:"Bolt face, lugs, raceways",body:"Scrub the bolt face and behind both locking lugs — brass shavings and primer soot collect there and change headspace feel. Wipe the raceways in the receiver with a patch over a finger. Light oil on the lugs and bolt body; bolt guns run nearly dry.",t:{},hl:[],labels:[],arrow:null}
+        {phase:"Clean",title:"Bolt face, lugs, raceways",body:"Scrub the bolt face and behind both locking lugs — brass shavings and primer soot collect there and change headspace feel. Wipe the raceways in the receiver with a patch over a finger. Light oil on the lugs and bolt body; bolt guns run nearly dry.",t:{},hl:[],labels:[],arrow:null,branch:true}
+      ],
+      deepSteps:[
+        {phase:"Deep Clean",title:"Firing pin assembly out",body:"Grip the bolt body and unscrew the firing pin assembly counter-clockwise — shroud, spring, and pin come out as one threaded unit. It fights you the whole way: the mainspring is under real compression, so use a bolt disassembly tool rather than your palm; the old trick of pressing the pin tip against the bench works until it slips, and it slips into your hand. Leave the unit assembled — stripping the pin off the spring needs the tool and there's nothing under there that cleaning reaches anyway.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Lug seats and chamber",body:"With the bolt out, get light into the receiver ring: the locking lug seats collect brass shavings and carbon that change how the bolt closes — that gritty lift you've been feeling lives here. Swab the seats with solvent on a patch-wrapped brush, then dry-patch the chamber walls until clean. A dirty chamber grips brass; that's a stuck case at the worst moment.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Dry channel, greased lugs",body:"Before the assembly goes back: the firing pin channel inside the bolt body stays bone dry — oil in there thickens in the cold and slows the pin into misfires. The lugs and the cocking cam get grease, not oil, and only a rice-grain of it. Thread the assembly home snug, then check the cocking piece indicator sits flush at the rear — proud means it's not seated.",t:{},hl:[],labels:[],arrow:null}
       ],
       cleaning:[
         {name:"BORE",tasks:["Rod or pull-through from the chamber end — always chamber to muzzle","Never drag steel back across the crown; it is what decides accuracy","Patch until clean, then dry patch the chamber — a wet chamber invites a stuck case"]},
@@ -3600,7 +3605,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      that put the Parts Diagram dots off the gun. Ring `r` stays % of ART width. */
   const BOLTR_LAYERS=[
     {n:"rifle",asm:[0,0],src:"assets/guns/boltr/rifle.png"},
-    {n:"bolt",asm:[8.37,31.97],src:"assets/guns/boltr/bolt.png"}
+    {n:"bolt",asm:[8.37,31.97],src:"assets/guns/boltr/bolt.png"},
+    {n:"det_fp",asm:[0,0],eh:true,src:"assets/guns/boltr/det_fp.png"}
   ];
   const BOLTR_NAMES={rifle:"Stock & Barreled Action",bolt:"Bolt Assembly"};
   /* ART-% label points, measured ON the part's ink — a bbox centre is NOT usable here:
@@ -3608,16 +3614,28 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      bolt's (30.6,20.1) falls in the gap between body and handle knob, so both dots
      rendered off the gun. rifle -> receiver body (700,200)px; bolt -> bolt body (428,60)px. */
   const BOLTR_CENTERS={rifle:[50,50.89],bolt:[30.57,15.27]};
+  const BOLTRX={det_fp:"x"}; /* DC1 inset hidden except on its own DC step (full-swap, g19 det pattern) */
   const BOLTR_LSTEPS=[
     /* idx0 is the CLEAR step: it must show the whole gun. Rifle silhouette spans art
        x 4.50..95.43, so an exact fit is z=1.1 — which leaves the muzzle flush against the
        pane edge and still reads as clipped. z=1.05 gives a real ~2% margin each side.
        Mid-strip steps below keep their working crops per doctrine. */
-    {pos:{rifle:"a",bolt:"a"},hl:null,z:1.05,zc:50,zcy:65.45,m:null},
-    {pos:{rifle:"a",bolt:"a"},hl:"bolt",z:1.7,zc:38,zcy:51.42,m:{x:30.36,y:47.07,ch:"◀"}},
-    {pos:{rifle:"a",bolt:"e"},hl:"bolt",z:1.05,zc:50,zcy:45.72,m:null},
-    {pos:{rifle:"a",bolt:"e"},hl:null,z:1.5,zc:75,zcy:44.30,m:{x:77.14,y:40.71,ch:"▶"}},
-    {pos:{rifle:"a",bolt:"e"},hl:"bolt",z:1.5,zc:43.6,zcy:31.48,m:[{x:36.82,y:15.27,r:2.2},{x:54.29,y:47.07,r:2.5}]}
+    {pos:{rifle:"a",bolt:"a",...BOLTRX},hl:null,z:1.05,zc:50,zcy:65.45,m:null},
+    {pos:{rifle:"a",bolt:"a",...BOLTRX},hl:"bolt",z:1.7,zc:38,zcy:51.42,m:{x:30.36,y:47.07,ch:"◀"}},
+    {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:"bolt",z:1.05,zc:50,zcy:45.72,m:null},
+    {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:null,z:1.5,zc:75,zcy:44.30,m:{x:77.14,y:40.71,ch:"▶"}},
+    {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:"bolt",z:1.5,zc:43.6,zcy:31.48,m:[{x:36.82,y:15.27,r:2.2},{x:54.29,y:47.07,r:2.5}]},
+    /* ---- Deep Clean branch (pass 2) ---- */
+    /* DC1 FULL SWAP: standard layers hidden, det_fp alone. Ring on the PLUG ("Bolt End" in
+       the blend — NOT "Bolt Shroud", which is the bolt BODY), measured from an isolated
+       mask render: ink centroid px (174.4,116.1) on the 1400x393 canvas. */
+    {pos:{rifle:"x",bolt:"x",det_fp:"e"},hl:null,z:1.05,zc:50,zcy:50,m:{x:12.46,y:29.55,r:3.5}},
+    /* DC2 back to standard art. z is held near full view because BOTH standard layers
+       return from "x" here, so the no-crop ruling protects the whole rifle + parked bolt —
+       see scratchpad/boltr/pass2/REPORT.md. */
+    {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:null,z:1.05,zc:50,zcy:50,m:{x:47.1,y:47.07,r:2.5}},
+    /* DC3 nothing moves, so only hl binds — the bolt alone, which allows a real push-in. */
+    {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:"bolt",z:2.0,zc:30.6,zcy:20,m:{x:23.6,y:15.3,r:2.0}}
   ];
   const LAYER_SETS={
     /* `art` = the layer PNGs' real pixel size. Stored coordinates are percentages of THIS,
