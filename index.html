@@ -1618,11 +1618,12 @@
       steps:[
         {phase:"Clear",title:"Confirm the revolver is clear",body:"Verified at the safety gate \u2014 cylinder open, every chamber checked by sight and by touch. Count the empty chambers. Muzzle in a safe direction throughout.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Strip",title:"Swing out the cylinder",body:"Press the cylinder release and swing the cylinder out on its crane, supporting the cylinder with your off-hand fingers as it comes — the revolver's entire timing and alignment live in that one thin crane arm. That's the whole disassembly: a modern DA revolver cleans from exactly here.",warn:"Never remove the sideplate. Internal lockwork is fitted at the factory \u2014 sideplate removal is gunsmith work and can void your warranty.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Ready to clean",body:"With the cylinder open, the bore, every chamber, the cylinder face, and the frame window are all reachable. Two habits that keep a revolver honest: scrub the carbon rings off the cylinder face and the forcing cone where the flame cuts — buildup there is what degrades accuracy — and when you finish, close the cylinder with your hand. Flicking it shut movie-style bends the crane and ruins the timing you just protected. Want to go deeper? The optional DEEP CLEAN path covers the ejector star, charge holes, and yoke.",t:{},hl:[],labels:[],arrow:null,branch:true}
+        {phase:"Strip",title:"Ready to clean",body:"With the cylinder open, the bore, every chamber, the cylinder face, and the frame window are all reachable. Two habits that keep a revolver honest: scrub the carbon rings off the cylinder face and the forcing cone where the flame cuts — buildup there is what degrades accuracy — and when you finish, close the cylinder with your hand. Flicking it shut movie-style bends the crane and ruins the timing you just protected. Want to go deeper? The optional DEEP CLEAN path covers the ejector star, charge holes, forcing cone, and yoke.",t:{},hl:[],labels:[],arrow:null,branch:true}
       ],
       deepSteps:[
         {phase:"Deep Clean",title:"Under the ejector star",body:"Press the ejector rod and hold it back, then brush out the crud packed under the ejector star \u2014 unburned powder here is why a cylinder that spun freely at home binds at the range. Let the star seat, wipe the ratchet faces, and leave it all dry: oil under the star glues grit in place.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Deep Clean",title:"Charge holes and forcing cone",body:"Scrub each charge hole from the rear until a patch comes through clean \u2014 a carbon ring in a .357 shooting .38s can stop magnums from seating. Then the forcing cone at the rear of the barrel: brush it until the leading's out. The cone does the dirtiest work in the gun.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Charge holes",body:"Scrub each charge hole from the rear until a patch comes through clean \u2014 a carbon ring in a .357 shooting .38s can stop magnums from seating. Work the brush straight through; the bores are open at both ends, so what you loosen has somewhere to go.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Forcing cone",body:"The forcing cone at the rear of the barrel does the dirtiest work in the gun: it swallows the bullet's jump from cylinder to bore and takes the flame-cutting for it. Brush it until the leading's out — a bronze brush turned by hand is enough; leading you leave here spits sideways at the next range trip.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Deep Clean",title:"Yoke, window, and grips",body:"Wipe the yoke barrel and put a single drop of oil where the cylinder spins. Scrub the cylinder window and breech face. If the grips come off easily, pull them and wipe underneath \u2014 sweat lives there and rusts frames from the inside out. Never remove the sideplate: the lockwork behind it is armorer territory.",t:{},hl:[],labels:[],arrow:null}
       ],
       cleaning:[
@@ -3490,17 +3491,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* ---- DA revolver layer set (Fieldstrip 3D pipeline) ---- */
   const REVDA_LAYERS=[
     {n:"cylinder",asm:[0,-48.18],src:"assets/guns/revda/cylinder.png"},
-    {n:"frame",asm:[0.0,0.0],src:"assets/guns/revda/frame.png"}
+    {n:"frame",asm:[0.0,0.0],src:"assets/guns/revda/frame.png"},
+    {n:"det_bores",asm:[0,0],eh:true,src:"assets/guns/revda/det_bores.png"}
   ];
   const REVDA_NAMES={frame:"Frame, Barrel & Action",cylinder:"Cylinder & Crane"};
   const REVDA_CENTERS={frame:[50.0,49.96],cylinder:[54.34,77.44]};
+  const REVDAX={det_bores:"x"}; /* charge-hole inset hidden except on its own DC step (full-swap, g19 det pattern) */
+  /* 7 lsteps = 3 walkable + 4 Deep Clean. The DC set was re-split 2026-07-27: the old
+     "Charge holes and forcing cone" became two steps, so the yoke step moved idx5 -> idx6.
+     branch:true lives on GUNS.revda.steps[2] ("Ready to clean"), which the split does not
+     touch. idx4 is a FULL SWAP: frame + cylinder hidden, det_bores alone on the canvas. */
   const REVDA_LSTEPS=[
-    {pos:{frame:"a",cylinder:"a"},hl:null,m:null},
-    {pos:{frame:"a",cylinder:["e",0,-6,1.24]},hl:"cylinder",m:[{x:31.7,y:26.7,r:4.6},{x:52,y:53,r:4.6}]},
-    {pos:{frame:"a",cylinder:["e",0,-6,1.24]},hl:null,m:null},
-    {pos:{frame:"a",cylinder:["e",0,-6,1.24]},hl:"cylinder",m:{x:41,y:73,r:4.6}},
-    {pos:{frame:"a",cylinder:["e",0,-6,1.24]},hl:"cylinder",m:{x:48.6,y:72.6,r:5}},
-    {pos:{frame:"a",cylinder:["e",0,-6,1.24]},hl:"frame",m:{x:53.8,y:17.8,r:2.5}}
+    /* 0 clear */        {pos:{frame:"a",cylinder:"a",...REVDAX},hl:null,m:null},
+    /* 1 swing out */    {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:[{x:31.7,y:26.7,r:4.6},{x:52,y:53,r:4.6}]},
+    /* 2 ready */        {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:null,m:null},
+    /* 3 ejector star */ {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:{x:41,y:73,r:4.6}},
+    /* 4 charge holes */ {pos:{frame:"x",cylinder:"x",...REVDAX,det_bores:"e"},hl:null,m:{x:51.25,y:49.21,r:3.6}},
+    /* 5 forcing cone */ {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"frame",m:{x:53.8,y:17.8,r:2.5}},
+    /* 6 yoke */         {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"frame",m:null}
   ];
   /* ---- Single-action revolver layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
   const REVSA_LAYERS=[
