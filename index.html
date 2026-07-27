@@ -1678,7 +1678,7 @@
         {phase:"Strip",title:"Release the bolt",body:"Hold the trigger guard's bolt release — the lever at the front left of the trigger guard — and draw the bolt straight back out of the receiver. It comes free in one motion; no twisting, no force. If it hangs, the release isn't fully pressed.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Strip",title:"Bolt out, set it down",body:"That's the field strip. One part in your hand, and every surface that matters is now reachable. Set the bolt on the mat, lugs up.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Clean",title:"Bore from the chamber end",body:"Rod or pull-through, always chamber to muzzle — the crown at the muzzle decides accuracy and doesn't forgive steel dragged across it. Patch until clean, then dry patch the chamber; a wet chamber invites a stuck case.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Clean",title:"Bolt face, lugs, raceways",body:"Scrub the bolt face and behind both locking lugs — brass shavings and primer soot collect there and change headspace feel. Wipe the raceways in the receiver with a patch over a finger. Light oil on the lugs and bolt body; bolt guns run nearly dry.",t:{},hl:[],labels:[],arrow:null,branch:true}
+        {phase:"Clean",title:"Bolt face, lugs, raceways",body:"Scrub the bolt face and behind both locking lugs — brass shavings and primer soot collect there and change headspace feel. Wipe the raceways in the receiver with a patch over a finger. Light oil on the lugs and bolt body; bolt guns run nearly dry. Want to go deeper? The optional DEEP CLEAN path covers the firing pin assembly, the lug seats and chamber, and proper lube before the bolt goes home.",t:{},hl:[],labels:[],arrow:null,branch:true}
       ],
       deepSteps:[
         {phase:"Deep Clean",title:"Firing pin assembly out",body:"Grip the bolt body and unscrew the firing pin assembly counter-clockwise — shroud, spring, and pin come out as one threaded unit. It fights you the whole way: the mainspring is under real compression, so use a bolt disassembly tool rather than your palm; the old trick of pressing the pin tip against the bench works until it slips, and it slips into your hand. Leave the unit assembled — stripping the pin off the spring needs the tool and there's nothing under there that cleaning reaches anyway.",t:{},hl:[],labels:[],arrow:null},
@@ -3630,10 +3630,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        the blend — NOT "Bolt Shroud", which is the bolt BODY), measured from an isolated
        mask render: ink centroid px (174.4,116.1) on the 1400x393 canvas. */
     {pos:{rifle:"x",bolt:"x",det_fp:"e"},hl:null,z:1.05,zc:50,zcy:50,m:{x:12.46,y:29.55,r:3.5}},
-    /* DC2 back to standard art. z is held near full view because BOTH standard layers
-       return from "x" here, so the no-crop ruling protects the whole rifle + parked bolt —
-       see scratchpad/boltr/pass2/REPORT.md. */
-    {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:null,z:1.05,zc:50,zcy:50,m:{x:47.1,y:47.07,r:2.5}},
+    /* DC2 back to standard art. Both standard layers return from "x" to positions they
+       already held, which the 2026-07-27 amendment says is NOT motion — so nothing is
+       protected here and the framing rule governs freely. Pushed in on the receiver ring /
+       lug-seat area; the rifle cropping either side is permitted background. */
+    {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:null,z:3.0,zc:47.1,zcy:47.07,m:{x:47.1,y:47.07,r:2.5}},
     /* DC3 nothing moves, so only hl binds — the bolt alone, which allows a real push-in. */
     {pos:{rifle:"a",bolt:"e",...BOLTRX},hl:"bolt",z:2.0,zc:30.6,zcy:20,m:{x:23.6,y:15.3,r:2.0}}
   ];
