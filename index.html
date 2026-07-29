@@ -287,7 +287,9 @@
   /* height:100%+contain matches .lstage img so BOTH stages letterbox the art identically —
      width:100% with auto height top-ANCHORED the art, so any family whose stage aspect
      differed from its art aspect had its numbered dots land below the artwork. */
-  .explayers img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .9s cubic-bezier(.22,.9,.3,1),filter .3s}
+  /* opacity rides the SAME curve/duration as transform so an asmAlt pair crossfades in step
+     with the parts that are translating around it — see setExp()'s asmAlt branch. */
+  .explayers img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:transform .9s cubic-bezier(.22,.9,.3,1),opacity .9s cubic-bezier(.22,.9,.3,1),filter .3s}
   .explayers img.hl{filter:drop-shadow(0 0 5px rgba(232,163,61,.9)) drop-shadow(0 0 14px rgba(232,163,61,.45)) brightness(1.35)}
   /* the stage may never exceed its pane on either axis; margin auto centres it in both. */
   .lviewport{position:relative;overflow:hidden;height:min(38vh,calc(88vw*1300/985));height:min(38svh,calc(88vw*1300/985));aspect-ratio:985/1300;margin:0 auto;max-width:100%;max-height:100%;pointer-events:none}
@@ -3529,7 +3531,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   ];
   /* ---- DA revolver layer set (Fieldstrip 3D pipeline) ---- */
   const REVDA_LAYERS=[
-    {n:"cylinder",asm:[0,-48.18],src:"assets/guns/revda/cylinder.png"}, /* POSED (P-C). EXPLODED-ONLY: it carries a park rotation, and the engine seats by translation only, so this art must never be shown at "a". */
+    {n:"cylinder",asm:[0,-48.18],asmAlt:"cylinder_seated",src:"assets/guns/revda/cylinder.png"}, /* POSED (P-C). EXPLODED-ONLY: it carries a park rotation, and the engine seats by translation only, so this art must never be shown at "a". asmAlt hands the Parts Diagram's ASSEMBLE view the seated art instead of translating this one — the guide already does the same swap via REVDAX/lsteps. */
     {n:"cylinder_seated",asm:[0,0],eh:true,src:"assets/guns/revda/cylinder_seated.png"}, /* the same assembly UN-posed and authored AT the seated position, so asm is [0,0]. Shown on assembled steps in place of the posed art. */
     {n:"frame",asm:[0.0,0.0],src:"assets/guns/revda/frame.png"},
     {n:"det_bores",asm:[0,0],eh:true,src:"assets/guns/revda/det_bores.png"}
@@ -3910,10 +3912,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     /* the art region is flex-sized by CSS now — no inline aspect/width/height, which would
        fight it. Clear anything a previous build left behind. */
     vp.style.aspectRatio=""; vp.style.height=""; vp.style.width=""; vp.style.maxHeight="";
+    /* ASSEMBLE-VIEW ALTERNATE (asmAlt): a layer may name a second layer holding the same
+       assembly authored for the SEATED state. Needed because the engine seats by translation
+       only, so art carrying a park ROTATION cannot be seated by any asm — see A POSED LAYER
+       IS EXPLODED-ONLY in CLAUDE.md. Both members are built here; setExp() shows exactly one
+       per mode. The alternate is eh:true (not a field-strip part, never carries a dot), so
+       being named as an asmAlt is the ONLY thing that admits it to the diagram. */
+    const altOwner=new Map();            /* alternate layer name -> the layer that names it */
+    set.layers.forEach(L=>{ if(L.asmAlt) altOwner.set(L.asmAlt,L.n); });
     set.layers.forEach(L=>{
-      if(L.eh) return; /* eh = exp-hide: skip in the Parts Diagram (e.g. ar15 upper_open) */
+      if(L.eh && !altOwner.has(L.n)) return; /* eh = exp-hide: skip in the Parts Diagram (e.g. ar15 upper_open) */
       const im=document.createElement("img");
-      im.src=L.src; im.id="expl-"+L.n; im.alt=set.names[L.n];
+      im.src=L.src; im.id="expl-"+L.n; im.alt=set.names[L.n]||set.names[altOwner.get(L.n)]||L.n;
       wrap.appendChild(im);
     });
     set.nums.forEach(([n,i])=>{
@@ -3928,7 +3938,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       b.className="exptag"; b.textContent=set.names[n]; b.dataset.p=n;
       b.addEventListener("click",()=>{
         expHl=(expHl===n)?null:n;
-        document.querySelectorAll(".explayers img").forEach(i=>i.classList.toggle("hl",i.id==="expl-"+expHl));
+        /* a tag lights BOTH members of an asmAlt pair, so the highlight survives the swap
+           instead of appearing dead in whichever mode shows the other member. */
+        const hlL=expHl?set.layers.find(x=>x.n===expHl):null;
+        const hlIds=expHl?["expl-"+expHl].concat(hlL&&hlL.asmAlt?["expl-"+hlL.asmAlt]:[]):[];
+        document.querySelectorAll(".explayers img").forEach(i=>i.classList.toggle("hl",hlIds.indexOf(i.id)>=0));
         document.querySelectorAll(".exptag").forEach(t=>t.classList.toggle("on",t.dataset.p===expHl));
         document.getElementById("expCap").textContent = expHl? set.names[expHl]+" \u2014 rendered from Fieldstrip's 3D pipeline":"Rendered from Fieldstrip's 3D pipeline";
       });
@@ -3941,11 +3955,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const set=LAYER_SETS[expKey||activeLayerKey()];
     document.getElementById("expLayers").classList.toggle("asmb",!exploded);
     const fx=artFit(document.getElementById("expViewport"),set);   /* live box, every call */
+    const altOwner=new Map();            /* alternate layer name -> the layer that names it */
+    set.layers.forEach(L=>{ if(L.asmAlt) altOwner.set(L.asmAlt,L.n); });
     set.layers.forEach(L=>{
       const im=document.getElementById("expl-"+L.n);
       if(!im) return;
       const tx=exploded?(L.exp?L.exp[0]:0):L.asm[0], ty=exploded?(L.exp?L.exp[1]:0):L.asm[1];
       im.style.transform=`translate(${(tx*fx.sx).toFixed(3)}%,${(ty*fx.sy).toFixed(3)}%)`;
+      /* asmAlt pair: posed art in FIELD STRIP, seated alternate in ASSEMBLE. Exactly one of
+         the two is opaque in either mode; the crossfade rides the same .9s curve as the
+         transforms above (.explayers img), so nothing pops. Layers with no pair are untouched
+         and keep opacity unset. */
+      if(L.asmAlt) im.style.opacity=exploded?"1":"0";
+      else if(altOwner.has(L.n)) im.style.opacity=exploded?"0":"1";
     });
     /* dots carry ART-% centers; project, then clamp so none rides off the top edge */
     document.querySelectorAll("#expLayers .expnum").forEach(d=>{
