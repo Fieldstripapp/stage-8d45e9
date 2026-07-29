@@ -1621,7 +1621,7 @@
       cleanIntro:"A double-action revolver never gets field stripped for routine cleaning \u2014 no parts come off. Four zones: bore, chambers, cylinder face and frame, then a wipe and a few precise drops of oil.",
       steps:[
         {phase:"Clear",title:"Confirm the revolver is clear",body:"Verified at the safety gate \u2014 cylinder open, every chamber checked by sight and by touch. Count the empty chambers. Muzzle in a safe direction throughout.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Swing out the cylinder",body:"Press the cylinder release and swing the cylinder out on its crane, supporting the cylinder with your off-hand fingers as it comes — the revolver's entire timing and alignment live in that one thin crane arm. That's the whole disassembly: a modern DA revolver cleans from exactly here.",warn:"Never remove the sideplate. Internal lockwork is fitted at the factory \u2014 sideplate removal is gunsmith work and can void your warranty.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Swing out the cylinder",body:"Press the cylinder release and swing the cylinder out on its crane, supporting the cylinder with your off-hand fingers as it comes — the revolver's entire timing and alignment live in that one thin crane arm. That's the whole disassembly: a modern double-action revolver cleans from exactly here.",warn:"Never remove the sideplate. Internal lockwork is fitted at the factory \u2014 sideplate removal is gunsmith work and can void your warranty.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Strip",title:"Ready to clean",body:"With the cylinder open, the bore, every chamber, the cylinder face, and the frame window are all reachable. Two habits that keep a revolver honest: scrub the carbon rings off the cylinder face and the forcing cone where the flame cuts — buildup there is what degrades accuracy — and when you finish, close the cylinder with your hand. Flicking it shut movie-style bends the crane and ruins the timing you just protected. Want to go deeper? The optional DEEP CLEAN path covers the ejector star, charge holes, forcing cone, and yoke.",t:{},hl:[],labels:[],arrow:null,branch:true}
       ],
       deepSteps:[
@@ -3542,11 +3542,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      touch. idx4 is a FULL SWAP: frame + cylinder hidden, det_bores alone on the canvas. */
   const REVDA_LSTEPS=[
     /* 0 clear */        {pos:{frame:"a",cylinder:"a",...REVDAX},hl:null,m:null},
-    /* 1 swing out */    {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:[{x:31.7,y:26.7,r:4.6},{x:52,y:53,r:4.6}]},
+    /* 1 swing out */    {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:[{x:34.64,y:25.76,r:4.6},{x:62.15,y:85.64,r:4.6}]},
     /* 2 ready */        {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:null,m:null},
-    /* 3 ejector star */ {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:{x:41,y:73,r:4.6}},
-    /* 4 charge holes */ {pos:{frame:"x",cylinder:"x",...REVDAX,det_bores:"e"},hl:null,m:{x:51.25,y:49.21,r:3.6}},
-    /* 5 forcing cone */ {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"frame",m:{x:53.8,y:17.8,r:2.5}},
+    /* 3 ejector star */ {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:null}, /* ring DELETED 2026-07-28: the ejector star is not modelled (model gap); step is copy-only. det_star stays a pass-2 candidate. */
+    /* 4 charge holes */ {pos:{frame:"x",cylinder:"x",...REVDAX,det_bores:"e"},hl:null,m:{x:49.7,y:50.55,r:3.6}},
+    /* 5 forcing cone */ {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"frame",m:{x:53.38,y:17.93,r:2.5}},
     /* 6 yoke */         {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"frame",m:null}
   ];
   /* ---- Single-action revolver layer set (Fieldstrip 3D pipeline, muzzle-right standard) ---- */
