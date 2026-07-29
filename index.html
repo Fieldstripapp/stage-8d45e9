@@ -3529,19 +3529,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   ];
   /* ---- DA revolver layer set (Fieldstrip 3D pipeline) ---- */
   const REVDA_LAYERS=[
-    {n:"cylinder",asm:[0,-48.18],src:"assets/guns/revda/cylinder.png"},
+    {n:"cylinder",asm:[0,-48.18],src:"assets/guns/revda/cylinder.png"}, /* POSED (P-C). EXPLODED-ONLY: it carries a park rotation, and the engine seats by translation only, so this art must never be shown at "a". */
+    {n:"cylinder_seated",asm:[0,0],eh:true,src:"assets/guns/revda/cylinder_seated.png"}, /* the same assembly UN-posed and authored AT the seated position, so asm is [0,0]. Shown on assembled steps in place of the posed art. */
     {n:"frame",asm:[0.0,0.0],src:"assets/guns/revda/frame.png"},
     {n:"det_bores",asm:[0,0],eh:true,src:"assets/guns/revda/det_bores.png"}
   ];
   const REVDA_NAMES={frame:"Frame, Barrel & Action",cylinder:"Cylinder & Crane"};
   const REVDA_CENTERS={frame:[50.0,49.96],cylinder:[54.34,77.44]};
-  const REVDAX={det_bores:"x"}; /* charge-hole inset hidden except on its own DC step (full-swap, g19 det pattern) */
+  const REVDAX={det_bores:"x",cylinder_seated:"x"}; /* charge-hole inset hidden except on its own DC step (full-swap, g19 det pattern); cylinder_seated hidden except on ASSEMBLED steps, where it replaces the posed cylinder */
   /* 7 lsteps = 3 walkable + 4 Deep Clean. The DC set was re-split 2026-07-27: the old
      "Charge holes and forcing cone" became two steps, so the yoke step moved idx5 -> idx6.
      branch:true lives on GUNS.revda.steps[2] ("Ready to clean"), which the split does not
      touch. idx4 is a FULL SWAP: frame + cylinder hidden, det_bores alone on the canvas. */
   const REVDA_LSTEPS=[
-    /* 0 clear */        {pos:{frame:"a",cylinder:"a",...REVDAX},hl:null,m:null},
+    /* 0 clear */        {pos:{frame:"a",cylinder:"x",...REVDAX,cylinder_seated:"a"},hl:null,m:null}, /* ASSEMBLED step: the POSED cylinder is hidden and the seated art shown. Translating rotated art into the frame window cannot seat it - see A POSED LAYER IS EXPLODED-ONLY in CLAUDE.md. */
     /* 1 swing out */    {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:[{x:34.64,y:25.76,r:4.6},{x:62.15,y:85.64,r:4.6}]},
     /* 2 ready */        {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:null,m:null},
     /* 3 ejector star */ {pos:{frame:"a",cylinder:["e",0,-6,1.24],...REVDAX},hl:"cylinder",m:null}, /* ring DELETED 2026-07-28: the ejector star is not modelled (model gap); step is copy-only. det_star stays a pass-2 candidate. */
