@@ -3599,17 +3599,17 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const AR15_LSTEPS=[
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"a",...AR15X},hl:null,m:null},
     {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"mag",z:1.35,zc:45,zcy:65,m:{x:46,y:68,ch:"\u25bc"}},
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"upper",z:1.32,zc:61.8,zcy:32.3,m:{x:42.4,y:35.5,r:5.8}},
-    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"lower",z:1.4,zc:30,zcy:38,m:{x:28.2,y:40.8,r:2}},
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"upper",z:1.32,zc:61.8,zcy:32.3,m:{x:42.66,y:34.98,r:5.8}}, /* ejection_port <art_assembled>, feature-anchored 2026-07-29 */
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR15X},hl:"lower",z:1.4,zc:30,zcy:38,m:{x:28.25,y:40.9,r:2}}, /* rear_takedown_pin axis, feature-anchored 2026-07-29 */
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e",...AR15X},hl:"upper_open",m:{x:46,y:36,ch:"\u27f3"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e",...AR15X},hl:"bcg",z:1.35,zc:15,zcy:16,m:{x:13,y:16,ch:"\u25c0"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"ch",z:1.35,zc:15,zcy:5,m:{x:27,y:3,ch:"\u25c0"}},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:"bcg",m:null},
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR15X},hl:null,m:null},
     /* ---- Deep Clean branch (BCG breakdown) ---- */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"lower",z:1,zc:50,zcy:43.9,m:{x:48.3,y:40.9,r:2}},
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"bcg",z:1.4,zc:68,zcy:78,m:{x:59.8,y:78.6,r:2.1}},
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"campin",z:1.35,zc:70,zcy:79,m:[{x:64,y:71.4,r:2.8},{x:64,y:66,ch:"\u27f2"}]},
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"lower",z:1,zc:50,zcy:43.9,m:{x:48.46,y:40.94,r:2}}, /* front_pivot_pin axis, feature-anchored 2026-07-29 */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:"bcg",z:1.4,zc:68,zcy:78,m:{x:59.8,y:78.6,r:2.1}}, /* ⛔ MODEL_GAP / AMBIGUOUS — ACCEPTED AS DRAWN, do not "re-anchor" this ring. The firing pin and its retaining pin are NOT modelled anywhere in ar15.blend (bcg_group = primitive carrier + primitive campin + real M4_Bolt), so no camera can show the feature. These are the hand-placed values, kept deliberately; the emission's proxy anchor sits on the carrier's rear face 2.87 art-% away and is NOT what this ring points at. See fixtures/ar15.json step 10 and the model-gaps list in CLAUDE.md. */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"campin",z:1.35,zc:70,zcy:79,m:[{x:64,y:71.5,r:2.8},{x:64,y:66,ch:"\u27f2"}]},
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.35,zc:70,zcy:79,m:{x:69,y:75,ch:"\u25bc"}},
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:null,z:1.4,zc:68,zcy:78,m:null}
   ];
