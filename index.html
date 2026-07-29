@@ -132,6 +132,9 @@
   .chips button{flex-shrink:0;font-family:var(--display);font-weight:600;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;padding:7px 13px;border-radius:16px;border:1px solid var(--edge);background:var(--panel);color:var(--muted);cursor:pointer}
   .chips button.on{color:var(--amber);border-color:var(--amber-dim);background:rgba(232,163,61,.07)}
   .resultnote{font-size:11.5px;color:var(--muted);font-family:var(--display);letter-spacing:.8px;padding:0 2px 6px}
+  /* catalog-level naming disclaimer: static, last child of #scr-pick, always visible at the
+     end of the catalog. Deliberately NOT #resultNote, which is rewritten on every keystroke. */
+  .catnote{font-size:11px;color:var(--muted);line-height:1.5;padding:14px 4px 22px;text-align:center;max-width:430px;margin:0 auto}
 
   /* ---------- DETAIL ---------- */
   .detail{padding:20px 18px;display:flex;flex-direction:column;gap:14px;flex:1}
@@ -501,6 +504,7 @@
       <div class="resultnote" id="resultNote"></div>
     </div>
     <div class="catalog" id="pickList"></div>
+    <div class="catnote">Manufacturer and model names identify the firearm each guide covers &mdash; Fieldstrip is not affiliated with or endorsed by any manufacturer, and &ldquo;-pattern&rdquo; names describe a mechanism, not a brand.</div>
   </section>
 
   <!-- ============ DETAIL ============ -->
@@ -1438,8 +1442,8 @@
     {v:"g1911", label:"1911-pattern pistol"},
     {v:"ar15",  label:"AR-pattern rifle"},
     {v:"m500",  label:"Mossberg 500-pattern shotgun"},
-    {v:"revda", label:"Double-action revolver"},
-    {v:"revsa", label:"Single-action revolver"},
+    {v:"revda", label:"K/L-frame double-action revolver"},
+    {v:"revsa", label:"SAA-pattern single-action revolver"},
     {v:"sldsup",label:"Suppressor (sealed)"},
     {v:"cfsup", label:"Suppressor (user-serviceable)"}
   ];
@@ -1693,7 +1697,7 @@
       ],
       cleaning:[
         {name:"BORE",tasks:["Rod or pull-through from the chamber end — always chamber to muzzle","Never drag steel back across the crown; it is what decides accuracy","Patch until clean, then dry patch the chamber — a wet chamber invites a stuck case"]},
-        {name:"BOLT",tasks:["Scrub the bolt face","Scrub behind both locking lugs — brass shavings and primer soot collect there and change headspace feel","Light oil on the lugs and bolt body; bolt guns run nearly dry"]},
+        {name:"BOLT",tasks:["Scrub the bolt face","Scrub behind both locking lugs — brass shavings and primer soot collect there and change headspace feel","Rice-grain of grease on the locking lugs; light oil on the bolt body — bolt guns run nearly dry"]},
         {name:"RECEIVER & RACEWAYS",tasks:["Wipe the raceways in the receiver with a patch over a finger","Keep the bolt on the mat lugs up while you work"]}
       ],
       /* approved S6 prose, re-split into list items; the safety/dry-fire sentences rejoin
@@ -1726,7 +1730,7 @@
       ],
       cleaning:[
         {name:"CLEAR & OPEN",tasks:["Wipe the magazine body and feed lips dry — magazines get no oil","Brush carbon and grit out of the receiver interior and both guide rails","Wipe the inside of the dust cover and check its rear notch is clear so the guide tab can seat","Check the front and rear magazine lugs in the receiver for burrs"]},
-        {name:"RECOIL & CARRIER GROUP",tasks:["Scrub the bolt face, around the extractor claw, and behind both locking lugs","Clean the carrier's cam track and the inside of its bolt tunnel","Wipe the recoil spring and guide rod; check the spring for kinks and the rear tab for cracks","Light oil on the carrier rails and bolt lugs — a film, not a coat"]},
+        {name:"RECOIL & CARRIER GROUP",tasks:["Scrub the bolt face, around the extractor claw, and behind both locking lugs","Clean the carrier's cam track and the inside of its bolt tunnel","Wipe the recoil spring and guide rod; check the spring for kinks and the rear tab for cracks","Light oil on the carrier rails and bolt lugs — a film, not a coat","Firing pin channel stays dry — no oil; it traps carbon and slows the pin"]},
         {name:"GAS SYSTEM",tasks:["Scrape the hard carbon off the gas piston head — this is where AK fouling actually sets","Swab the inside of the gas tube; it runs hot and cakes","Check the gas block port is clear, and never enlarge it","Bore from the chamber end with the carrier out, then dry patch and leave the chamber dry"]}
       ],
       reassembly:["Gas tube and upper handguard first: front end onto the gas block, seat the rear in the sight block, then rotate the locking lever down until it stops.","Bolt into the carrier — lug into the cam track, rotate it home, push the bolt forward until it seats.","Feed the carrier onto the receiver rails with the piston entering the gas tube, press it down into the raceway, and run it forward.","Recoil spring assembly in: guide down the carrier's tunnel, push forward, then drop the rear tab into its notch in the rear trunnion.","Dust cover on: front edge over the receiver first, then press the rear down until the guide tab clicks up through the notch.","Magazine in front lug first, then rock the rear back until the catch snaps over it.","<strong>Function check:</strong> selector to safe — the trigger should be dead and the carrier should not draw back far enough to strip a round. Selector to fire, rack the handle, dry-fire (click), then cycle again and confirm the trigger resets."]
@@ -1744,7 +1748,7 @@
           {phase:"Clear",title:"Confirm the rifle is clear",body:"Verified at the safety gate — magazine out, chamber checked by sight and by touch. Safety on. Bullpup layout means the chamber sits right at your cheek, so a real clear check matters even more here. Muzzle stays in a safe direction throughout.",t:{...A},hl:[],labels:[],arrow:null},
           {phase:"Clear",title:"Remove the magazine",body:"On the X95 the magazine sits <em>behind</em> the pistol grip. Press the mag release just behind the trigger guard and strip the magazine down and out with your support hand.",t:{...A,mag:[-12,122]},hl:["mag"],labels:["x95-lbl-mag"],arrow:{x:232,y:270,rot:12,nx:"-2px",ny:"8px"}},
           {phase:"Clear",title:"Charge and inspect the chamber",body:"Pull the non-reciprocating charging handle — forward on the left side — fully to the rear and lock the bolt back. Look into the ejection port, then feel the chamber. Empty by sight AND touch.",t:{...A,mag:[-12,122],ch:[-62,0]},hl:["ch","port"],labels:[],arrow:{x:352,y:118,rot:-90,nx:"-8px",ny:"0px"}},
-          {phase:"Strip",title:"Push out the rear takedown pin",body:"At the rear of the chassis, above the buttpad, push the captive takedown pin from right to left until it stops. It stays attached to the rifle — it will not fall out. Use a cartridge tip or punch if it's stiff. No trigger pull is required on the Tavor — different animal than the Glock.",t:{...A,mag:[-12,122],pin:[0,-44]},hl:["pin"],labels:["x95-lbl-pin"],arrow:{x:128,y:230,rot:180,nx:"0px",ny:"-7px"}},
+          {phase:"Strip",title:"Push out the rear takedown pin",body:"At the rear of the chassis, above the buttpad, push the captive takedown pin from right to left until it stops. It stays attached to the rifle — it will not fall out. Use a cartridge tip or punch if it's stiff. No trigger pull is required — unlike a Glock, nothing has to be released to free the chassis.",t:{...A,mag:[-12,122],pin:[0,-44]},hl:["pin"],labels:["x95-lbl-pin"],arrow:{x:128,y:230,rot:180,nx:"0px",ny:"-7px"}},
           {phase:"Strip",title:"Swing the buttpad open",body:"With the pin out, the buttpad hinges at the bottom. Swing the top of the pad down and away — it opens like a door, exposing the rear of the receiver and the back of the bolt carrier group.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100]},hl:["butt"],labels:["x95-lbl-butt"],arrow:{x:52,y:190,rot:135,nx:"-5px",ny:"5px"}},
           {phase:"Strip",title:"Withdraw the bolt carrier group",body:"Tilt the muzzle up slightly and pull the bolt carrier group straight out the back of the receiver — recoil assembly and the long-stroke gas piston come with it as one unit. It's heavy for its size; keep a grip on it.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100],bcg:BCGOUT},hl:["bcg"],labels:["x95-lbl-bcg"],arrow:{x:66,y:80,rot:90,nx:"-8px",ny:"0px"}},
           {phase:"Strip",title:"Separate the bolt from the carrier",body:"Push the firing pin retaining pin out, withdraw the firing pin, rotate the cam pin a quarter turn and lift it out, then slide the bolt forward out of the carrier — same family as an AR bolt, and this is where the carbon lives.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100],bcg:BCGOUT,bolt:[182,36]},hl:["bolt"],labels:["x95-lbl-bcg","x95-lbl-bolt"],arrow:{x:392,y:96,rot:90,nx:"8px",ny:"0px"}},
