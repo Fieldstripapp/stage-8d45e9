@@ -1711,18 +1711,22 @@
       parts:{}, origins:{},
       cleanIntro:"Three groups. The AK tolerates neglect better than almost anything you own, and that is exactly why people let carbon set hard in the gas tube and on the piston until it starts short-stroking. Solvent, then dry, then a thin film of oil on steel only — the wood furniture stays dry.",
       steps:[
-        {phase:"Clear",title:"Clear it",body:"Magazine out first, then the bolt. Pull the charging handle fully to the rear and hold it there while you look into the ejection port, then put a finger in the chamber — the AK has no bolt hold-open, so the carrier runs forward the instant you let go and a glance is not a check. Note that the selector on safe limits carrier travel: enough to see the chamber, not enough to strip a round, so it has to come off safe for a real inspection and go back on afterwards. Muzzle stays in a safe direction the whole time.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Rock the magazine out",body:"AK magazines rock; they do not drop free. Press the magazine catch — the paddle at the rear of the magazine well, just ahead of the trigger guard — forward, then pull the rear of the magazine down and swing the front out of the receiver's front lug. It will feel stiff on a tight gun, and it will not come straight down no matter how hard you pull, because the front of the magazine hooks into a lug rather than sliding in a slot. Yanking it vertically is what bends feed lips and turns a good magazine into a jam.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Dust cover off — mind the spring",body:"At the rear of the dust cover a small tab from the recoil spring guide protrudes through a notch in the cover's back face. Press that tab in — and keep your other thumb flat on the cover while you do it. <strong>The cover is under recoil spring tension the moment the tab clears, and it will launch off the rear of the receiver if you let go</strong>. With the tab held in, lift the rear of the cover first, then draw it up and back off the rear trunnion. If it will not budge, the tab is not pressed far enough in — force applied to a cover that is still latched only bends the sheet metal.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Recoil spring assembly out",body:"With the cover gone, push the recoil spring guide forward to lift its cruciform rear tab clear of the notch in the rear trunnion, then raise the tail of the guide and draw the whole assembly back out of the bolt carrier. Spring, guide rod and rear tab come away as one piece — there is nothing here to take apart and nothing to lose in the carpet. It stays compressed until the tab clears the trunnion, so keep the muzzle end of it pointed away from your face on that first push.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Bolt carrier and piston out",body:"Draw the charging handle fully rearward until the carrier's lugs line up with the two clearance cutouts in the receiver rails, then lift the rear of the carrier up and out of the raceway. Once the rear is clear, pull the whole carrier straight back and free — the gas piston slides out of the gas tube as it comes. The carrier only releases at the very back of its travel, so if it will not lift, the handle is not far enough rearward; lifting early just binds the lugs against the rails.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Bolt out of the carrier",body:"Push the bolt rearward into the carrier to take the load off its lug, rotate the bolt so the lug follows the cam track cut into the carrier, then draw the bolt forward and out. It turns roughly a quarter turn and then slides straight out; trying to pull it without rotating simply jams the lug into the track and convinces people the bolt is stuck. Leave the firing pin where it is — it is held in the bolt by its own retaining pin and a field strip does not go past this point.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Gas tube and upper handguard",body:"On the right side of the rear sight block sits the gas tube locking lever. Rotate it upward through about ninety degrees — use the rim of a cartridge case or a proper lever tool if it is tight, never a screwdriver blade levered against the sight block. With the lever up, lift the rear of the gas tube out of its seat in the sight block and draw the tube forward and off the gas block. The tube and the wooden upper handguard come away as a single assembly; they are not separated for cleaning, and prying them apart is how the handguard gets cracked.",t:{},hl:[],labels:[],arrow:null},
-        {phase:"Strip",title:"Field strip complete",body:"Receiver with barrel and stock, magazine, dust cover, recoil spring assembly, bolt carrier with its gas piston, bolt, and the gas tube with its upper handguard. That is the entire AK field strip — no tools, nothing captive, nothing small enough to lose, and every surface that actually fouls is now in reach. Want to go deeper? The optional DEEP CLEAN path strips the bolt itself — firing pin, extractor and their two retaining pins.",t:{},hl:[],labels:[],arrow:null,branch:true}
+        {phase:"Clear",title:"Clear it",body:"Remove the magazine and clear the rifle before any disassembly. Pull the charging handle fully rearward and visually check the chamber is empty.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Rock the magazine out",body:"Grip the magazine, press the magazine catch (the paddle behind the mag well) forward with your thumb, and rotate the magazine forward and down out of the well.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Dust cover off — mind the spring",body:"Press in the serrated button protruding from the rear of the cover — it's the recoil spring guide under tension. Keep it depressed, lift the rear of the cover, and remove it up and off. Control the cover; the spring is pushing on it.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Recoil spring assembly out",body:"Push the guide forward until its base clears the slot in the rear trunnion, lift the rear end, and draw the assembly rearward out of the bolt carrier channel.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Bolt carrier and piston out",body:"Pull the charging handle fully rearward; at the rear of its travel, lift the carrier up off the receiver rails and draw it away with the bolt.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Bolt out of the carrier",body:"Push the bolt rearward into the carrier and rotate it so its cam lug follows the carrier's cam slot, then slide the bolt forward out of the carrier. Set the bolt aside with the other removed parts.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Field strip complete — five parts off",body:"Magazine, dust cover, recoil spring assembly, bolt carrier with its gas piston, and the bolt. That is the AK field strip — no tools, nothing captive, nothing small enough to lose, and every surface that actually fouls is now in reach. Want to go deeper? The optional DEEP CLEAN path takes off the gas tube and upper handguard, then strips the bolt itself — firing pin, extractor and their two retaining pins.",t:{},hl:[],labels:[],arrow:null,branch:true}
       ],
-      /* Pass-2 deep clean: the bolt group, on the dedicated detail stage. Mechanical order
-         is chat-directed and is flagged for Darren's accuracy vet on the walk. */
+      /* Deep clean: the GAS TUBE, then the bolt group on the dedicated detail stage.
+         ⛔ The four bolt-group bodies are the WALK-PASSED copy from 373b26e, carried VERBATIM
+         and in unchanged order — which is the whole reason the gas-tube step was PREPENDED
+         rather than slotted in. Reordering or editing them would re-open the content gate.
+         The gas-tube step is the banked text from the 2026-07-30 field-strip ruling, which
+         moved that step out of the field strip and into this branch. */
       deepSteps:[
+        {phase:"Deep Clean",title:"Gas tube and upper handguard",body:"Rotate the lock lever on the right side of the rear sight block upward. Lift the rear of the gas tube with its upper handguard off the gas block and remove.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Deep Clean",title:"Drift out the firing pin retaining pin",body:"Support the bolt on a block with the retaining pin's small end facing up, and drift it out with a light punch — brass or a hardwood dowel, because a pin this size burrs under a steel punch and a burred pin will not go back. It is a slip fit, so it should start moving under light taps and then come free; if you find yourself swinging hard, the bolt is not sitting squarely and you are driving the pin against the side of its hole. Catch it as it drops. Put it somewhere it cannot roll — it is the smallest part in the rifle and the one people lose.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Deep Clean",title:"Firing pin out the rear",body:"With the retaining pin clear, tip the bolt rearward and let the firing pin slide back out of its channel. The AKM pin is free-floating — there is no spring behind it — so it should come out under its own weight, and if it needs persuading, hardened carbon in the channel is why, which is exactly what you are here to remove. Wipe the pin and the channel dry and leave them dry: oil in there traps carbon and thickens in the cold, and a sluggish pin gives you light strikes. When the bolt goes back together, shake it — you should hear the pin rattle, and that rattle is the function check.",t:{},hl:[],labels:[],arrow:null},
         {phase:"Deep Clean",title:"Drift out the extractor pin",body:"The extractor pin sits across the bolt head, ahead of the firing pin channel. Press the extractor inward against its spring with a thumb before you drift the pin — under spring load the pin binds in its hole, and driving a bound pin bends it. With the pressure held it drifts out the same way as the first one, and you will feel it go slack as it releases. Keep your thumb on the extractor after the pin clears: nothing is holding it in now except you.",t:{},hl:[],labels:[],arrow:null},
@@ -1733,7 +1737,7 @@
         {name:"RECOIL & CARRIER GROUP",tasks:["Scrub the bolt face, around the extractor claw, and behind both locking lugs","Clean the carrier's cam track and the inside of its bolt tunnel","Wipe the recoil spring and guide rod; check the spring for kinks and the rear tab for cracks","Light oil on the carrier rails and bolt lugs — a film, not a coat","Firing pin channel stays dry — no oil; it traps carbon and slows the pin"]},
         {name:"GAS SYSTEM",tasks:["Scrape the hard carbon off the gas piston head — this is where AK fouling actually sets","Swab the inside of the gas tube; it runs hot and cakes","Check the gas block port is clear, and never enlarge it","Bore from the chamber end with the carrier out, then dry patch and leave the chamber dry"]}
       ],
-      reassembly:["Gas tube and upper handguard first: front end onto the gas block, seat the rear in the sight block, then rotate the locking lever down until it stops.","Bolt into the carrier — lug into the cam track, rotate it home, push the bolt forward until it seats.","Feed the carrier onto the receiver rails with the piston entering the gas tube, press it down into the raceway, and run it forward.","Recoil spring assembly in: guide down the carrier's tunnel, push forward, then drop the rear tab into its notch in the rear trunnion.","Dust cover on: front edge over the receiver first, then press the rear down until the guide tab clicks up through the notch.","Magazine in front lug first, then rock the rear back until the catch snaps over it.","<strong>Function check:</strong> selector to safe — the trigger should be dead and the carrier should not draw back far enough to strip a round. Selector to fire, rack the handle, dry-fire (click), then cycle again and confirm the trigger resets."]
+      reassembly:["Reverse order. The recoil spring guide base must seat fully in its rear trunnion slot, or the cover cannot lock. Fit the cover front tab first, then press the rear down until the guide button snaps through its opening. Function-check before loading."]
     },
 
     x95: {
@@ -3691,22 +3695,37 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      receiver (hidden-internals standard) — the bolt is seated inside the carrier, which
      is seated inside the receiver, so "a" hides them and the removal step animates the
      draw-out instead of popping them into existence. */
+  /* ---- AKM 6P1 (supersedes the AKMS-LP art, ruling 2026-07-30) ----
+     Every layer is rendered from the PURCHASED AKM 6P1 on the measured OBJ seated base
+     (AKM.obj carries the assembled positions baked into world vertex coordinates, so there
+     is no seat solve anywhere in this family). Canvas 1400x1070, family ortho 1.05809 m.
+     `base` -> `receiver` and `dustcover` -> `cover` throughout: the new render script names
+     them for what they are, and a half-renamed family is worse than either name.
+     asm = the NEGATED PARK DELTA, asserted against it at emission time rather than assumed;
+     the art is authored at PARK, so "e" is the rendered position and "a" applies asm.
+     Tone: world 0.658 ambient only, sun INERT - the shipped family's own rig, recovered in
+     phase 1 and baked into render_akm.py so it needs no env vars. Family median 56.0. */
   const AKM_LAYERS=[
-    {n:"bolt",asm:[-22.617,14.11],src:"assets/guns/akm/bolt.png"},
-    {n:"carrier",asm:[0,13.725],src:"assets/guns/akm/carrier.png"},
-    {n:"recoilasm",asm:[0,23.793],src:"assets/guns/akm/recoilasm.png"},
-    {n:"mag",asm:[-2.016,-24.055],src:"assets/guns/akm/mag.png"},
-    {n:"base",asm:[0,0],src:"assets/guns/akm/base.png"},
-    {n:"dustcover",asm:[0,33.977],src:"assets/guns/akm/dustcover.png"},
-    {n:"gastube",asm:[0,22.582],src:"assets/guns/akm/gastube.png"},
-    /* ---- pass-2 DETAIL STAGE (deep clean, bolt group) ----
-       A dedicated detail camera, not the family one: ortho_scale 0.188636 m against the
-       family's 0.991857, same 1400x1080 canvas. These five are DEEP_ONLY - asm [0,0],
-       eh:true, parked-only, never seated - so the parked position is the only one they
-       ever occupy and there is nothing for asm to move. They are full-frame PNGs shown
+    {n:"bolt",asm:[-47.35,-35.05],src:"assets/guns/akm/bolt.png"},
+    {n:"carrier",asm:[0,0],src:"assets/guns/akm/carrier.png"},
+    {n:"recoilasm",asm:[-24.294,-37.21],src:"assets/guns/akm/recoilasm.png"},
+    {n:"mag",asm:[35.629,-32.113],src:"assets/guns/akm/mag.png"},
+    {n:"receiver",asm:[0,0],src:"assets/guns/akm/receiver.png"},
+    {n:"cover",asm:[3.167,-37.753],src:"assets/guns/akm/cover.png"},
+    {n:"gastube",asm:[0,0],src:"assets/guns/akm/gastube.png"},
+    /* ---- DETAIL STAGE (deep clean, bolt group), re-rendered from the 6P1 ----
+       A dedicated detail camera, not the family one: ortho_scale 0.096217 m against the
+       family's 1.05809 (11.00x tighter), same 1400x1070 canvas. These five are DEEP_ONLY -
+       asm [0,0], eh:true, parked-only, never seated - so the parked position is the only one
+       they ever occupy and there is nothing for asm to move. They are full-frame PNGs shown
        with every standard layer hidden, so the engine grammar is unchanged.
-       det_bolt is Bolt_LP.003 alone; the other four are procedural, built to ruled
-       dimensions recorded in scratchpad/ak/pass2/render_akm_detail.py's header. */
+       All five are REAL 6P1 geometry (the superseded set had four procedural primitives).
+       Anchors emitted from the det camera itself; seats read from the OBJ, no seat solve.
+       det_pin_ret / det_pin_ext are `Bolt Detent 1` / `Bolt Detent 2`, and which is which was
+       MEASURED, not read off those names - Detent 2 sits 2.95 mm from the extractor against
+       Detent 1's 7.68, and Detent 1 is the nearer of the two to the firing pin. The approved
+       copy names a firing-pin retaining pin and an extractor pin, so the mapping is proved
+       before it is rendered. Script: scratchpad/akm/det/render_det.py. */
     {n:"det_bolt",asm:[0,0],eh:true,src:"assets/guns/akm/det_bolt.png"},
     {n:"det_pin_ret",asm:[0,0],eh:true,src:"assets/guns/akm/det_pin_ret.png"},
     {n:"det_fp",asm:[0,0],eh:true,src:"assets/guns/akm/det_fp.png"},
@@ -3716,46 +3735,55 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* spread into every WALKABLE step so the detail layers stay hidden outside the branch */
   const AKMX={det_bolt:"x",det_pin_ret:"x",det_fp:"x",det_pin_ext:"x",det_extractor:"x"};
   /* spread into every DEEP step so the standard layers stay hidden inside the branch */
-  const AKMH={base:"x",mag:"x",dustcover:"x",recoilasm:"x",carrier:"x",bolt:"x",gastube:"x"};
-  const AKM_NAMES={base:"Receiver, Barrel & Stock",mag:"Magazine",dustcover:"Dust Cover",recoilasm:"Recoil Spring Assembly",carrier:"Bolt Carrier & Gas Piston",bolt:"Bolt",gastube:"Gas Tube & Upper Handguard"};
-  /* ART-% label points MEASURED ON EACH PART'S OWN INK at its exploded position
-     (scratchpad/ak/purchased/centers.ps1: alpha centroid, snapped to the nearest opaque
-     pixel if the centroid falls in a hollow). All seven centroids landed on ink with no
-     snap needed, so these are true centroids — a bbox centre would have dropped the base
-     dot into the magwell void. */
-  const AKM_CENTERS={base:[40.71,47.04],mag:[51.29,81.48],dustcover:[41,7.59],recoilasm:[36.86,17.22],carrier:[51.14,27.78],bolt:[69.5,29.63],gastube:[67.14,17.78]};
-  /* Per-step z/zc/zcy solved by scratchpad/ak/purchased/solve_zoom.py against the
-     measured art-% boxes: the protected set (layers whose pos changed this step, plus the
-     `hl` subject, plus the marker with a 4% pad) must clear all four viewport edges.
-     Every step verified OK with the marker no closer than 34% to any viewport edge, so
-     rule 6 and the 3% glyph edge-clearance rule both hold with a wide margin.
-     Markers are ARROWS throughout — every AK strip step is an action, not a
-     feature call-out, so glyph is the correct half of the ring grammar. The AK's
-     rock-out and lift-and-draw motions are genuinely diagonal, and there is no solid
-     triangle for a diagonal — so the three diagonal steps use the CATALOG triangle
-     with a `rot` (degrees, CSS positive = clockwise), which the engine feeds into
-     .lmark's single transform via --mrot. The catalog's glyph vocabulary is therefore
-     unchanged: no new characters, only rotated ones. */
+  const AKMH={receiver:"x",mag:"x",cover:"x",recoilasm:"x",carrier:"x",bolt:"x",gastube:"x"};
+  const AKM_NAMES={receiver:"Receiver, Barrel & Stock",mag:"Magazine",cover:"Dust Cover",recoilasm:"Recoil Spring Assembly",carrier:"Bolt Carrier & Gas Piston",bolt:"Bolt",gastube:"Gas Tube & Upper Handguard"};
+  /* ART-% dot points at each layer's EXPLODED (PARK) position — which is where buildExp draws
+     the numbered dots, and where the art itself is authored. Each is the layer's 3D bbox centre
+     SNAPPED TO THAT LAYER'S NEAREST REAL VERTEX, so it is a measured on-ink point rather than a
+     bbox centre: the receiver's bbox centre falls in the magwell void. Derived in
+     scratchpad/akm/render_akm.py (layer_dot) from mesh geometry, not from a PNG scan, and all
+     seven verified ON-INK against the park art by scratchpad/akm/anchor_onink.ps1. */
+  const AKM_CENTERS={receiver:[46.94,37.12],mag:[11.94,77.89],cover:[36.39,66.33],recoilasm:[67.01,67.69],carrier:[56.98,30.39],bolt:[91.59,67.49],gastube:[63.72,28.89]};
+  /* Markers are RING + GLYPH pairs on every strip step, which is the ring grammar applied
+     properly: the ring identifies the step's subject where that step draws it, the glyph
+     carries the motion. The superseded set used rotated triangles alone on the grounds that
+     "every AK strip step is an action" — true, but it left the steps with no feature call-out
+     at all, and the rings are what let a reader see WHICH catch, button or lug the sentence
+     means. No rotated glyphs are needed now: each motion resolves to a dominant axis in the
+     MEASURED travel (weakest is s4 at 1.12x, and its text leads with the lift), so the
+     catalog's four arrows cover all five steps with no new characters. */
   const AKM_LSTEPS=[
-    {pos:{base:"a",mag:"a",dustcover:"a",recoilasm:"a",carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:null,z:1.03,zc:50,zcy:51.48,m:null},
-    {pos:{base:"a",mag:"e",dustcover:"a",recoilasm:"a",carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:"mag",z:1.35,zc:48.77,zcy:62.96,m:{x:42.17,y:51.11,ch:"▶",rot:45}},
-    {pos:{base:"a",mag:"e",dustcover:"e",recoilasm:"a",carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:"dustcover",z:1.35,zc:39.31,zcy:37.04,m:{x:29.91,y:42.31,ch:"▲"}},
-    {pos:{base:"a",mag:"e",dustcover:"e",recoilasm:"e",carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:"recoilasm",z:1.35,zc:37.04,zcy:37.04,m:{x:29.91,y:42.31,ch:"▶",rot:-45}},
-    {pos:{base:"a",mag:"e",dustcover:"e",recoilasm:"e",carrier:"e",bolt:"a",gastube:"a",...AKMX},hl:"carrier",z:1.35,zc:52.51,zcy:37.04,m:{x:52.21,y:42.88,ch:"▲",rot:-45}},
-    {pos:{base:"a",mag:"e",dustcover:"e",recoilasm:"e",carrier:"e",bolt:"e",gastube:"a",...AKMX},hl:"bolt",z:1.35,zc:60.1,zcy:38.04,m:{x:50.79,y:43.76,ch:"▶"}},
-    {pos:{base:"a",mag:"e",dustcover:"e",recoilasm:"e",carrier:"e",bolt:"e",gastube:"e",...AKMX},hl:"gastube",z:1.35,zc:62.96,zcy:37.04,m:{x:57.56,y:39.69,ch:"▲"}},
-    {pos:{base:"a",mag:"e",dustcover:"e",recoilasm:"e",carrier:"e",bolt:"e",gastube:"e",...AKMX},hl:null,z:1.03,zc:50,zcy:50,m:null},
-    /* ---- Deep Clean branch (pass 2): the BOLT GROUP on the detail stage ----
-       Every standard layer goes to "x" and the det_* layers come up one per step. A det
-       layer un-hiding here is arriving at a position it has NEVER held, so it IS protected
-       by the no-crop rule - the 2026-07-27 amendment only exempts a return to a position
-       already occupied. z/zc/zcy solved against the measured art-% boxes by
-       scratchpad/ak/pass2/merge_and_solve.py; all four clear their protected set and every
-       marker sits well inside its window. Pin rings take the catalog pin-ring radius. */
-    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"x",det_pin_ext:"x",det_extractor:"x"},hl:"det_pin_ret",z:1.35,zc:50,zcy:57.51,m:{x:40,y:78,r:2.1}},
-    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"e",det_pin_ext:"x",det_extractor:"x"},hl:"det_fp",z:1.35,zc:37.04,zcy:62.96,m:{x:28,y:72,ch:"◀"}},
-    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"e",det_pin_ext:"e",det_extractor:"x"},hl:"det_pin_ext",z:1.35,zc:60,zcy:62.96,m:{x:60,y:78,r:2.1}},
-    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"e",det_pin_ext:"e",det_extractor:"e"},hl:"det_extractor",z:1.35,zc:62.96,zcy:62.96,m:{x:72,y:72,ch:"▶"}}
+    /* FIELD STRIP - 5 steps + clear + terminal. A mover's rendered position is its PARK, so
+       "e" is park, "a" applies asm (park -> seated), and an intermediate withdrawal uses the
+       array form ["e",dx,dy]. Every dx/dy below is the emitted art-% offset from park in
+       scratchpad/akm/akm_layout.txt, not a hand number. Markers and per-step z/zc/zcy are
+       solved together by scratchpad/akm/rings.py: ring centres are FEATURE ANCHORS carried to
+       the position their layer is drawn at in that step, glyph directions are the MEASURED
+       dominant art-% travel (all five agree with the approved step text, checked mechanically),
+       and z is solved with the markers IN the protected set then capped at the per-step zoom
+       standard's 1.4 ceiling. 11 markers, rule 6 + edge clearance PASS. */
+    {pos:{receiver:"a",mag:"a",cover:"a",recoilasm:"a",carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:null,z:1.159,zc:46.75,zcy:43.14,m:{x:48.09,y:33.43,r:3}},
+    {pos:{receiver:"a",mag:["e",41.3,-14.799],cover:"a",recoilasm:"a",carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:"mag",z:1.4,zc:46.75,zcy:51.48,m:[{x:45.84,y:54.76,r:3},{x:53.01,y:72.4,ch:"▼"}]},
+    {pos:{receiver:"a",mag:"e",cover:["e",-4.394,-57.54],recoilasm:"a",carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:"cover",z:1.165,zc:46.56,zcy:49.49,m:[{x:27.26,y:32.21,r:3},{x:30.82,y:9.19,ch:"▲"}]},
+    {pos:{receiver:"a",mag:"e",cover:"e",recoilasm:["e",-43.196,-49.577],carrier:"a",bolt:"a",gastube:"a",...AKMX},hl:"recoilasm",z:1.4,zc:40.47,zcy:51.4,m:[{x:8.36,y:19.84,r:3},{x:23.73,y:22.84,ch:"◀"}]},
+    {pos:{receiver:"a",mag:"e",cover:"e",recoilasm:"e",carrier:["e",-13.231,-14.84],bolt:["e",-60.581,-49.89],gastube:"a",...AKMX},hl:"carrier",z:1.4,zc:47.36,zcy:48.23,m:[{x:36.23,y:16.84,r:3},{x:43.77,y:14.69,ch:"▲"}]},
+    {pos:{receiver:"a",mag:"e",cover:"e",recoilasm:"e",carrier:["e",-13.231,-14.84],bolt:"e",gastube:"a",...AKMX},hl:"bolt",z:1.4,zc:60.43,zcy:48.57,m:[{x:36.42,y:16.46,r:3},{x:91.39,y:63.38,ch:"▶"}]},
+    {pos:{receiver:"a",mag:"e",cover:"e",recoilasm:"e",carrier:["e",-13.231,-14.84],bolt:"e",gastube:"a",...AKMX},hl:null,z:1,zc:50,zcy:50,m:null},
+    /* ---- Deep Clean branch: GAS TUBE then the BOLT GROUP ----
+       ⛔ THIS BRANCH IS MIXED BY DESIGN. Step 1 is the GAS TUBE on the FAMILY stage: gastube is
+       static through the whole field strip, so its park IS its seat and its asm is [0,0]; the
+       removal is expressed as a step-level ["e",dx,dy], which needs no second render of that
+       layer. Steps 2-5 are the bolt group on the DET stage with every family layer hidden by
+       AKMH. Det markers come from the DET camera's own anchors - the family camera's anchors
+       are meaningless at 11x - and are solved by scratchpad/akm/det/det_rings.py. A det layer
+       un-hiding here is arriving at a position it has NEVER held, so it IS protected by the
+       no-crop rule; the 2026-07-27 amendment only exempts a return to a position already
+       occupied. Pin rings keep the catalog pin-ring radius. 6 markers, rule 6 + edge PASS. */
+    {pos:{receiver:"a",mag:"e",cover:"e",recoilasm:"e",carrier:["e",-13.231,-14.84],bolt:"e",gastube:["e",0,-14],...AKMX},hl:"gastube",z:1.4,zc:49.96,zcy:44.41,m:[{x:63.72,y:14.89,r:3},{x:63.71,y:10.88,ch:"▲"}]},
+    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"x",det_pin_ext:"x",det_extractor:"x"},hl:"det_pin_ret",z:1.067,zc:49.96,zcy:51.21,m:{x:21.31,y:94.18,r:2.1}},
+    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"e",det_pin_ext:"x",det_extractor:"x"},hl:"det_fp",z:1.11,zc:49.96,zcy:49.47,m:{x:49.93,y:60.08,ch:"◀"}},
+    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"e",det_pin_ext:"e",det_extractor:"x"},hl:"det_pin_ext",z:1.11,zc:49.96,zcy:49.47,m:{x:48.98,y:77.55,r:2.1}},
+    {pos:{...AKMH,det_bolt:"e",det_pin_ret:"e",det_fp:"e",det_pin_ext:"e",det_extractor:"e"},hl:"det_extractor",z:1.11,zc:49.96,zcy:49.47,m:{x:79.25,y:90.36,ch:"▶"}}
   ];
   const LAYER_SETS={
     /* `art` = the layer PNGs' real pixel size. Stored coordinates are percentages of THIS,
@@ -3785,7 +3813,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        three tiers above the rifle (cover top, recoil+gas tube, carrier+bolt) with the
        magazine below — the frame is the union of every seated AND parked bbox plus 6%
        per side, which is what keeps parked parts off the viewport edge. */
-    akm:{layers:AKM_LAYERS,lsteps:AKM_LSTEPS,centers:AKM_CENTERS,names:AKM_NAMES,nums:[["mag",1],["dustcover",2],["recoilasm",3],["carrier",4],["bolt",5],["gastube",6],["base",7]],tags:["mag","dustcover","recoilasm","carrier","bolt","gastube","base"],aspect:"1400 / 1080",art:[1400,1080],hRatio:1080/1400}
+    akm:{layers:AKM_LAYERS,lsteps:AKM_LSTEPS,centers:AKM_CENTERS,names:AKM_NAMES,nums:[["mag",1],["cover",2],["recoilasm",3],["carrier",4],["bolt",5],["gastube",6],["receiver",7]],tags:["mag","cover","recoilasm","carrier","bolt","gastube","receiver"],aspect:"1400 / 1070",art:[1400,1070],hRatio:1070/1400}
   };
   /* m590 shares m500 art: same barrel/pump/receiver PNGs, same markers. The idx2 ring
      sits on the magazine tube's terminal cap — where BOTH the 500 takedown screw and the
