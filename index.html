@@ -3663,13 +3663,23 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     /* deep-clean BCG breakdown: eh:true (out of the free Parts Diagram); Deep Clean branch only */
     {n:"carrier",asm:[0,0],eh:true,src:"assets/guns/ar10/carrier.png"},
     {n:"bolt",asm:[0,0],eh:true,src:"assets/guns/ar10/bolt.png"},
-    {n:"campin",asm:[0,0],eh:true,src:"assets/guns/ar10/campin.png"}
+    {n:"campin",asm:[0,0],eh:true,src:"assets/guns/ar10/campin.png"},
+    /* ---- deep-clean DETAIL INSETS (v5, Darren-approved 2026-07-31). Full-swap: asm[0,0],
+       eh:true, each is the SOLE visible layer on its own deep step, so its frame IS the art
+       and it is exempt from the crop audit. det_d1 serves TWO steps -- D1 and the copy-first
+       D2. There is deliberately no det_d2. ---- */
+    {n:"det_d1",asm:[0,0],eh:true,src:"assets/guns/ar10/det_d1.png"},
+    {n:"det_d3",asm:[0,0],eh:true,src:"assets/guns/ar10/det_d3.png"},
+    {n:"det_d4",asm:[0,0],eh:true,src:"assets/guns/ar10/det_d4.png"},
+    {n:"det_d5",asm:[0,0],eh:true,src:"assets/guns/ar10/det_d5.png"},
+    {n:"det_d6",asm:[0,0],eh:true,src:"assets/guns/ar10/det_d6.png"},
+    {n:"det_d7",asm:[0,0],eh:true,src:"assets/guns/ar10/det_d7.png"}
   ];
   const AR10_NAMES={upper:"Upper Receiver Group",upper_open:"Upper Receiver (open)",lower:"Lower Receiver Group",bcg:"Bolt Carrier Group",ch:"Charging Handle",mag:"Magazine",carrier:"Carrier & Gas Key",bolt:"Bolt",campin:"Cam Pin"};
   /* CENTERS are MEASURED ON-INK points from the alpha-extent pass, not bbox centres.
      lower's alpha centroid falls in the trigger-guard void and was snapped 18.2px onto ink. */
   const AR10_CENTERS={upper:[46.79,8.52],lower:[21.21,28.63],mag:[49.86,66.62],ch:[49.86,85.75],bcg:[51.21,95.95],carrier:[46.00,95.53],bolt:[58.57,95.11],campin:[62.71,94.97]};
-  const AR10X={carrier:"x",bolt:"x",campin:"x"}; /* guard: BCG-breakdown layers hidden outside the Deep Clean branch */
+  const AR10X={carrier:"x",bolt:"x",campin:"x",det_d1:"x",det_d3:"x",det_d4:"x",det_d5:"x",det_d6:"x",det_d7:"x"}; /* guard: BCG-breakdown layers hidden outside the Deep Clean branch */
   const AR10BCGP=["e",-5.21,-0.42]; /* measured bcg-park -> carrier-station offset (array form is an OFFSET, not an absolute).
      ⚠ CURRENTLY UNREFERENCED: the ruled all-visible deep grammar hides the bcg in every deep step
      (bcg:"x"), so nothing consumes this yet. Kept because the value is ruled and measured -- a future
@@ -3684,16 +3694,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR10X},hl:"ch",z:1.4,zc:50,zcy:86,m:{x:49.86,y:85.75,r:2.5}}, /* ch on-ink */
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"e",ch:"e",mag:"e",...AR10X},hl:"upper",z:1,zc:50,zcy:50,m:{x:42.68,y:27.44,r:2.1}}, /* pivot_pin -- lower is the anchor layer, so parked == assembled for this feature */
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"e",ch:"e",mag:"e",...AR10X},hl:"lower",z:1,zc:50,zcy:50,m:null},
-    /* ---- Deep Clean branch (BCG breakdown) -- ⛔ RULED DIVERGENCE 2026-07-30: all five
-       breakdown steps keep the group VISIBLE (boltr precedent) rather than alternating as
-       ar15 does; hl walks the parts. Superior for reassembly context. ---- */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:{x:46.00,y:95.53,r:2.5}}, /* carrier on-ink */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:null}, /* ⛔ firing-pin retaining pin NOT MODELLED -- no dot on absent geometry. Fast-follow scratch-build filed; art + dot land in their own walked round. */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:null}, /* ⛔ firing pin NOT MODELLED -- see above */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"campin",z:1.6,zc:54,zcy:95,m:{x:62.71,y:94.97,r:2.1}}, /* campin on-ink */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"bolt",z:1.6,zc:54,zcy:95,m:{x:58.57,y:95.11,r:2.1}}, /* bolt on-ink */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"bolt",z:1.6,zc:54,zcy:95,m:{x:58.52,y:94.69,r:2.1}}, /* extractor */
-    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:{x:62.71,y:94.97,r:2.1}} /* cam pin orientation -- the critical reassembly item */
+    /* ---- Deep Clean branch -- FULL-SWAP DETAIL INSETS (Darren ruling 2026-07-31, v5).
+       Every standard layer "x", one det layer "e". asm[0,0]+eh:true, so z/zc/zcy reset to
+       1/50/50 -- the art IS the zoom (PRO-TIER ART BAR: zoom cannot substitute for detail
+       art, because it enlarges pixels that were never rendered at that scale).
+       ⛔ D2 IS COPY-FIRST and re-uses det_d1 with m:null. It has no honest depiction at any
+       legal frame: the retaining pin travels LATERALLY, which is a projection NO-OP in the
+       ortho side camera (98 differing bytes of 4,009,600), and the station bar fails at
+       16.2px against 44. Its instruction is textual by nature; the strip gives orientation.
+       ⚠ hl:null on all seven, matching the six shipped full-swap insets. hl applies
+       brightness(1.35) + amber glow to the WHOLE image, which on a sole-visible layer
+       lights the entire panel and lifts it off the tone reference. ---- */
+    {pos:{lower:"x",upper:"x",upper_open:"x",bcg:"x",ch:"x",mag:"x",...AR10X,det_d1:"e"},hl:null,z:1,zc:50,zcy:50,m:{x:37.35,y:42.92,r:2.5}}, /* D1  bolt group laid out (strip, 2 rows) */
+    {pos:{lower:"x",upper:"x",upper_open:"x",bcg:"x",ch:"x",mag:"x",...AR10X,det_d1:"e"},hl:null,z:1,zc:50,zcy:50,m:null}, /* D2  COPY-FIRST -- re-uses det_d1, no marker */
+    {pos:{lower:"x",upper:"x",upper_open:"x",bcg:"x",ch:"x",mag:"x",...AR10X,det_d3:"e"},hl:null,z:1,zc:50,zcy:50,m:{x:46.67,y:50.00,r:2.1}}, /* D3  firing pin emerging from the carrier rear */
+    {pos:{lower:"x",upper:"x",upper_open:"x",bcg:"x",ch:"x",mag:"x",...AR10X,det_d4:"e"},hl:null,z:1,zc:50,zcy:50,m:{x:50.00,y:39.80,r:2.1}}, /* D4  cam pin lifted, head exposed */
+    {pos:{lower:"x",upper:"x",upper_open:"x",bcg:"x",ch:"x",mag:"x",...AR10X,det_d5:"e"},hl:null,z:1,zc:50,zcy:50,m:{x:50.00,y:50.00,r:2.5}}, /* D5  bolt at the carrier bore mouth */
+    {pos:{lower:"x",upper:"x",upper_open:"x",bcg:"x",ch:"x",mag:"x",...AR10X,det_d6:"e"},hl:null,z:1,zc:50,zcy:50,m:{x:50.00,y:50.00,r:2.1}}, /* D6  bolt profile */
+    {pos:{lower:"x",upper:"x",upper_open:"x",bcg:"x",ch:"x",mag:"x",...AR10X,det_d7:"e"},hl:null,z:1,zc:50,zcy:50,m:{x:50.00,y:41.00,r:2.1}} /* D7  cam pin seated -- the critical reassembly item */
   ];
   /* ---- Suppressor layer set (Fieldstrip 3D pipeline, muzzle-right standard) ----
      stack is listed first so it z-stacks UNDER the tube: assembled, the stack
