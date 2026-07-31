@@ -1417,7 +1417,7 @@
   /* boltr is mapped per-MODEL, not per-family: fm "BOLT-700" also covers the Christensen
      Ridgeline and Springfield 2020 Waypoint, and "BOLT-RF" covers 7 rimfire bolt guns.
      Only the two Darren named get the guide; fm-level rollout is a one-line change. */
-  const GUIDE_EXACT={"rfsup":"rfsup","remington700adlbdlsps":"boltr","rugeramericanrimfire":"boltr"};
+  const GUIDE_EXACT={"rfsup":"rfsup","remington700adlbdlsps":"boltr","rugeramericanrimfire":"boltr","knightsarmamentsr25":"ar10"};
   const SPRINGS={"GLOCK":[4000,"Recoil spring assembly"],"GLOCK-SLIM":[4000,"Recoil spring assembly"],
     "SIG-P365":[2500,"Recoil spring assembly"],"SIG-P320":[5000,"Recoil spring assembly"],
     "MP-SHIELD":[5000,"Recoil spring assembly"],"MP2":[5000,"Recoil spring assembly"],
@@ -1794,6 +1794,38 @@
       reassembly:["Feed the fore-end assembly onto the magazine tube — press the left shell latch to let the action bars enter the receiver, and guide the bolt onto them.","Insert the trigger group up into the receiver and push both pins back through.","Slide the barrel guide ring over the magazine tube and seat the chamber end into the receiver with the action partly open.","Screw the magazine cap on hand-tight — the detent clicks are normal.","Cycle the action several times; it should run smooth with a solid lockup.","<strong>Function check:</strong> point in a safe direction, safety ON — trigger dead. Safety OFF, pull (click), cycle the pump, confirm it resets."]
     },
 
+    ar10: {
+      gate:DEFAULT_GATE, exploded:true, layerMode:true,
+      parts:{}, origins:{},
+      cleanIntro:"A large-frame AR is a direct-impingement rifle that vents its own gas and carbon straight back into the carrier, and the .308 case fouls a chamber harder than a 5.56 one does. Four groups. The rule that matters: an AR runs wet at the carrier and dry everywhere else.",
+      steps:[
+        {phase:"Clear",title:"Safe the rifle",body:"Rotate the selector to SAFE before anything else. On a large-frame AR the selector will only rotate to SAFE with the hammer cocked, so if it will not turn, the hammer is down &mdash; continue through the magazine and chamber steps, then cycle the handle and set SAFE. Doing this first means every later step happens with the trigger mechanically blocked, which is the whole point of ordering it here.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Remove the magazine",body:"Press the magazine release on the right side of the lower and draw the magazine straight down. A .308 magazine is longer and heavier than a 5.56 one and will often drop free on its own &mdash; catch it rather than letting it fall on a hard surface, because a bent feed lip is the most common self-inflicted magazine fault. Set it aside; the rifle is not clear yet.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Clear",title:"Verify chamber empty",body:"Pull the charging handle fully rearward and press the bottom of the bolt catch to lock the bolt open. With the action held open, look into the ejection port: daylight through the chamber, empty magazine well. Run a finger into the chamber if the light is poor. A cartridge that was already chambered will still be there no matter how many times the magazine came out.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Push the takedown pin",body:"Push the rear takedown pin from the left side until it stops. It is captive: push until its head stands proud on the right side and it stops, and it is not supposed to come out. If it will not move, the upper and lower are under tension &mdash; set the rifle on a bench and press the halves together slightly as you push. Forcing a captive pin is how detents get sheared.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Pivot the upper open",body:"With the rear pin out, hinge the upper away from the lower about the front pivot pin. The upper swings up and back and the barrel tips down; let gravity do it rather than pulling. It should swing freely &mdash; resistance here almost always means the takedown pin is not fully out. The rifle is now open but still one unit, which is the state most cleaning is done in.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Remove the bolt carrier group",body:"Grip the charging handle and draw it rearward; the bolt carrier group rides out of the upper with it. Pull the carrier the rest of the way clear by hand once it is past the raceway. It should slide with light, even drag &mdash; grit or a bent gas key will make it catch, and that catch is worth investigating rather than muscling through.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Remove the charging handle",body:"With the carrier out, pull the charging handle to the rear until its lugs align with the cut in the raceway, then drop it down and out. It only clears at that one position, so if it will not come free you have not drawn it back far enough. Note which way up it sits before it leaves the rifle; it goes back in the same orientation and no other.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Separate upper from lower",body:"Push the front pivot pin across and lift the upper away from the lower. Like the rear pin it is captive and travels only far enough to release. The two halves are now independent, which is what lets you clean the lower's fire-control area without dripping solvent into the upper.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Strip",title:"Field strip complete",body:"Upper receiver group, lower receiver group, bolt carrier group, charging handle and magazine &mdash; five pieces, and that is as far as a field strip goes. This is the level the rifle is cleaned at after nearly every range trip. Going further into the carrier is a deep-clean job and is covered in the Deep Clean branch.",t:{},hl:[],labels:[],arrow:null,branch:true}
+      ],
+      deepSteps:[
+        {phase:"Deep Clean",title:"Bolt carrier group",body:"Lay the carrier group out with the bolt forward. Everything in this branch comes apart without a single tool &mdash; if you find yourself reaching for one, stop and re-read the step. Work over a tray: the firing-pin retaining pin is small and it is the part people lose.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Remove the firing pin retaining pin",body:"Pull the small cotter-style retaining pin from the left side of the carrier &mdash; fingers or the edge of a cartridge rim, never pliers. It is the smallest part on the tray and the one people lose.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Drop the firing pin out",body:"Tip the carrier muzzle-up and the firing pin slides out the rear on its own. If it does not fall free, it is dirty, not stuck &mdash; no pulling.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Remove the cam pin",body:"Push the bolt fully into the carrier, then rotate the cam pin a quarter turn and lift it straight out. It only clears at that one angle, and it will not come out at all if the bolt is extended &mdash; that is the interlock working, not a jam. The cam pin is what times the bolt's rotation, so note how it sat before it leaves.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Slide the bolt out",body:"With the cam pin gone, draw the bolt straight forward out of the carrier. It should come without resistance. If it does not, the cam pin is still partly seated &mdash; go back rather than pulling harder, because the bolt's lugs are not something to lever against.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Inspect bolt face and extractor",body:"Clean the bolt face and look at it in good light: carbon rings around the rim recess, a chipped lug, or a cracked bolt at the cam-pin hole are the faults that matter. Check the extractor claw for chips and make sure it springs back when pressed. On a large-frame rifle the extractor spring is working against a heavier case rim, so a tired spring shows up here before it shows up as a failure to extract.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Reassemble the carrier group",body:"Bolt into the carrier, cam pin down through the bolt and rotated a quarter turn to lock, and check before anything else that the cam pin is fully seated &mdash; a proud cam pin will not let the carrier enter the upper, and forcing it there is what cracks receivers. Then the firing pin in from the rear &mdash; it seats without force &mdash; and the retaining pin back into its hole. With the cam pin home the bolt should extend and retract smoothly by hand. That free movement is the confirmation the group is back together correctly.",t:{},hl:[],labels:[],arrow:null}
+      ],
+      cleaning:[
+        {name:"BORE & CHAMBER",tasks:["Bore, breech to muzzle: patch, brush, patch until a clean patch comes out. Use a rod guide.","Chamber and locking-lug recesses: a chamber brush, then dry patches. This is where a .308 fouls hardest and where a failure to go into battery starts."]},
+        {name:"BOLT & CARRIER",tasks:["Bolt face and rim recess: scrape the carbon ring, then oil lightly.","Bolt body and rings: wipe carbon off the tail; the gas rings should not be replaced on a schedule, only when the bolt will not stand on its own extended.","Carrier bore and gas key interior: dry patch. Do not oil the inside of the key.","Lube on reassembly: oil the carrier's bearing surfaces and the bolt's cam pin area. An AR runs wet at the carrier and dry everywhere else."]},
+        {name:"UPPER & CHARGING HANDLE",tasks:["Upper raceway and charging-handle channel: wipe dry, then a very light film."]},
+        {name:"LOWER & MAGAZINE",tasks:["Lower fire-control area: brush out debris, one drop of oil on the hammer and trigger pins.","Magazine: wipe the body and follower dry. No oil inside a magazine."]}
+      ],
+      reassembly:["Bolt carrier group back into the upper, charging handle in first at its cut and pushed forward, then the carrier following it home.","Close the upper onto the lower, push the front pivot pin, then the rear takedown pin.","<strong>Function check</strong> on an empty rifle: SAFE blocks the trigger, FIRE releases the hammer, and holding the trigger down through a charging-handle cycle should reset with an audible click when you let it out.","Magazine last."]
+    },
     ar15: {
       svg:"svg-ar15", arrow:"ar-arrow", gate:DEFAULT_GATE, layerMode:true, exploded:true,
       parts:{mag:"ar-mag",lower:"ar-lower",bcg:"ar-bcg",bolt:"ar-bolt",upper:"ar-upper",port:"ar-port",ch:"ar-ch",pins:"ar-pins"},
@@ -3617,6 +3649,52 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.35,zc:70,zcy:79,m:{x:69,y:75,ch:"\u25bc"}},
     {pos:{lower:"a",upper:"e",upper_open:"x",bcg:ARBCGP,ch:"e",mag:"e",carrier:"x",bolt:"x",campin:"x"},hl:null,z:1.4,zc:68,zcy:78,m:null}
   ];
+  /* ---- ar10 layer set (SR-25 / AR-10 pattern, .308) -- 5-row stacked, canvas 1400x716.
+     Source sr-25_rev3.blend; licence scratchpad/licenses/ar10-sr25-m110.png. All values
+     feature-anchored from render_ar10_stacked / compose_ar10_v3 emission, 2026-07-30.
+     LOWER IS THE ANCHOR LAYER (asm[0,0]) -- ar15/m500 grammar; it never moves. ---- */
+  const AR10_LAYERS=[
+    {n:"bcg",asm:[-20.01,-73.50],src:"assets/guns/ar10/bcg.png"},
+    {n:"ch",asm:[-17.38,-67.42],src:"assets/guns/ar10/ch.png"},
+    {n:"mag",asm:[-11.48,-29.66],src:"assets/guns/ar10/mag.png"},
+    {n:"upper",asm:[11.19,13.22],src:"assets/guns/ar10/upper.png"},
+    {n:"upper_open",asm:[0,0],eh:true,src:"assets/guns/ar10/upper_open.png"}, /* posed 26.0deg about the measured pivot_pin boss; maxfit-limited, POSED_ANGLE_PROVISIONAL */
+    {n:"lower",asm:[0,0],src:"assets/guns/ar10/lower.png"},
+    /* deep-clean BCG breakdown: eh:true (out of the free Parts Diagram); Deep Clean branch only */
+    {n:"carrier",asm:[0,0],eh:true,src:"assets/guns/ar10/carrier.png"},
+    {n:"bolt",asm:[0,0],eh:true,src:"assets/guns/ar10/bolt.png"},
+    {n:"campin",asm:[0,0],eh:true,src:"assets/guns/ar10/campin.png"}
+  ];
+  const AR10_NAMES={upper:"Upper Receiver Group",upper_open:"Upper Receiver (open)",lower:"Lower Receiver Group",bcg:"Bolt Carrier Group",ch:"Charging Handle",mag:"Magazine",carrier:"Carrier & Gas Key",bolt:"Bolt",campin:"Cam Pin"};
+  /* CENTERS are MEASURED ON-INK points from the alpha-extent pass, not bbox centres.
+     lower's alpha centroid falls in the trigger-guard void and was snapped 18.2px onto ink. */
+  const AR10_CENTERS={upper:[46.79,8.52],lower:[21.21,28.63],mag:[49.86,66.62],ch:[49.86,85.75],bcg:[51.21,95.95],carrier:[46.00,95.53],bolt:[58.57,95.11],campin:[62.71,94.97]};
+  const AR10X={carrier:"x",bolt:"x",campin:"x"}; /* guard: BCG-breakdown layers hidden outside the Deep Clean branch */
+  const AR10BCGP=["e",-5.21,-0.42]; /* measured bcg-park -> carrier-station offset (array form is an OFFSET, not an absolute).
+     ⚠ CURRENTLY UNREFERENCED: the ruled all-visible deep grammar hides the bcg in every deep step
+     (bcg:"x"), so nothing consumes this yet. Kept because the value is ruled and measured -- a future
+     round that shows the intact group in a deep step has it ready. Delete only by ruling. */
+  const AR10_LSTEPS=[
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"a",...AR10X},hl:"lower",z:1.35,zc:31,zcy:45,m:{x:28.17,y:29.31,r:2.1}}, /* safety_selector. ⛔ RULED DIVERGENCE 2026-07-30: ar15 idx0 is hl:null,m:null. Safing is a real interactive step under current doctrine, not grammar drift. */
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR10X},hl:"mag",z:1.35,zc:31,zcy:45,m:{x:34.51,y:29.59,r:2.1}}, /* magazine_release */
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR10X},hl:"ch",z:1.35,zc:31,zcy:45,m:{x:32.62,y:18.73,r:2.1}}, /* charging_handle */
+    {pos:{lower:"a",upper:"a",upper_open:"x",bcg:"a",ch:"a",mag:"e",...AR10X},hl:"lower",z:1.35,zc:31,zcy:45,m:{x:26.86,y:27.52,r:2.1}}, /* takedown_pin boss */
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"x",ch:"x",mag:"e",...AR10X},hl:"upper_open",z:1.35,zc:60.6,zcy:36.7,m:{x:42.68,y:27.44,r:2.1}}, /* pivot_pin boss. zc/zcy re-solved 31/45 -> 60.6/36.7 by crop_audit solve: the posed upper_open is both MOVED and SUBJECT and overflowed R39%/T10.3% at 31/45. Pan only, z unchanged. */
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"x",mag:"e",...AR10X},hl:"bcg",z:1.25,zc:51,zcy:93,m:{x:51.21,y:95.95,r:2.5}}, /* bcg on-ink */
+    {pos:{lower:"a",upper:"x",upper_open:"e",bcg:"e",ch:"e",mag:"e",...AR10X},hl:"ch",z:1.4,zc:50,zcy:86,m:{x:49.86,y:85.75,r:2.5}}, /* ch on-ink */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"e",ch:"e",mag:"e",...AR10X},hl:"upper",z:1,zc:50,zcy:50,m:{x:42.68,y:27.44,r:2.1}}, /* pivot_pin -- lower is the anchor layer, so parked == assembled for this feature */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"e",ch:"e",mag:"e",...AR10X},hl:"lower",z:1,zc:50,zcy:50,m:null},
+    /* ---- Deep Clean branch (BCG breakdown) -- ⛔ RULED DIVERGENCE 2026-07-30: all five
+       breakdown steps keep the group VISIBLE (boltr precedent) rather than alternating as
+       ar15 does; hl walks the parts. Superior for reassembly context. ---- */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:{x:46.00,y:95.53,r:2.5}}, /* carrier on-ink */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:null}, /* ⛔ firing-pin retaining pin NOT MODELLED -- no dot on absent geometry. Fast-follow scratch-build filed; art + dot land in their own walked round. */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:null}, /* ⛔ firing pin NOT MODELLED -- see above */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"campin",z:1.6,zc:54,zcy:95,m:{x:62.71,y:94.97,r:2.1}}, /* campin on-ink */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"bolt",z:1.6,zc:54,zcy:95,m:{x:58.57,y:95.11,r:2.1}}, /* bolt on-ink */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"bolt",z:1.6,zc:54,zcy:95,m:{x:58.52,y:94.69,r:2.1}}, /* extractor */
+    {pos:{lower:"a",upper:"e",upper_open:"x",bcg:"x",ch:"e",mag:"e",carrier:"e",bolt:"e",campin:"e"},hl:"carrier",z:1.6,zc:54,zcy:95,m:{x:62.71,y:94.97,r:2.1}} /* cam pin orientation -- the critical reassembly item */
+  ];
   /* ---- Suppressor layer set (Fieldstrip 3D pipeline, muzzle-right standard) ----
      stack is listed first so it z-stacks UNDER the tube: assembled, the stack
      sits hidden inside the can; extraction slides it out from underneath. */
@@ -3803,6 +3881,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     revda:{layers:REVDA_LAYERS,lsteps:REVDA_LSTEPS,centers:REVDA_CENTERS,names:REVDA_NAMES,nums:[["cylinder",1],["frame",2]],tags:["cylinder","frame"],aspect:"1400 / 769",art:[1400,769],hRatio:769/1400},
     revsa:{layers:REVSA_LAYERS,lsteps:REVSA_LSTEPS,centers:REVSA_CENTERS,names:REVSA_NAMES,nums:[["frame",1],["cylinder",2],["pin",3]],tags:["frame","cylinder","pin"],aspect:"1500 / 682",art:[1500,682],hRatio:682/1500},
     ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1400 / 726",art:[1400,726],hRatio:726/1400},
+    ar10:{layers:AR10_LAYERS,lsteps:AR10_LSTEPS,centers:AR10_CENTERS,names:AR10_NAMES,nums:[["upper",1],["lower",2],["mag",3],["ch",4],["bcg",5]],tags:["upper","lower","mag","ch","bcg"],aspect:"1400 / 716",art:[1400,716],hRatio:716/1400},
     /* boltr: the 2.50:1 padded display stage is REMOVED — with runtime projection the pad
        bought nothing (the art is width-bound either way, so the rifle rendered the same
        size) and it was the dead band above/below the gun in Darren's walk. Stage aspect
