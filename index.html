@@ -3928,14 +3928,42 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        per side, which is what keeps parked parts off the viewport edge. */
     akm:{layers:AKM_LAYERS,lsteps:AKM_LSTEPS,centers:AKM_CENTERS,names:AKM_NAMES,nums:[["mag",1],["cover",2],["recoilasm",3],["carrier",4],["bolt",5],["gastube",6],["receiver",7]],tags:["mag","cover","recoilasm","carrier","bolt","gastube","receiver"],aspect:"1400 / 1070",art:[1400,1070],hRatio:1070/1400}
   };
-  /* m590 shares m500 art: same barrel/pump/receiver PNGs, same markers. The idx2 ring
-     sits on the magazine tube's terminal cap — where BOTH the 500 takedown screw and the
-     590 barrel nut live — so it re-anchors by NAME only, no coordinate change. Art gap:
-     the receiver PNG models a CLOSED 500 tube end (logged in CLAUDE.md, not a blocker).
-     Markers are shared EXCEPT idx3 (barrel): m500 lifts (▲), m590 slides forward (▶) — minimal
-     lsteps fork below; layers + centers stay aliased to m500 (no art divergence, no new layers). */
-  const M590_LSTEPS = M500_LSTEPS.map((s,i)=> i===3 ? {...s, m:{...s.m, ch:"▶"}} : s);
-  LAYER_SETS.m590 = Object.assign({}, LAYER_SETS.m500, {lsteps:M590_LSTEPS});
+  /* ---- m590 FORKED layer set (tube-length + CadQuery-lane rulings 2026-08-11; walk pending).
+     Art: assets/guns/m590/ — receiver with FULL-LENGTH tube meeting the barrel's takedown
+     ring (banked tube-end part at the mouth), CadQuery 508 mm barrel (ring at the muzzle),
+     NEW magazine cap layer, receiver_strip to match (guard shells hidden, same recipe).
+     pump + deep-clean internals SHARE m500's PNGs (pump pixel-identical at 72/553300 px;
+     internals untouched — m500sw precedent for cross-family asset reuse). m500 UNTOUCHED.
+     Emission: scratchpad/590-barrel-audition/fork/fork-layout.json; fixture regenerated
+     from it. Barrel dot is the ON-INK band-mid (bbox centre fell in the band/ring hollow);
+     receiver dot keeps m500's on-ink hand-move (housing pixels reproduce shipped exactly). */
+  const M590_LAYERS=[
+    {n:"cartstop",asm:[-3.0,-42.0],eh:true,src:"assets/guns/m500/cartstop.png"},
+    {n:"trigger",asm:[2.55,-31.85],eh:true,src:"assets/guns/m500/trigger.png"},
+    {n:"boltslide",asm:[-31.8,-37.0],eh:true,src:"assets/guns/m500/boltslide.png"},
+    {n:"elevator",asm:[-8.8,-36.0],eh:true,src:"assets/guns/m500/elevator.png"},
+    {n:"receiver",asm:[0,0],src:"assets/guns/m590/receiver.png"},
+    {n:"receiver_strip",asm:[0,0],eh:true,src:"assets/guns/m590/receiver_strip.png"},
+    {n:"pump",asm:[-9.43,-3.93],exp:[0,10],src:"assets/guns/m500/pump.png"},
+    {n:"barrel",asm:[-2.57,26.87],src:"assets/guns/m590/barrel.png"},
+    {n:"cap",asm:[-4.29,14.42],src:"assets/guns/m590/cap.png"}
+  ];
+  const M590_CENTERS={barrel:[69.88,10.83],pump:[70.3,46.6],receiver:[42.6,39.76],cap:[90.22,28.79]};
+  const M590_NAMES={barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Stock",cap:"Magazine Cap",trigger:"Trigger Group",boltslide:"Bolt & Slide",elevator:"Elevator"};
+  const M590X={trigger:"a",boltslide:"a",elevator:"a",cartstop:"a",receiver_strip:"x"};
+  const M590_LSTEPS=[
+    {pos:{receiver:"a",pump:"a",barrel:"a",cap:"a",...M590X},hl:null,m:null},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",cap:"a",...M590X},hl:"pump",z:1.4,zc:60,m:{x:58,y:43,ch:"\u25c0"}},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"a",cap:"a",...M590X},hl:"cap",z:1.27,zc:52,m:[{x:85.93,y:43.21,r:2.1},{x:82,y:36,ch:"\u27f2"}]},
+    {pos:{receiver:"a",pump:["a",-2.7,0],barrel:"e",cap:"e",...M590X},hl:"barrel",m:{x:63,y:6,ch:"\u25b6"}},
+    {pos:{receiver:"a",pump:"a",barrel:"e",cap:"e",...M590X},hl:null,m:null},
+    {pos:{receiver:"a",pump:"a",barrel:"e",cap:"e",...M590X},hl:"receiver",z:1.23,zc:46.4,m:{x:32.39,y:41.95,r:2.1}},
+    {pos:{receiver:"x",pump:"a",barrel:"e",cap:"e",...M590X,trigger:"e",receiver_strip:"a"},hl:"trigger",z:1.23,zc:46.4,zcy:58.35,m:{x:33,y:73,ch:"\u25bc"}},
+    {pos:{receiver:"x",pump:"a",barrel:"e",cap:"e",...M590X,trigger:"e",cartstop:"e",receiver_strip:"a"},hl:"cartstop",z:1.257,zc:42,zcy:61.33,m:{x:44.9,y:85.89,r:2.5}},
+    {pos:{receiver:"x",receiver_strip:"a",pump:["a",-6,4],barrel:"e",cap:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:"boltslide",z:1.144,zc:45.45,zcy:58.55,m:{x:78,y:76,r:2.5}},
+    {pos:{receiver:"x",receiver_strip:"a",pump:["a",-6,4],barrel:"e",cap:"e",trigger:"e",boltslide:"e",elevator:"e",cartstop:"e"},hl:null,z:0.993,zc:51.27,zcy:47.32,m:null}
+  ];
+  LAYER_SETS.m590 = {layers:M590_LAYERS,lsteps:M590_LSTEPS,centers:M590_CENTERS,names:M590_NAMES,nums:[["barrel",1],["pump",2],["receiver",3],["cap",4]],tags:["barrel","pump","receiver","cap"],aspect:"1100 / 503",art:[1100,503],hRatio:503/1100};
   const activeLayerKey=()=>{ const k=fkey(byId(activeId)); return LAYER_SETS[k]?k:"g19"; };
 
   /* ================= RUNTIME LETTERBOX PROJECTION =================
