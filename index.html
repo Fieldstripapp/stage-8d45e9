@@ -449,6 +449,30 @@
     .searchwrap > *{max-width:700px;margin-inline:auto}
     .catalog{width:100%;max-width:700px;margin-inline:auto}
   }
+  /* ---------- THE BENCH (full build, ruling-bench-full-build-20260813) ---------- */
+  .benchrow{display:flex;align-items:flex-start;gap:10px;padding:11px 2px;border-bottom:1px solid var(--edge);font-size:13px;cursor:pointer}
+  .benchrow:last-child{border-bottom:none}
+  .benchrow .bi{flex:1;min-width:0}
+  .benchrow .bn{font-weight:600;color:#E4E8EE;line-height:1.35;font-size:13.5px}
+  .benchrow .bs{color:var(--muted);font-size:11.5px;margin-top:2px;line-height:1.45}
+  .statuschip{font-family:var(--display);font-size:9px;letter-spacing:1px;padding:2px 7px;border-radius:5px;text-transform:uppercase;font-weight:600;border:1px solid var(--edge);background:none;color:var(--muted);white-space:nowrap;cursor:pointer;flex:none;margin-top:2px}
+  .statuschip.active{color:var(--green);border-color:rgba(95,163,107,.45)}
+  .statuschip.problem{color:var(--safe-red);border-color:rgba(212,85,63,.45)}
+  .statuschip.retired{color:var(--muted)}
+  .statuschip.due{color:var(--amber);border-color:rgba(232,163,61,.5)}
+  .attgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}
+  .attthumb{aspect-ratio:1;border:1px solid var(--edge);border-radius:9px;background:#0e1013;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer}
+  .attthumb .atag{position:absolute;left:4px;bottom:4px;font-family:var(--display);font-size:8px;letter-spacing:.8px;color:var(--muted);background:rgba(12,14,17,.82);border-radius:4px;padding:1px 5px;text-transform:uppercase;pointer-events:none}
+  .attthumb .attdel{position:absolute;right:2px;top:2px;background:rgba(12,14,17,.85);border:1px solid var(--edge);border-radius:6px;color:var(--safe-red);font-size:11px;line-height:1;padding:2px 5px;cursor:pointer}
+  .attthumb.add{border-style:dashed;color:var(--muted);font-size:10px;font-family:var(--display);letter-spacing:1px;flex-direction:column;gap:3px}
+  .photoslot{border:1px dashed var(--edge);border-radius:10px;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-family:var(--display);font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;background:#0e1013;cursor:pointer;text-align:center}
+  .photoslot.filled{border-style:solid;border-color:rgba(95,163,107,.5)}
+  .segrow{display:flex;gap:8px;margin-top:6px}
+  .segrow button{flex:1;background:var(--panel2);border:1px solid var(--edge);border-radius:8px;color:var(--muted);font-family:var(--display);font-size:10px;letter-spacing:1.3px;padding:9px 6px;cursor:pointer;text-transform:uppercase}
+  .segrow button.on{color:var(--amber);border-color:var(--amber-dim);background:rgba(232,163,61,.08)}
+  .toastline{background:rgba(95,163,107,.12);border:1px solid rgba(95,163,107,.45);border-radius:10px;padding:11px 13px;color:var(--text);font-size:13px;line-height:1.5}
+  .toastline b{color:var(--green)}
+  .fa-card .cardclean{display:inline-block;text-align:center}
 </style>
 </head>
 <body>
@@ -468,10 +492,17 @@
       <div id="safeList"></div>
       <div class="spacer"></div>
       <button class="btn primary full" id="addBtn">+ Add Firearm</button>
+      <button class="btn full" id="benchBtn" style="margin-top:8px">The Bench</button>
       <button class="btn full" id="lockerBtn" style="margin-top:8px">Ammo Locker</button>
       <button class="prorow" id="proRow" hidden></button>
     </div>
   </section>
+
+  <!-- ============ THE BENCH ============ -->
+  <section class="screen" id="scr-bench">
+    <div class="detail" id="benchBody"></div>
+  </section>
+  <input type="file" id="benchFile" accept="image/*" hidden>
 
   <!-- ============ AMMO LOCKER ============ -->
   <section class="screen" id="scr-ammoinv">
@@ -537,6 +568,7 @@
         <div id="nfaSupWrap">
         <div class="lrow"><span class="lt">NFA Record</span><span class="lv" id="nfaStatus"></span></div>
         <div class="lmsg" id="nfaMsg"></div>
+        <div id="nfaFilingsUI"></div>
         <div class="nfagrid" id="nfaForm" hidden>
           <div class="nf"><label for="nfaFormType">Form</label><select id="nfaFormType"><option>Form 4 — Transfer</option><option>Form 1 — Maker</option></select></div>
           <div class="nf"><label for="nfaOwn">Ownership</label><select id="nfaOwn"><option>Individual</option><option>Trust</option><option>Corporation</option></select></div>
@@ -588,10 +620,14 @@
         <div class="lmsg" id="magMsg"></div>
         <div id="magList"></div>
         <div class="nfagrid" style="margin-top:11px">
+          <div class="nf wide"><label for="magModel">Model (optional)</label><input type="text" id="magModel" maxlength="40" placeholder="e.g. PMAG 30 AR/M4 GEN M3"></div>
+          <div class="nf"><label for="magBrand">Brand (optional)</label><input type="text" id="magBrand" maxlength="30" placeholder="e.g. Magpul"></div>
           <div class="nf"><label for="magCap">Capacity</label><input type="number" id="magCap" min="1" max="200" inputmode="numeric" placeholder="e.g. 15"></div>
+          <div class="nf"><label for="magQty">Quantity</label><input type="number" id="magQty" min="1" max="200" inputmode="numeric" value="1"></div>
           <div class="nf"><label for="magRole">Role</label><select id="magRole"><option>Range</option><option>Carry</option><option>Storage</option></select></div>
         </div>
-        <button class="btn sm primary" id="magAdd" style="margin-top:10px">Add Magazine</button>
+        <div class="lmsg" style="margin-top:8px">Each mag gets its own number — mark your physical mags to match (paint pen on the baseplate works), so "mag #7 has a problem" means the same thing in the app and in your hand.</div>
+        <button class="btn sm primary" id="magAdd" style="margin-top:10px">Add Magazines</button>
         <div class="ivrow" id="magRotRow" style="margin-top:12px"><label for="magRotDays">Rotate carry mags every</label><input type="number" id="magRotDays" min="7" max="365" inputmode="numeric"><span style="font-size:12px;color:var(--muted)">days</span></div>
         <div id="magRotLock" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--edge)">
           <div class="lrow"><span class="lt">Carry-rotation timer</span><span class="protag">PRO</span></div>
@@ -606,9 +642,27 @@
         <div class="nfagrid" style="margin-top:11px">
           <div class="nf wide"><label for="careType">Type</label><select id="careType"></select></div>
           <div class="nf wide" id="careLabelWrap" hidden><label for="careLabel">Name it</label><input type="text" id="careLabel" maxlength="40" placeholder="e.g. Sling wear check"></div>
-          <div class="nf"><label for="careDays">Every (days)</label><input type="number" id="careDays" min="7" max="730" inputmode="numeric"></div>
+          <div class="nf" hidden><label for="careDays">Every (days)</label><input type="number" id="careDays" min="7" max="730" inputmode="numeric"></div>
+          <div class="nf"><label for="careComp">Optic / component</label><input type="text" id="careComp" maxlength="40" placeholder="e.g. Trijicon RMR Type 2"></div>
+          <div class="nf"><label for="careBatt">Battery type</label><input type="text" id="careBatt" maxlength="20" placeholder="e.g. CR2032"></div>
+          <div class="nf"><label for="careTorque">Torque spec</label><input type="text" id="careTorque" maxlength="30" placeholder="e.g. 15 in-lb"></div>
+          <div class="nf"><label for="careLube">Lube</label><input type="text" id="careLube" maxlength="30" placeholder="e.g. TW25B — rails only"></div>
+          <div class="nf wide"><label for="careNote">Note (optional)</label><input type="text" id="careNote" maxlength="120" placeholder="e.g. Blue Loctite on mount screws"></div>
+        </div>
+        <div class="segrow"><button type="button" id="careClockRounds">Round count</button><button type="button" id="careClockTime" class="on">Time</button></div>
+        <div class="nfagrid" id="careTimeWrap" style="margin-top:9px">
+          <div class="nf"><label for="careEvery">Every</label><input type="number" id="careEvery" min="1" max="120" inputmode="numeric" value="12"></div>
+          <div class="nf"><label for="careUnit">Unit</label><select id="careUnit"><option value="months" selected>months</option><option value="weeks">weeks</option><option value="days">days</option></select></div>
+        </div>
+        <div class="nfagrid" id="careRoundsWrap" style="margin-top:9px" hidden>
+          <div class="nf wide"><label for="careRounds">Every (rounds)</label><input type="number" id="careRounds" min="1" max="100000" inputmode="numeric" placeholder="e.g. 5000"></div>
         </div>
         <button class="btn sm primary" id="careAdd" style="margin-top:10px">Add Reminder</button>
+      </div>
+      <div class="lifebox" id="attBox">
+        <div class="lrow"><span class="lt">Attachments</span><span class="lv" id="attSummary"></span></div>
+        <div class="lmsg" id="attMsg"></div>
+        <div id="attGridWrap"></div>
       </div>
       <div class="lifebox" id="svcBox">
         <div class="lrow"><span class="lt">Service &amp; Mods</span><span class="lv" id="svcSummary"></span></div>
@@ -630,8 +684,13 @@
         <div class="nfagrid" style="margin-top:11px">
           <div class="nf"><label for="zeroDist">Distance</label><input type="number" id="zeroDist" min="1" max="2000" inputmode="numeric" placeholder="e.g. 50"></div>
           <div class="nf"><label for="zeroUnit">Unit</label><select id="zeroUnit"><option>yd</option><option>m</option></select></div>
-          <div class="nf wide"><label for="zeroAmmo">Ammo</label><input type="text" id="zeroAmmo" maxlength="60"></div>
-          <div class="nf wide"><label for="zeroNote">Optic / turret notes (optional)</label><input type="text" id="zeroNote" maxlength="80" placeholder="e.g. Holosun 507C, 1.5 MOA left from factory"></div>
+          <div class="nf"><label for="zeroAmmo">Ammo brand / load</label><input type="text" id="zeroAmmo" maxlength="60"></div>
+          <div class="nf"><label for="zeroLot">Lot number</label><input type="text" id="zeroLot" maxlength="30" placeholder="e.g. FC26-114A"></div>
+          <div class="nf wide"><label for="zeroNote">Conditions / optic notes (optional)</label><input type="text" id="zeroNote" maxlength="120" placeholder="e.g. 90F light wind prone; Holosun 507C, 1.5 MOA left"></div>
+        </div>
+        <div class="nfagrid" id="zeroPhotoRow" style="margin-top:9px">
+          <div class="nf"><label>Target — before</label><div class="photoslot" id="zeroSlot_before">▣<span>ADD PHOTO</span></div></div>
+          <div class="nf"><label>Target — after</label><div class="photoslot" id="zeroSlot_after">▣<span>ADD PHOTO</span></div></div>
         </div>
         <button class="btn sm primary" id="zeroAdd" style="margin-top:10px">Log Zero</button>
       </div>
@@ -1306,7 +1365,11 @@
       <div class="proreason" id="proReason" style="display:none"></div>
       <p class="pp" id="proSheetIntro">One purchase, yours for good. No subscription, no account, and like everything here — nothing leaves your phone.</p>
       <div class="feat"><span class="fx">▸</span><span><b>Unlimited safe</b> — track every firearm and can you own, not just two.</span></div>
-      <div class="feat"><span class="fx">▸</span><span><b>NFA Record</b> — SBR/SBS/AOW classification, Form 4/1 dates, stamp reference, and a stored photo of the stamp itself.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>The Bench</b> — your whole inventory in one view: NFA items, the mag fleet, zeros, and care clocks across the safe.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>NFA Record</b> — item type, every filing (Form 1/4/5 or your own named filing), entity, status, dates, stamp photo and documents.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Magazine fleet</b> — batch add ("qty 15" becomes 15 numbered records), per-mag status and notes.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Receipts &amp; work photos</b> — attached to firearms, mags, NFA filings and zeros; stored on this phone only.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Backup &amp; export</b> — one local file, photos optional, saved wherever you choose.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Fouling by weight</b> — baseline, weigh-ins, and a clean-due threshold for sealed cans.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Barcode check-in</b> — scan an ammo box and it lands in the locker, no typing.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Zero Record</b> — distance, ammo, and optic notes, so a re-zero starts from facts.</span></div>
@@ -1749,6 +1812,178 @@
   }
 
   return {migrateStamps, lsKey, fsPath};
+});
+/* BENCH STAGE 2 — ATTACHMENTS (order item 2, files-not-DB).
+   Receipts, work photos, notes-with-photos — attachable to firearms, mags, NFA
+   filings, zero records. Photos are FILES on device storage, never in the database;
+   the registry (fs_attachments) holds metadata + file paths only. Thumbnails are
+   generated at import; full-size loads on tap. NO size caps and no quota language —
+   gentle compress-on-import for oversized camera shots only (ruled).
+
+   Binary adapter contract (device = Capacitor Filesystem, base64 in/out, DATA dir):
+     filesB64: { writeB64(path,b64):Promise, readB64(path):Promise<string>,
+                 removeFile(path):Promise, list?(dir):Promise<string[]> }
+   thumbnailer(b64, maxDim) -> Promise<b64 jpeg>  — webview: canvas (Stage 3 wires
+   the shipped downscaleToJpeg pattern); tests inject a stub. */
+(function(root, factory){
+  if(typeof module!=="undefined" && module.exports) module.exports = factory();
+  else root.BenchAttach = factory();
+})(typeof self!=="undefined" ? self : this, function(){
+  "use strict";
+
+  const KEY = "fs_attachments";
+  const DIR = "bench/att";
+  const PARENT_KINDS = ["firearm","mag","nfa","zero"];
+  /* compress-on-import threshold: only shots whose longest side exceeds this get the
+     gentle recompress; below it the original bytes are stored untouched. Not a cap. */
+  const IMPORT_MAX_DIM = 2600;
+  const THUMB_DIM = 320;
+
+  let seq = 0;
+  function makeId(now){ seq = (seq+1)%46656; return "att_" + (now||0).toString(36) + "_" + seq.toString(36); }
+
+  function readReg(store){
+    try{ const r = store.getRaw(KEY); return r ? JSON.parse(r) : []; }catch(e){ return []; }
+  }
+  function writeReg(store, reg){ store.setRaw(KEY, JSON.stringify(reg)); }
+
+  function validParent(parent){
+    return parent && PARENT_KINDS.indexOf(parent.kind)>=0 && typeof parent.id==="string" && parent.id;
+  }
+
+  /* import: write full file (+ gentle recompress when oversized), write thumb,
+     then and only then create the registry record. A failed write never leaves a
+     registry row pointing at a file that does not exist. */
+  async function importPhoto(store, filesB64, parent, b64, opts){
+    if(!validParent(parent)) throw new Error("bad parent");
+    if(!b64) throw new Error("no data");
+    const now = opts.now, thumbnailer = opts.thumbnailer;
+    const dims = opts.dims || null;                 /* {w,h} when the caller measured */
+    const id = makeId(now);
+    const file = DIR + "/" + id + ".jpg";
+    const thumb = DIR + "/" + id + "_t.jpg";
+    let stored = b64, recompressed = false;
+    if(dims && Math.max(dims.w||0, dims.h||0) > IMPORT_MAX_DIM && thumbnailer){
+      stored = await thumbnailer(b64, IMPORT_MAX_DIM);  /* gentle compress-on-import */
+      recompressed = true;
+    }
+    await filesB64.writeB64(file, stored);
+    const tb64 = thumbnailer ? await thumbnailer(stored, THUMB_DIM) : stored;
+    await filesB64.writeB64(thumb, tb64);
+    const back = await filesB64.readB64(file);          /* verify the full-size landed */
+    if(back !== stored){
+      try{ await filesB64.removeFile(file); await filesB64.removeFile(thumb); }catch(e){}
+      throw new Error("attachment write verify failed");
+    }
+    const rec = {id, parent:{kind:parent.kind, id:parent.id}, file, thumb,
+                 kind:opts.kind||"photo", note:String(opts.note||""), addedAt:now, recompressed};
+    const reg = readReg(store); reg.push(rec); writeReg(store, reg);
+    return rec;
+  }
+
+  async function addNote(store, parent, text, now){
+    if(!validParent(parent)) throw new Error("bad parent");
+    const rec = {id:makeId(now), parent:{kind:parent.kind, id:parent.id}, file:null, thumb:null,
+                 kind:"note", note:String(text||""), addedAt:now};
+    const reg = readReg(store); reg.push(rec); writeReg(store, reg);
+    return rec;
+  }
+
+  function listFor(store, parent){
+    return readReg(store).filter(a=>a.parent.kind===parent.kind && a.parent.id===parent.id);
+  }
+
+  async function deleteAttachment(store, filesB64, id){
+    const reg = readReg(store);
+    const i = reg.findIndex(a=>a.id===id);
+    if(i<0) return false;
+    const rec = reg[i];
+    if(rec.file){ try{ await filesB64.removeFile(rec.file); }catch(e){} }
+    if(rec.thumb){ try{ await filesB64.removeFile(rec.thumb); }catch(e){} }
+    reg.splice(i,1); writeReg(store, reg);
+    return true;
+  }
+
+  /* files on disk with no registry row (crash between write and register, or a
+     deleted parent) — report only; deletion is a caller decision */
+  async function sweepOrphans(store, filesB64){
+    if(!filesB64.list) return {checked:false, orphans:[]};
+    const reg = readReg(store);
+    const known = new Set();
+    reg.forEach(a=>{ if(a.file) known.add(a.file); if(a.thumb) known.add(a.thumb); });
+    const onDisk = await filesB64.list(DIR);
+    return {checked:true, orphans:onDisk.filter(p=>!known.has(p))};
+  }
+
+  return {KEY, DIR, PARENT_KINDS, IMPORT_MAX_DIM, THUMB_DIM,
+          readReg, importPhoto, addNote, listFor, deleteAttachment, sweepOrphans};
+});
+/* BENCH — BACKUP / EXPORT (ruled scope item 9; photos-optional).
+   Pure builder: assembles the export object from the store (all fs_* raw values)
+   plus, when includePhotos, every attachment file/thumb and every fs-stored stamp
+   photo as base64. No size caps, no quota logic — by ruling. The caller
+   stringifies, writes, and hands the file to the user (share sheet on device). */
+(function(root, factory){
+  if(typeof module!=="undefined" && module.exports) module.exports = factory();
+  else root.BenchExport = factory();
+})(typeof self!=="undefined" ? self : this, function(){
+  "use strict";
+
+  const FORMAT = "fieldstrip-backup";
+  const FORMAT_VERSION = 1;
+
+  function gatherRaw(store){
+    const data = {};
+    store.keys().filter(k=>k.indexOf("fs_")===0).sort().forEach(k=>{
+      const v = store.getRaw(k);
+      if(v!==null && v!==undefined) data[k] = v;
+    });
+    return data;
+  }
+
+  /* every device file the export must carry when photos are included */
+  function photoPaths(data){
+    const paths = [];
+    try{
+      const reg = JSON.parse(data.fs_attachments||"[]");
+      reg.forEach(a=>{ if(a.file) paths.push(a.file); if(a.thumb) paths.push(a.thumb); });
+    }catch(e){}
+    try{
+      const safe = JSON.parse(data.fs_safe||"[]");
+      safe.forEach(f=>{ if(f && f.stamp && f.stamp.store==="fs" && f.stamp.path) paths.push(f.stamp.path); });
+    }catch(e){}
+    return paths.filter((p,i)=>paths.indexOf(p)===i);
+  }
+
+  /* filesB64 may be null (web / photos-off). Missing files are reported, never
+     silently dropped. */
+  async function buildExport(store, filesB64, opts){
+    const data = gatherRaw(store);
+    const out = {
+      meta:{format:FORMAT, formatVersion:FORMAT_VERSION, schema:2,
+            exportedAt:opts.now, photos:!!(opts.includePhotos && filesB64),
+            appVersion:opts.appVersion||null},
+      data
+    };
+    const report = {keys:Object.keys(data).length, files:0, missing:[]};
+    if(out.meta.photos){
+      out.files = {};
+      for(const p of photoPaths(data)){
+        try{ out.files[p] = await filesB64.readB64(p); report.files++; }
+        catch(e){ report.missing.push(p); }
+      }
+    }
+    return {export:out, report};
+  }
+
+  function exportFileName(now){
+    const d = new Date(now);
+    const pad = n => String(n).padStart(2,"0");
+    return "fieldstrip-backup-"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+
+           "-"+pad(d.getHours())+pad(d.getMinutes())+".json";
+  }
+
+  return {FORMAT, FORMAT_VERSION, gatherRaw, photoPaths, buildExport, exportFileName};
 });
   /* ===== BENCH STAGE 3 SLICE 1 — boot-time gated migration + stamp migration =====
      Ruled: scratchpad/plan/ruling-bench-stage2-pass-20260813.md item 3. Device-only:
@@ -2490,8 +2725,8 @@
   const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
   /* =============== ROUTER =============== */
-  const screens=["scr-safe","scr-pick","scr-detail","scr-logclean","scr-ammo","scr-ammoinv","scr-gate","scr-player","scr-clean","scr-done"];
-  const parents={"scr-pick":"scr-safe","scr-detail":"scr-safe","scr-logclean":"scr-detail","scr-ammo":"scr-detail","scr-ammoinv":"scr-safe","scr-gate":"scr-detail","scr-player":"scr-gate","scr-clean":"scr-player","scr-done":"scr-clean"};
+  const screens=["scr-safe","scr-pick","scr-detail","scr-logclean","scr-ammo","scr-ammoinv","scr-bench","scr-gate","scr-player","scr-clean","scr-done"];
+  const parents={"scr-pick":"scr-safe","scr-detail":"scr-safe","scr-logclean":"scr-detail","scr-ammo":"scr-detail","scr-ammoinv":"scr-safe","scr-bench":"scr-safe","scr-gate":"scr-detail","scr-player":"scr-gate","scr-clean":"scr-player","scr-done":"scr-clean"};
   const backBtn=document.getElementById("backBtn");
   const ctxLabel=document.getElementById("ctxLabel");
   let current="scr-safe";
@@ -4726,6 +4961,819 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
   /* =============== DONE → LOG FORM =============== */
   document.getElementById("finishBtn").addEventListener("click",()=> openCleanForm(true));
+
+  /* ============ BENCH UI (full build) — begins ============ */
+  /* ================================================================
+     BENCH UI (full build per ruling-bench-full-build-20260813.md).
+     Loaded AFTER every original definition, BEFORE the boot render.
+     Pattern: leaf renderers are function declarations, so they are
+     REASSIGNED here wholesale; renderDetail is WRAPPED with extras;
+     add-buttons are re-wired by node cloning (drops old listeners).
+     Legacy NFA READ paths are retired here; legacy stored fields are
+     never deleted. No per-trip mag round counting exists anywhere.
+     ================================================================ */
+
+  /* ---------- shared device environment ---------- */
+  const BenchEnv = (function(){
+    const P = ()=> window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences;
+    const FS = ()=> window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
+    const SH = ()=> window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+    const storeA = {
+      keys(){ const a=[]; for(let i=0;i<localStorage.length;i++) a.push(localStorage.key(i)); return a; },
+      getRaw(k){ return localStorage.getItem(k); },
+      setRaw(k,v){ localStorage.setItem(k,String(v)); try{ const p=P(); if(p) p.set({key:k, value:String(v)}); }catch(e){} },
+      remove(k){ localStorage.removeItem(k); try{ const p=P(); if(p) p.remove({key:k}); }catch(e){} }
+    };
+    function filesA(){
+      const fs=FS(); if(!fs) return null;
+      return {
+        async writeB64(p,b){ await fs.writeFile({path:p, data:b, directory:"DATA", recursive:true}); },
+        async readB64(p){ const r=await fs.readFile({path:p, directory:"DATA"}); return r && r.data; },
+        async removeFile(p){ await fs.deleteFile({path:p, directory:"DATA"}); }
+      };
+    }
+    /* b64 -> downscaled jpeg b64 via canvas (thumbnails + gentle compress-on-import) */
+    function thumbnailer(b64, maxDim){
+      return new Promise((res, rej)=>{
+        const img=new Image();
+        img.onload=()=>{ try{
+          const sc=Math.min(1, maxDim/Math.max(img.width,img.height));
+          const c=document.createElement("canvas");
+          c.width=Math.max(1,Math.round(img.width*sc)); c.height=Math.max(1,Math.round(img.height*sc));
+          c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+          res(c.toDataURL("image/jpeg",0.82).split(",")[1]);
+        }catch(e){ rej(e); } };
+        img.onerror=()=>rej(new Error("decode"));
+        img.src="data:image/jpeg;base64,"+b64;
+      });
+    }
+    function fileToB64(file){
+      return new Promise((res,rej)=>{
+        const r=new FileReader();
+        r.onload=()=>res(String(r.result).split(",")[1]);
+        r.onerror=()=>rej(new Error("read"));
+        r.readAsDataURL(file);
+      });
+    }
+    function fileDims(file){
+      return new Promise((res)=>{
+        const url=URL.createObjectURL(file); const img=new Image();
+        img.onload=()=>{ const d={w:img.width,h:img.height}; URL.revokeObjectURL(url); res(d); };
+        img.onerror=()=>{ URL.revokeObjectURL(url); res(null); };
+        img.src=url;
+      });
+    }
+    return {store:storeA, files:filesA, share:SH, thumbnailer, fileToB64, fileDims, hasFS:()=>!!FS()};
+  })();
+
+  /* ---------- attachments glue ---------- */
+  const benchThumbCache = {};
+  async function benchLoadThumb(imgEl, rec){
+    try{
+      const fA=BenchEnv.files(); if(!fA||!rec.thumb) return;
+      if(!benchThumbCache[rec.id]) benchThumbCache[rec.id]=await fA.readB64(rec.thumb);
+      imgEl.src="data:image/jpeg;base64,"+benchThumbCache[rec.id];
+    }catch(e){}
+  }
+  async function benchViewAtt(rec){
+    try{
+      const fA=BenchEnv.files(); if(!fA||!rec.file) return;
+      const b=await fA.readB64(rec.file);
+      document.getElementById("stampViewImg").src="data:image/jpeg;base64,"+b;
+      document.getElementById("stampView").classList.add("open");
+    }catch(e){}
+  }
+  function benchPickPhoto(cb){
+    const inp=document.getElementById("benchFile");
+    inp.onchange=async ()=>{
+      const file=inp.files && inp.files[0]; inp.value="";
+      if(!file) return;
+      try{ cb(await BenchEnv.fileToB64(file), await BenchEnv.fileDims(file)); }catch(e){ alert("Couldn't read that photo."); }
+    };
+    inp.click();
+  }
+  async function benchImport(parent, b64, dims, kind, note){
+    const fA=BenchEnv.files(); if(!fA) throw new Error("no filesystem");
+    return BenchAttach.importPhoto(BenchEnv.store, fA, parent, b64,
+      {now:Date.now(), thumbnailer:BenchEnv.thumbnailer, dims, kind:kind||"photo", note:note||""});
+  }
+  function benchAttGrid(container, parent, opts){
+    opts=opts||{};
+    const items=BenchAttach.listFor(BenchEnv.store, parent);
+    container.innerHTML="";
+    if(!BenchEnv.hasFS() && !items.length){ return 0; }
+    const grid=document.createElement("div"); grid.className="attgrid";
+    items.forEach(a=>{
+      const cell=document.createElement("div"); cell.className="attthumb";
+      if(a.kind==="note" || !a.file){
+        cell.innerHTML=`<span class="atag">note</span><div style="font-size:10px;color:var(--muted);padding:6px;overflow:hidden">${esc(a.note||"")}</div>`;
+      } else {
+        const img=document.createElement("img"); img.alt=a.kind; img.style.cssText="width:100%;height:100%;object-fit:cover";
+        cell.appendChild(img);
+        const tag=document.createElement("span"); tag.className="atag"; tag.textContent=a.kind; cell.appendChild(tag);
+        benchLoadThumb(img, a);
+        cell.addEventListener("click",()=>benchViewAtt(a));
+      }
+      let armed=false;
+      const del=document.createElement("button"); del.className="attdel"; del.textContent="×";
+      del.addEventListener("click",async e=>{
+        e.stopPropagation();
+        if(!armed){ armed=true; del.textContent="✓?"; setTimeout(()=>{armed=false; del.textContent="×";},3000); return; }
+        await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), a.id);
+        if(opts.onchange) opts.onchange();
+      });
+      cell.appendChild(del);
+      grid.appendChild(cell);
+    });
+    if(BenchEnv.hasFS()){
+      const add=document.createElement("div"); add.className="attthumb add"; add.innerHTML="＋<span>"+(opts.addLabel||"ADD")+"</span>";
+      add.addEventListener("click",()=>{
+        benchPickPhoto(async (b64,dims)=>{
+          try{ await benchImport(parent,b64,dims,opts.kind||"photo"); if(opts.onchange) opts.onchange(); }
+          catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+        });
+      });
+      grid.appendChild(add);
+    }
+    container.appendChild(grid);
+    return items.length;
+  }
+
+  /* ---------- reminders: due-ness through the bench clocks ---------- */
+  function benchDue(f, r){ return BenchData.reminderState(f, r, Date.now()); }
+  function benchDueLabel(f, r){
+    const s=benchDue(f, r);
+    if(s.type==="rounds") return `${fmtN(s.used)} / ${fmtN(s.every)} rounds${s.due?" — DUE":""}`;
+    const days=Math.round((s.nextDueAt-Date.now())/86400000);
+    return s.due ? `overdue ${Math.max(1,-days)}d` : `due in ${Math.max(0,days)}d`;
+  }
+
+  /* ---------- NFA: filings-based rendering (legacy reads retired) ---------- */
+  const escAttr = s => esc(s).replace(/"/g,"&quot;");
+  function benchFilingLabel(fl){
+    if(fl.type==="custom") return fl.customName||"Custom filing";
+    const t=BenchData.OPTIONS.NFA_FILING_TYPES.find(x=>x.id===fl.type);
+    return t?t.label:fl.type;
+  }
+  function benchNfaSummary(f){
+    const fls=Array.isArray(f.nfaFilings)?f.nfaFilings:[];
+    const appr=fls.filter(x=>x.status==="Approved").length;
+    const pend=fls.filter(x=>x.status==="Pending"||x.status==="Submitted").length;
+    return {fls, appr, pend};
+  }
+  renderNfa = function(f){
+    const st=document.getElementById("nfaStatus"), msg=document.getElementById("nfaMsg");
+    const s=benchNfaSummary(f);
+    if(!s.fls.length){
+      st.textContent = f.nfaItemType ? f.nfaItemType+" — no filings yet" : "No paperwork on file";
+      st.style.color = f.nfaItemType ? "var(--amber)" : "";
+      msg.textContent="Track every filing — Form 1, 4, 5, or your own filing type — with dates, entity, status, and documents.";
+    } else if(s.pend){
+      const p=s.fls.find(x=>x.status==="Pending"||x.status==="Submitted");
+      const d=p.submitted?daysBetween(new Date(p.submitted).getTime(),Date.now()):null;
+      st.textContent=`${p.status.toUpperCase()}${d!=null?` — ${d} day${d===1?"":"s"} waiting`:""}`; st.style.color="var(--amber)";
+      msg.textContent=`${benchFilingLabel(p)} · ${p.entity}${p.submitted?` · submitted ${fmtDate(new Date(p.submitted).getTime())}`:""}. Log the approval when the stamp lands.`;
+    } else {
+      st.textContent=s.appr?`APPROVED${s.fls.length>1?` · ${s.fls.length} filings`:""}`:`${s.fls.length} filing${s.fls.length===1?"":"s"}`;
+      st.style.color=s.appr?"var(--green)":"";
+      msg.textContent="";
+    }
+    benchRenderFilings(f);
+  };
+  let benchFilingOpen=null;   /* filing id being edited, or "new" */
+  function benchRenderFilings(f){
+    const host=document.getElementById("nfaFilingsUI"); if(!host) return;
+    const O=BenchData.OPTIONS;
+    if(!Array.isArray(f.nfaFilings)) f.nfaFilings=[];
+    let h="";
+    /* item type — the locked 7-type set */
+    h+=`<div class="nfagrid" style="margin:2px 0 9px"><div class="nf wide"><label>NFA item type</label><select id="nfaItemSel"><option value="">Not NFA / unset</option>${O.NFA_ITEM_TYPES.map(t=>`<option${f.nfaItemType===t?" selected":""}>${t}</option>`).join("")}</select></div></div>`;
+    f.nfaFilings.forEach(fl=>{
+      h+=`<div class="benchrow"><div class="bi"><div class="bn">${esc(benchFilingLabel(fl))}</div>
+          <div class="bs">${esc(fl.entity)}${fl.submitted?` · sub ${esc(fl.submitted)}`:""}${fl.approved?` · appr ${esc(fl.approved)}`:""}${fl.ref?` · ${esc(fl.ref)}`:""}${fl.note?` · ${esc(fl.note)}`:""}</div>
+          <div class="attwrap" data-fid="${fl.id}"></div></div>
+          <span class="statuschip ${fl.status==="Approved"?"active":(fl.status==="Denied"?"problem":(fl.status==="Pending"||fl.status==="Submitted"?"due":""))}">${esc(fl.status.toUpperCase())}</span>
+          <button class="magbtn" data-edit="${fl.id}">Edit</button></div>`;
+    });
+    h+=`<button class="btn sm" id="nfaFilingAdd" style="margin-top:9px">Add Filing</button>`;
+    if(benchFilingOpen!==null){
+      const fl = benchFilingOpen==="new" ? {} : (f.nfaFilings.find(x=>x.id===benchFilingOpen)||{});
+      h+=`<div class="nfagrid" id="nfaFilingForm">
+        <div class="nf"><label>Filing type</label><select id="nffType">${O.NFA_FILING_TYPES.map(t=>`<option value="${t.id}"${fl.type===t.id?" selected":""}>${t.label}</option>`).join("")}</select></div>
+        <div class="nf" id="nffCustomWrap" ${fl.type==="custom"?"":"hidden"}><label>Name it</label><input type="text" id="nffCustom" maxlength="40" value="${escAttr(fl.customName||"")}"></div>
+        <div class="nf"><label>Entity</label><select id="nffEntity">${O.NFA_ENTITIES.map(x=>`<option${fl.entity===x?" selected":""}>${x}</option>`).join("")}</select></div>
+        <div class="nf"><label>Status</label><select id="nffStatus">${O.NFA_STATUS.map(x=>`<option${fl.status===x?" selected":""}>${x}</option>`).join("")}</select></div>
+        <div class="nf"><label>Submitted</label><input type="date" id="nffSub" value="${esc(fl.submitted||"")}"></div>
+        <div class="nf"><label>Approved</label><input type="date" id="nffApp" value="${esc(fl.approved||"")}"></div>
+        <div class="nf wide"><label>Stamp / serial reference</label><input type="text" id="nffRef" maxlength="60" value="${escAttr(fl.ref||"")}"></div>
+        <div class="nf wide"><label>Note</label><input type="text" id="nffNote" maxlength="120" value="${escAttr(fl.note||"")}"></div>
+      </div>
+      <button class="btn sm primary" id="nffSave" style="margin-top:9px">Save Filing</button>
+      <button class="btn sm" id="nffCancel" style="margin-left:8px;margin-top:9px">Cancel</button>
+      ${benchFilingOpen!=="new"?`<button class="btn sm" id="nffDel" style="margin-left:8px;margin-top:9px;color:var(--safe-red)">Delete</button>`:""}`;
+    }
+    host.innerHTML=h;
+    /* attachment grids per filing */
+    host.querySelectorAll(".attwrap").forEach(w=>{
+      benchAttGrid(w, {kind:"nfa", id:w.dataset.fid}, {kind:"document", addLabel:"DOC", onchange:()=>renderDetail()});
+    });
+    const itemSel=document.getElementById("nfaItemSel");
+    if(itemSel) itemSel.onchange=()=>{
+      const f2=byId(activeId); if(!f2) return;
+      BenchData.setItemType(f2, itemSel.value||null);
+      addLog(f2,"nfa", itemSel.value?("NFA item type set — "+itemSel.value):"NFA item type cleared");
+      saveSafe(); renderDetail();
+    };
+    host.querySelectorAll("[data-edit]").forEach(b=> b.onclick=()=>{ benchFilingOpen=b.dataset.edit; renderDetail(); });
+    const addB=document.getElementById("nfaFilingAdd");
+    if(addB) addB.onclick=()=>{ benchFilingOpen="new"; renderDetail(); };
+    const tSel=document.getElementById("nffType");
+    if(tSel) tSel.onchange=()=>{ document.getElementById("nffCustomWrap").hidden = tSel.value!=="custom"; };
+    const cancel=document.getElementById("nffCancel");
+    if(cancel) cancel.onclick=()=>{ benchFilingOpen=null; renderDetail(); };
+    const del=document.getElementById("nffDel");
+    if(del) del.onclick=()=>{
+      const f2=byId(activeId); if(!f2) return;
+      const i=f2.nfaFilings.findIndex(x=>x.id===benchFilingOpen);
+      if(i>=0){ addLog(f2,"nfa","Filing removed — "+benchFilingLabel(f2.nfaFilings[i])); f2.nfaFilings.splice(i,1); }
+      benchFilingOpen=null; saveSafe(); renderDetail();
+    };
+    const save=document.getElementById("nffSave");
+    if(save) save.onclick=()=>{
+      const f2=byId(activeId); if(!f2) return;
+      const spec={type:document.getElementById("nffType").value,
+                  customName:document.getElementById("nffCustom")?document.getElementById("nffCustom").value:"",
+                  entity:document.getElementById("nffEntity").value,
+                  status:document.getElementById("nffStatus").value,
+                  submitted:document.getElementById("nffSub").value||null,
+                  approved:document.getElementById("nffApp").value||null,
+                  ref:document.getElementById("nffRef").value.trim(),
+                  note:document.getElementById("nffNote").value.trim()};
+      try{
+        if(benchFilingOpen==="new"){
+          const rec=BenchData.createFiling(f2, spec, Date.now());
+          addLog(f2,"nfa","Filing added — "+benchFilingLabel(rec)+" · "+rec.status);
+        } else {
+          const fl=f2.nfaFilings.find(x=>x.id===benchFilingOpen); if(!fl) return;
+          const prevStatus=fl.status;
+          fl.type=spec.type; fl.customName=spec.type==="custom"?(spec.customName||"").trim():null;
+          if(fl.type==="custom" && !fl.customName) throw new Error("custom filing needs a name");
+          if(BenchData.OPTIONS.NFA_ENTITIES.indexOf(spec.entity)<0) throw new Error("bad entity");
+          if(BenchData.OPTIONS.NFA_STATUS.indexOf(spec.status)<0) throw new Error("bad status");
+          fl.entity=spec.entity; fl.status=spec.status; fl.submitted=spec.submitted; fl.approved=spec.approved;
+          fl.ref=spec.ref; fl.note=spec.note;
+          if(prevStatus!==fl.status) addLog(f2,"nfa",benchFilingLabel(fl)+" — "+fl.status);
+        }
+        benchFilingOpen=null; saveSafe(); renderDetail();
+      }catch(e){ alert(e.message||String(e)); }
+    };
+  }
+  /* the old SBR/SBS/AOW segment is retired — item type covers it */
+  renderNfaClass = function(){};
+
+  /* ---------- MAGS: numbered fleet, batch add, per-mag status ---------- */
+  const MAG_STATUS_NEXT={active:"problem", problem:"retired", retired:"active"};
+  renderMags = function(f){
+    if(!Array.isArray(f.mags)) f.mags=[];
+    if(f.magRotDays==null) f.magRotDays=90;
+    const sum=document.getElementById("magSummary"), msg=document.getElementById("magMsg"), list=document.getElementById("magList");
+    const rotPro=isPro();
+    document.getElementById("magRotDays").value=f.magRotDays||90;
+    document.getElementById("magRotRow").style.display = rotPro ? "" : "none";
+    document.getElementById("magRotLock").style.display = rotPro ? "none" : "";
+    if(!rotPro){
+      const carryN=f.mags.filter(m=>m.role==="Carry").length;
+      document.getElementById("magRotMsg").textContent =
+        (carryN?`${carryN} carry mag${carryN===1?"":"s"} tracked — `:"")
+        + "Carry-rotation reminders and the rotation timer are part of Fieldstrip Pro. Your mags — capacity and role — stay free.";
+    }
+    const act=f.mags.filter(m=>(m.status||"active")==="active").length;
+    const prob=f.mags.filter(m=>m.status==="problem").length;
+    const ret=f.mags.filter(m=>m.status==="retired").length;
+    sum.textContent = f.mags.length ? `${f.mags.length} mag${f.mags.length===1?"":"s"} · ${act} active${prob?` · ${prob} problem`:""}${ret?` · ${ret} retired`:""}` : "None tracked";
+    const overdue=rotPro ? f.mags.filter(m=>(m.status||"active")==="active" && magOverdue(f,m)) : [];
+    if(prob){ msg.textContent=`${prob} mag${prob===1?"":"s"} flagged as a problem — tap the status chip to update.`; msg.style.color="var(--amber)"; }
+    else if(overdue.length){ msg.textContent=`${overdue.length} carry mag${overdue.length===1?"":"s"} due for rotation — unload, rest the spring, load a fresh one.`; msg.style.color="var(--amber)"; }
+    else if(!f.mags.length){ msg.textContent="Your mag fleet, individually numbered — mark the real mags to match, and a problem mag stays identified for good."; msg.style.color=""; }
+    else { msg.textContent=""; msg.style.color=""; }
+    list.innerHTML="";
+    f.mags.forEach((m,i)=>{
+      const row=document.createElement("div"); row.className="magrow";
+      const status=m.status||"active";
+      let rot="";
+      if(rotPro && m.role==="Carry" && status==="active"){
+        const due=magOverdue(f,m);
+        rot = m.lastRot
+          ? `<span class="rot${due?' due':''}">rotated ${daysBetween(m.lastRot,Date.now())}d ago${due?' — DUE':''}</span>`
+          : `<span class="rot due">never rotated — log first rotation</span>`;
+      }
+      if(m.note) rot += `<span class="rot">${esc(m.note)}</span>`;
+      const label = `<b>#${m.num||i+1}</b> · ${m.cap}-rd${m.model?` · ${esc(m.model)}`:""}${m.brand?` · ${esc(m.brand)}`:""} · ${esc(m.role)}`;
+      row.innerHTML=`<div class="maginfo">${label}${rot}<div class="attwrap" data-mid="${m.id||""}"></div></div>`
+        + `<button class="statuschip ${status}" data-i="${i}" data-st="1">${status.toUpperCase()}</button>`
+        + (rotPro && m.role==="Carry" && status==="active"?`<button class="magbtn" data-i="${i}" data-rot="1">Rotate</button>`:"")
+        + `<button class="magbtn" data-i="${i}" data-note="1">✎</button>`
+        + `<button class="magbtn del" data-i="${i}" data-del="1">${magDelArm===i?"Confirm":"×"}</button>`;
+      list.appendChild(row);
+    });
+    list.querySelectorAll(".attwrap").forEach(w=>{
+      if(w.dataset.mid) benchAttGrid(w, {kind:"mag", id:w.dataset.mid}, {onchange:()=>renderDetail()});
+    });
+    list.querySelectorAll("[data-st]").forEach(b=>{
+      b.addEventListener("click",()=>{
+        const f2=byId(activeId); if(!f2) return;
+        const m=f2.mags[+b.dataset.i]; if(!m) return;
+        const next=MAG_STATUS_NEXT[m.status||"active"];
+        BenchData.setMagStatus(m, next);
+        addLog(f2,"mag",`Mag #${m.num||+b.dataset.i+1} — ${next}`);
+        saveSafe(); renderDetail();
+      });
+    });
+    list.querySelectorAll(".magbtn").forEach(b=>{
+      b.addEventListener("click",()=>{
+        const f2=byId(activeId); if(!f2) return;
+        const i=+b.dataset.i; const m=f2.mags[i]; if(!m) return;
+        if(b.dataset.rot){
+          m.lastRot=Date.now(); magDelArm=null;
+          addLog(f2,"mag",`Carry mag rotated — #${m.num||i+1}`);
+        } else if(b.dataset.note){
+          const t=prompt("Note for mag #"+(m.num||i+1)+(m.note?` (current: ${m.note})`:""), m.note||"");
+          if(t===null) return;
+          m.note=t.trim();
+        } else if(b.dataset.del){
+          if(magDelArm===i){
+            addLog(f2,"mag",`Magazine removed — #${m.num||i+1} ${m.cap}-rd ${m.role}`);
+            f2.mags.splice(i,1); magDelArm=null;
+          }
+          else { magDelArm=i; renderMags(f2); setTimeout(()=>{ if(magDelArm===i){ magDelArm=null; const f3=byId(activeId); if(f3) renderMags(f3); } },4000); return; }
+        }
+        saveSafe(); renderDetail();
+      });
+    });
+  };
+  /* batch-capable add (qty>1 is a Bench/Pro feature; single add stays free) */
+  (function(){
+    const old=document.getElementById("magAdd");
+    const nu=old.cloneNode(true); old.parentNode.replaceChild(nu,old);
+    nu.addEventListener("click",()=>{
+      const f=byId(activeId); if(!f) return;
+      const cap=Math.floor(+document.getElementById("magCap").value||0); if(cap<1) return;
+      const qty=Math.max(1,Math.floor(+document.getElementById("magQty").value||1));
+      const model=document.getElementById("magModel").value.trim();
+      const brand=document.getElementById("magBrand").value.trim();
+      const role=document.getElementById("magRole").value;
+      if(qty>1 && !isPro()){ openProSheet("Batch mag creation — one spec, the whole fleet numbered at once — is part of the Bench."); return; }
+      try{
+        const made=BenchData.batchCreateMags(f, {model, brand, cap, role}, qty, Date.now());
+        addLog(f,"mag", qty>1
+          ? `${qty} magazines added — #${made[0].num}–#${made[made.length-1].num} · ${cap}-rd${model?` ${model}`:""}${brand?` (${brand})`:""} · ${role}`
+          : `Magazine added — #${made[0].num} · ${cap}-rd${model?` ${model}`:""} · ${role}`);
+      }catch(e){ alert(e.message||String(e)); return; }
+      document.getElementById("magCap").value=""; document.getElementById("magQty").value="1";
+      document.getElementById("magModel").value=""; document.getElementById("magBrand").value="";
+      magDelArm=null;
+      saveSafe(); renderDetail();
+    });
+  })();
+
+  /* ---------- CARE: structured fields + both clocks ---------- */
+  let benchCareClock="time";
+  function benchSyncCareClockUI(){
+    const t=document.getElementById("careClockTime"), r=document.getElementById("careClockRounds");
+    if(!t) return;
+    t.className=benchCareClock==="time"?"on":""; r.className=benchCareClock==="rounds"?"on":"";
+    document.getElementById("careTimeWrap").hidden=benchCareClock!=="time";
+    document.getElementById("careRoundsWrap").hidden=benchCareClock!=="rounds";
+  }
+  renderCare = function(f){
+    if(!Array.isArray(f.reminders)) f.reminders=[];
+    const sum=document.getElementById("careSummary"), msg=document.getElementById("careMsg"), list=document.getElementById("careList");
+    const due=f.reminders.filter(r=>benchDue(f,r).due);
+    sum.textContent = f.reminders.length ? `${f.reminders.length} tracked${due.length?` · ${due.length} due`:""}` : "None set";
+    if(due.length){ msg.textContent=`${due.length} item${due.length===1?"":"s"} due: ${due.map(r=>r.label).join(", ")}.`; msg.style.color="var(--amber)"; }
+    else if(!f.reminders.length){ msg.textContent="Round clocks and time clocks — battery swaps, spring sets, storage checks. The specs live here, not in your memory."; msg.style.color=""; }
+    else { msg.textContent=""; msg.style.color=""; }
+    list.innerHTML="";
+    f.reminders.forEach((r,i)=>{
+      const row=document.createElement("div"); row.className="magrow";
+      const s=benchDue(f,r);
+      const specs=[]; const sv=r.structured||{};
+      if(sv.component) specs.push(esc(sv.component));
+      if(sv.battery) specs.push(esc(sv.battery));
+      if(sv.torque) specs.push(esc(sv.torque));
+      if(sv.lube) specs.push(esc(sv.lube));
+      const clockTxt = (r.clock&&r.clock.type==="rounds") ? `every ${fmtN(r.clock.every)} rds` : `every ${r.clock?r.clock.every:(r.everyDays||365)}${r.clock?({days:"d",weeks:"w",months:"mo"}[r.clock.unit]||"d"):"d"}`;
+      row.innerHTML=`<div class="maginfo"><b>${esc(r.label)}</b> · ${clockTxt}`
+        +(specs.length?`<span class="rot">${specs.join(" · ")}</span>`:"")
+        +(r.note?`<span class="rot">${esc(r.note)}</span>`:"")
+        +`<span class="rot${s.due?' due':''}">${benchDueLabel(f,r)}</span></div>`
+        + `<button class="magbtn" data-i="${i}" data-done="1">Done</button>`
+        + `<button class="magbtn del" data-i="${i}" data-del="1">${careDelArm===i?"Confirm":"×"}</button>`;
+      list.appendChild(row);
+    });
+    list.querySelectorAll(".magbtn").forEach(b=>{
+      b.addEventListener("click",()=>{
+        const f2=byId(activeId); if(!f2) return;
+        const i=+b.dataset.i;
+        if(b.dataset.done){
+          BenchData.markReminderDone(f2, f2.reminders[i], Date.now()); careDelArm=null;
+          addLog(f2,"care",`${f2.reminders[i].label} — done`);
+        } else if(b.dataset.del){
+          if(careDelArm===i){
+            addLog(f2,"care",`Reminder removed — ${f2.reminders[i].label}`);
+            f2.reminders.splice(i,1); careDelArm=null;
+          } else { careDelArm=i; renderCare(f2); setTimeout(()=>{ if(careDelArm===i){ careDelArm=null; const f3=byId(activeId); if(f3) renderCare(f3); } },4000); return; }
+        }
+        saveSafe(); renderDetail();
+      });
+    });
+  };
+  (function(){
+    const old=document.getElementById("careAdd");
+    const nu=old.cloneNode(true); old.parentNode.replaceChild(nu,old);
+    document.getElementById("careClockTime").addEventListener("click",()=>{ benchCareClock="time"; benchSyncCareClockUI(); });
+    document.getElementById("careClockRounds").addEventListener("click",()=>{ benchCareClock="rounds"; benchSyncCareClockUI(); });
+    benchSyncCareClockUI();
+    /* preset picks pre-fill the time clock (the shipped presets are day counts) */
+    document.getElementById("careType").addEventListener("change",()=>{
+      const p=CARE_PRESETS.find(x=>x[0]===document.getElementById("careType").value);
+      if(p && p[0]!=="Custom"){ benchCareClock="time"; document.getElementById("careEvery").value=p[1]; document.getElementById("careUnit").value="days"; benchSyncCareClockUI(); }
+    });
+    nu.addEventListener("click",()=>{
+      const f=byId(activeId); if(!f) return;
+      const type=document.getElementById("careType").value;
+      const label = type==="Custom" ? document.getElementById("careLabel").value.trim() : type;
+      if(!label) return;
+      const fields={label,
+        component:document.getElementById("careComp").value.trim(),
+        battery:document.getElementById("careBatt").value.trim(),
+        torque:document.getElementById("careTorque").value.trim(),
+        lube:document.getElementById("careLube").value.trim(),
+        note:document.getElementById("careNote").value.trim()};
+      let clock;
+      if(benchCareClock==="rounds"){
+        const every=Math.floor(+document.getElementById("careRounds").value||0);
+        if(!(every>0)) return;
+        clock={type:"rounds", every};
+      } else {
+        const every=Math.floor(+document.getElementById("careEvery").value||0);
+        if(!(every>0)) return;
+        clock={type:"time", every, unit:document.getElementById("careUnit").value};
+      }
+      try{
+        const r=BenchData.createReminder(f, fields, clock, Date.now());
+        /* legacy mirror keeps the shipped notification scheduler working untouched:
+           time clocks get everyDays/last; rounds clocks stay in-app only (ruled). */
+        if(r.clock.type==="time"){
+          const unitDays={days:1,weeks:7,months:30.4375}[r.clock.unit]||1;
+          r.everyDays=Math.max(1,Math.round(r.clock.every*unitDays));
+          r.last=r.lastDone;
+        }
+        addLog(f,"care",`Reminder added — ${label}, ${clock.type==="rounds"?`every ${fmtN(clock.every)} rounds`:`every ${clock.every} ${clock.unit}`}`);
+      }catch(e){ alert(e.message||String(e)); return; }
+      ["careComp","careBatt","careTorque","careLube","careNote","careLabel"].forEach(id=>{ document.getElementById(id).value=""; });
+      careDelArm=null;
+      saveSafe(); renderDetail();
+    });
+  })();
+
+  /* ---------- ZEROS: brand + lot + target photos + conditions ---------- */
+  let benchZeroStage={before:null, after:null};
+  function benchZeroSlots(){
+    ["before","after"].forEach(which=>{
+      const slot=document.getElementById("zeroSlot_"+which); if(!slot) return;
+      const staged=benchZeroStage[which];
+      slot.classList.toggle("filled", !!staged);
+      slot.innerHTML = staged ? `<span style="font-size:10px;color:var(--green)">PHOTO STAGED ✓<br>tap to replace</span>` : `▣<span>ADD PHOTO</span>`;
+      slot.onclick=()=>{
+        benchPickPhoto((b64,dims)=>{ benchZeroStage[which]={b64,dims}; benchZeroSlots(); });
+      };
+    });
+  }
+  renderZero = function(f){
+    if(!Array.isArray(f.zeros)) f.zeros=[];
+    const sum=document.getElementById("zeroSummary"), msg=document.getElementById("zeroMsg"), list=document.getElementById("zeroList");
+    const cur=f.zeros.length? f.zeros[f.zeros.length-1] : null;
+    sum.textContent = cur ? `${cur.dist} ${cur.unit} — ${fmtDate(cur.ts)}` : "Not recorded";
+    msg.textContent = cur ? "" : "Distance, the load AND its lot, target photos — a zero is only as good as the box it was shot with.";
+    if(!document.getElementById("zeroAmmo").value && f.lastAmmo){
+      const la=f.lastAmmo;
+      document.getElementById("zeroAmmo").value=[la.mk,la.gr,la.bt].filter(Boolean).join(" ");
+    }
+    document.getElementById("zeroPhotoRow").style.display = BenchEnv.hasFS() ? "" : "none";
+    benchZeroSlots();
+    list.innerHTML="";
+    [...f.zeros].reverse().forEach((z)=>{
+      const i=f.zeros.indexOf(z);
+      const row=document.createElement("div"); row.className="magrow";
+      row.innerHTML=`<div class="maginfo"><b>${z.dist} ${esc(z.unit)}</b> · ${esc(z.ammo||"—")}${z.lot?` · lot ${esc(z.lot)}`:""}<span class="rot">${fmtDate(z.ts)}${z.note?` · ${esc(z.note)}`:""}</span><div class="attwrap" data-zid="${z.id||""}"></div></div>`
+        + `<button class="magbtn del" data-i="${i}" data-del="1">${zeroDelArm===i?"Confirm":"×"}</button>`;
+      list.appendChild(row);
+    });
+    list.querySelectorAll(".attwrap").forEach(w=>{
+      if(w.dataset.zid) benchAttGrid(w, {kind:"zero", id:w.dataset.zid}, {kind:"target", addLabel:"TARGET", onchange:()=>renderDetail()});
+    });
+    list.querySelectorAll(".magbtn").forEach(b=>{
+      b.addEventListener("click",()=>{
+        const f2=byId(activeId); if(!f2) return;
+        const i=+b.dataset.i;
+        if(zeroDelArm===i){ f2.zeros.splice(i,1); zeroDelArm=null; saveSafe(); renderDetail(); }
+        else { zeroDelArm=i; renderZero(f2); setTimeout(()=>{ if(zeroDelArm===i){ zeroDelArm=null; const f3=byId(activeId); if(f3) renderZero(f3); } },4000); }
+      });
+    });
+  };
+  (function(){
+    const old=document.getElementById("zeroAdd");
+    const nu=old.cloneNode(true); old.parentNode.replaceChild(nu,old);
+    nu.addEventListener("click",async ()=>{
+      const f=byId(activeId); if(!f) return;
+      const dist=Math.floor(+document.getElementById("zeroDist").value||0); if(dist<1) return;
+      const unit=document.getElementById("zeroUnit").value;
+      const ammo=document.getElementById("zeroAmmo").value.trim();
+      const lot=document.getElementById("zeroLot").value.trim();
+      const note=document.getElementById("zeroNote").value.trim();
+      let z;
+      try{ z=BenchData.createZero(f, {dist, unit, ammo, lot, note}, Date.now()); }
+      catch(e){ alert(e.message||String(e)); return; }
+      addLog(f,"zero",`Zeroed at ${dist} ${unit}${ammo?` — ${ammo}`:""}${lot?` · lot ${lot}`:""}${note?` · ${note}`:""}`);
+      for(const which of ["before","after"]){
+        const st=benchZeroStage[which];
+        if(st){
+          try{
+            const rec=await benchImport({kind:"zero", id:z.id}, st.b64, st.dims, "target", which);
+            if(which==="before") z.photoBefore=rec.id; else z.photoAfter=rec.id;
+          }catch(e){ alert("Target photo ("+which+") could not be saved: "+(e&&e.message||e)); }
+        }
+      }
+      benchZeroStage={before:null, after:null};
+      document.getElementById("zeroDist").value=""; document.getElementById("zeroLot").value=""; document.getElementById("zeroNote").value="";
+      zeroDelArm=null;
+      saveSafe(); renderDetail();
+    });
+  })();
+
+  /* ---------- ONE-TAP LOG CLEANING on the firearm card ---------- */
+  let benchJustCleaned=null;   /* firearm id -> show note row on its card */
+  function benchQuickClean(f){
+    f.lastClean=Date.now();
+    const had=f.roundsSinceClean;
+    f.roundsSinceClean=0;
+    addLog(f,"clean","Cleaning logged — one tap"+(had?` — ${fmtN(had)} rounds since last`:""), {chems:"", note:""});
+    benchJustCleaned=f.id;
+    saveSafe(); renderSafe();
+  }
+  renderSafe = function(){
+    updateProRow();
+    document.getElementById("proNfaBtn").onclick = ()=> openProSheet();
+    document.getElementById("proNfaLock").onclick = ()=> openProSheet();
+    document.getElementById("proWtBtn").onclick = ()=> openProSheet();
+    document.getElementById("proWtLock").onclick = ()=> openProSheet();
+    document.getElementById("proZeroBtn").onclick = ()=> openProSheet();
+    document.getElementById("proZeroLock").onclick = ()=> openProSheet();
+    document.getElementById("proSpringBtn").onclick = ()=> openProSheet();
+    document.getElementById("proSpringLock").onclick = ()=> openProSheet();
+    safeList.innerHTML="";
+    document.getElementById("safeSub").textContent = safe.length
+      ? "Your firearms, their round counts, and what's due."
+      : "Round tracking, spring life, and guided cleanings — starting with your first firearm.";
+    if(!safe.length){
+      safeList.innerHTML = `<div class="empty"><div class="big">YOUR SAFE IS EMPTY</div><p>Add a firearm to start tracking rounds and maintenance.</p></div>`;
+      return;
+    }
+    safe.forEach(f=>{
+      const m=faInfo(f);
+      const springDue = m.spring>0 && f.roundsSinceSpring>=m.spring;
+      const cleanDue = f.cleanInterval>0 && f.roundsSinceClean>=f.cleanInterval;
+      const hasAvoid = computeIntel(f).avoid.length>0;
+      let dots=[];
+      if(springDue) dots.push('<div class="alertdot">SPRING DUE</div>');
+      if(cleanDue) dots.push('<div class="alertdot amber">CLEAN DUE</div>');
+      if(!springDue && hasAvoid) dots.push('<div class="alertdot">AMMO FLAG</div>');
+      /* filings-based NFA wait badge (legacy f.nfa read retired) */
+      const pend=(Array.isArray(f.nfaFilings)?f.nfaFilings:[]).find(x=>(x.status==="Pending"||x.status==="Submitted")&&x.submitted);
+      if(pend) dots.push(`<div class="alertdot amber">NFA ${daysBetween(new Date(pend.submitted).getTime(),Date.now())}D</div>`);
+      if(f.wt && f.wt.base!=null && f.wt.current!=null){
+        const g=+(f.wt.current-f.wt.base).toFixed(2), th=f.wt.thresh||(f.wt.unit==="g"?30:2);
+        if(g>=th) dots.push('<div class="alertdot amber">CLEAN DUE (WT)</div>');
+      }
+      if(isPro() && hasMags(f) && Array.isArray(f.mags) && f.mags.some(mm=>(mm.status||"active")==="active" && mm.role==="Carry" && (!mm.lastRot || (Date.now()-mm.lastRot)/86400000 >= (f.magRotDays||90)))) dots.push('<div class="alertdot amber">ROTATE MAGS</div>');
+      if(Array.isArray(f.mags) && f.mags.some(mm=>mm.status==="problem")) dots.push('<div class="alertdot">MAG PROBLEM</div>');
+      if(Array.isArray(f.reminders) && f.reminders.some(r=>benchDue(f,r).due)) dots.push('<div class="alertdot amber">CARE DUE</div>');
+      const itemType=f.nfaItemType||null;
+      const card=document.createElement("div");
+      card.className="fa-card"; card.setAttribute("role","button"); card.tabIndex=0;
+      card.innerHTML=`
+        <div class="row1">
+          <div><div class="fname">${esc(m.name)}${f.custom?' <span class="protag customtag">CUSTOM</span>':""}${itemType?` <span class="protag">${esc(itemType.toUpperCase())}</span>`:""}</div><div class="fsub">${esc(m.sub)}</div></div>
+          ${dots.length?`<div class="dots">${dots.slice(0,2).join("")}</div>`:""}
+        </div>
+        <div class="stats">
+          <div class="st"><div class="v">${fmtN(f.totalRounds)}</div><div class="k">Rounds</div></div>
+          <div class="st"><div class="v">${fmtN(f.roundsSinceClean)}</div><div class="k">Since clean</div></div>
+          <div class="st" style="margin-left:auto"><span class="btn sm ${benchJustCleaned===f.id?"":"primary"} cardclean" data-fid="${f.id}">${benchJustCleaned===f.id?"✓ Logged":"✓ Log Cleaning"}</span></div>
+        </div>
+        ${benchJustCleaned===f.id?`
+        <div class="toastline" style="margin-top:12px"><b>Cleaned — logged.</b> Round counter reset; the cleaning heartbeat starts fresh. No guide required.</div>
+        <div class="nfagrid" style="margin-top:10px"><div class="nf wide"><label>Note (optional)</label><input type="text" class="cardnote" data-fid="${f.id}" maxlength="120" placeholder="e.g. Heavy fouling at the breech face"></div></div>`:""}`;
+      card.addEventListener("click",e=>{
+        if(e.target.closest(".cardclean")||e.target.closest(".cardnote")) return;
+        activeId=f.id; benchJustCleaned=null; show("scr-detail");
+      });
+      card.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target===card){ activeId=f.id; show("scr-detail"); } });
+      safeList.appendChild(card);
+    });
+    safeList.querySelectorAll(".cardclean").forEach(b=>{
+      b.addEventListener("click",e=>{
+        e.stopPropagation();
+        const f=byId(b.dataset.fid); if(!f) return;
+        if(benchJustCleaned===f.id) return;
+        benchQuickClean(f);
+      });
+    });
+    safeList.querySelectorAll(".cardnote").forEach(inp=>{
+      inp.addEventListener("click",e=>e.stopPropagation());
+      inp.addEventListener("change",()=>{
+        const f=byId(inp.dataset.fid); if(!f||!Array.isArray(f.log)) return;
+        const entry=f.log.find(e=>e.type==="clean");
+        if(entry){ entry.note=inp.value.trim(); saveSafe(); }
+      });
+    });
+  };
+
+  /* ---------- detail extras: NFA reshaping + firearm attachments ---------- */
+  const benchOrigRenderDetail = renderDetail;
+  let benchLastDetailId=null;
+  renderDetail = function(){
+    /* switching firearms drops any open filing form and staged zero photos */
+    if(benchLastDetailId!==activeId){ benchFilingOpen=null; benchZeroStage={before:null, after:null}; benchLastDetailId=activeId; }
+    benchOrigRenderDetail();
+    const f=byId(activeId); if(!f) return;
+    const isNFAcan=(fcat(f)||{}).gp==="Suppressors";
+    /* NFA box: filings UI for EVERYTHING under the expanded item types (Pro,
+       locked-visible per the house pattern). Legacy class segment stays hidden. */
+    const locked=!isPro();
+    document.getElementById("nfaBox").style.display = locked ? "none" : "block";
+    document.getElementById("proNfaLock").style.display = locked ? "block" : "none";
+    document.getElementById("nfaSupWrap").hidden=false;
+    document.getElementById("nfaClassWrap").hidden=true;
+    document.getElementById("nfaForm").hidden=true;
+    document.getElementById("nfaSave").hidden=true;
+    document.getElementById("nfaEdit").style.display="none";
+    if(locked){
+      const has=[];
+      const fls=Array.isArray(f.nfaFilings)?f.nfaFilings:[];
+      if(fls.length) has.push(`${fls.length} filing${fls.length===1?"":"s"}`);
+      if(f.nfaItemType) has.push(f.nfaItemType+" item type");
+      if(f.stamp) has.push("a stamp photo");
+      document.getElementById("proNfaMsg").textContent =
+        (has.length ? `${has.join(", ")} already stored — unlock to view and edit. ` : "")
+        + "Item type, every filing — Form 1/4/5 or your own — dates, entity, status, stamp photo and documents. Part of Fieldstrip Pro.";
+    } else {
+      renderNfa(f);
+      document.getElementById("stampWrap").hidden = !(isNFAcan || f.nfaItemType || f.stamp);
+      if(!document.getElementById("stampWrap").hidden) renderStamp(f);
+    }
+    const tag=document.getElementById("dNfaTag");
+    tag.hidden=!f.nfaItemType;
+    if(f.nfaItemType) tag.textContent=f.nfaItemType.toUpperCase();
+    /* firearm-level attachments (receipts, work photos) */
+    const ab=document.getElementById("attBox");
+    if(ab){
+      const wrap=document.getElementById("attGridWrap");
+      const n=benchAttGrid(wrap, {kind:"firearm", id:f.id}, {kind:"photo", onchange:()=>renderDetail()});
+      document.getElementById("attSummary").textContent = n ? `${n} file${n===1?"":"s"}` : "None yet";
+      document.getElementById("attMsg").textContent = BenchEnv.hasFS()
+        ? "Receipts, work photos, notes — stored on this phone as files. Thumbnails here; full size on tap."
+        : "Photos attach on the phone app.";
+    }
+  };
+
+  /* ---------- THE BENCH (top-level view; Pro, locked-visible) ---------- */
+  function benchCollect(){
+    const out={overdue:[], nfa:[], fleets:[], zeros:[], care:[], attCount:BenchAttach.readReg(BenchEnv.store).length};
+    safe.forEach(f=>{
+      const name=faInfo(f).name;
+      (f.reminders||[]).forEach(r=>{
+        const s=benchDue(f,r);
+        out.care.push({f, name, r, s});
+        if(s.due) out.overdue.push({kind:"care", name, label:r.label, detail:benchDueLabel(f,r)});
+      });
+      if(f.cleanInterval>0 && f.roundsSinceClean>=f.cleanInterval)
+        out.overdue.push({kind:"clean", name, label:"Clean due", detail:`${fmtN(f.roundsSinceClean)} / ${fmtN(f.cleanInterval)} since last clean`});
+      (f.mags||[]).forEach(m=>{ if(m.status==="problem") out.overdue.push({kind:"mag", name, label:`Mag #${m.num} flagged`, detail:m.note||"problem"}); });
+      if(f.nfaItemType || (f.nfaFilings||[]).length) out.nfa.push({f, name});
+      const groups={};
+      (f.mags||[]).forEach(m=>{
+        const key=(m.model||"")+"|"+(m.brand||"")+"|"+m.cap;
+        (groups[key]=groups[key]||{model:m.model, brand:m.brand, cap:m.cap, mags:[]}).mags.push(m);
+      });
+      Object.keys(groups).forEach(k=>out.fleets.push(Object.assign({name, f}, groups[k])));
+      (f.zeros||[]).slice(-2).forEach(z=>out.zeros.push({name, z}));
+    });
+    out.zeros.sort((a,b)=>b.z.ts-a.z.ts);
+    return out;
+  }
+  function renderBench(){
+    const body=document.getElementById("benchBody");
+    const c=benchCollect();
+    const totMags=c.fleets.reduce((a,g)=>a+g.mags.length,0);
+    if(!isPro()){
+      const stored=[];
+      if(totMags) stored.push(`${totMags} mag${totMags===1?"":"s"}`);
+      const zn=safe.reduce((a,f)=>a+(f.zeros||[]).length,0);
+      if(zn) stored.push(`${zn} zero${zn===1?"":"s"}`);
+      const rn=safe.reduce((a,f)=>a+(f.reminders||[]).length,0);
+      if(rn) stored.push(`${rn} reminder${rn===1?"":"s"}`);
+      body.innerHTML=`
+        <div class="d-head"><div class="dname">The Bench<span class="protag">PRO</span></div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>
+        <div class="lifebox prolock" id="benchLockBox">
+          <div class="lrow"><span class="lt">The Bench</span><span class="protag">PRO</span></div>
+          <div class="lmsg">Cross-cutting inventory for people who run more than a safe queen: the mag fleet with batch add, receipts and work photos, zero records with target photos, structured care reminders on round and time clocks, one-tap cleaning logs, and local backup. Everything stays on this phone.</div>
+          ${stored.length?`<div class="lmsg" style="color:var(--text)">${stored.join(", ")} already recorded and still stored — nothing is deleted while locked.</div>`:""}
+          <button class="btn sm primary" id="benchUnlock">Unlock Pro</button>
+        </div>`;
+      document.getElementById("benchUnlock").onclick=()=>openProSheet();
+      document.getElementById("benchLockBox").onclick=e=>{ if(e.target.id!=="benchUnlock") openProSheet(); };
+      return;
+    }
+    let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>`;
+    if(c.overdue.length){
+      h+=`<div class="lifebox warn"><div class="lrow"><span class="lt">Needs attention</span><span class="lv" style="color:var(--safe-red)">${c.overdue.length} item${c.overdue.length===1?"":"s"}</span></div>`;
+      c.overdue.slice(0,6).forEach(o=>{
+        h+=`<div class="benchrow"><div class="bi"><div class="bn">${esc(o.label)} — ${esc(o.name)}</div><div class="bs">${esc(o.detail)}</div></div><span class="statuschip ${o.kind==="mag"?"problem":"due"}">${o.kind==="mag"?"PROBLEM":"OVERDUE"}</span></div>`;
+      });
+      h+=`</div>`;
+    }
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">NFA Items</span><span class="lv">${c.nfa.length||"none"}</span></div>`;
+    if(!c.nfa.length) h+=`<div class="lmsg">Set an item type on any firearm or can and its filings gather here.</div>`;
+    c.nfa.forEach(x=>{
+      const s=benchNfaSummary(x.f);
+      const first=s.fls[0];
+      h+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.name)}</div><div class="bs">${esc(x.f.nfaItemType||"type unset")}${first?` · ${esc(benchFilingLabel(first))} · ${esc(first.entity)}`:""}${x.f.stamp?" · stamp photo attached":""}</div></div>${first?`<span class="statuschip ${first.status==="Approved"?"active":(first.status==="Denied"?"problem":"due")}">${esc(first.status.toUpperCase())}</span>`:""}</div>`;
+    });
+    h+=`</div>`;
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Magazines</span><span class="lv">${totMags?`${totMags} mags`:"none"}</span></div>`;
+    if(!c.fleets.length) h+=`<div class="lmsg">Add mags on a firearm — one spec, the whole fleet numbered at once.</div>`;
+    c.fleets.forEach(g=>{
+      const act=g.mags.filter(m=>(m.status||"active")==="active").length;
+      const prob=g.mags.filter(m=>m.status==="problem").length;
+      const ret=g.mags.filter(m=>m.status==="retired").length;
+      const nums=g.mags.map(m=>m.num).sort((a,b)=>a-b);
+      h+=`<div class="benchrow" data-nav="${g.f.id}"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}${g.brand?` · ${esc(g.brand)}`:""}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · #${nums[0]}–#${nums[nums.length-1]} · ${esc(g.name)} · ${act} active${prob?`, ${prob} problem`:""}${ret?`, ${ret} retired`:""}</div></div><span class="statuschip ${prob?"problem":"active"}">${prob?"CHECK":"FLEET"}</span></div>`;
+    });
+    h+=`</div>`;
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Zero Records</span><span class="lv">${c.zeros.length||"none"}</span></div>`;
+    if(!c.zeros.length) h+=`<div class="lmsg">Log a zero on a firearm and it shows here.</div>`;
+    c.zeros.slice(0,5).forEach(x=>{
+      h+=`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.name)} · ${x.z.dist} ${esc(x.z.unit)}</div><div class="bs">${fmtDate(x.z.ts)} · ${esc(x.z.ammo||"—")}${x.z.lot?` · lot ${esc(x.z.lot)}`:""}${(x.z.photoBefore||x.z.photoAfter)?" · target photos":""}</div></div></div>`;
+    });
+    h+=`</div>`;
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Care Reminders</span><span class="lv">${c.care.length?`${c.care.length} clocks`:"none"}</span></div>`;
+    if(!c.care.length) h+=`<div class="lmsg">Round clocks and time clocks, across the safe.</div>`;
+    c.care.slice(0,8).forEach(x=>{
+      h+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.r.label)} — ${esc(x.name)}</div><div class="bs">${esc(benchDueLabel(x.f,x.r))}</div></div><span class="statuschip ${x.s.due?"due":"active"}">${x.s.due?"OVERDUE":"OK"}</span></div>`;
+    });
+    h+=`</div>`;
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Attachments</span><span class="lv">${c.attCount?`${c.attCount} files`:"none"}</span></div>
+        <div class="lmsg">Receipts, work photos, stamp photos and targets across the safe. Stored on this phone only.</div></div>`;
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Backup</span></div>
+        <div class="lmsg">One local file with everything the Bench knows. You choose where it goes — nothing leaves this phone on its own.</div>
+        ${BenchEnv.hasFS()?`<div class="ivrow" style="margin-top:8px"><label for="benchExpPhotos">Include photos</label><input type="checkbox" id="benchExpPhotos" style="width:auto"></div>`:""}
+        <button class="btn sm primary" id="benchExport">Export Backup</button>
+        <div class="lmsg" id="benchExpMsg"></div></div>`;
+    body.innerHTML=h;
+    body.querySelectorAll("[data-nav]").forEach(row=>{
+      row.addEventListener("click",()=>{ activeId=row.dataset.nav; show("scr-detail"); });
+    });
+    document.getElementById("benchExport").onclick=benchDoExport;
+  }
+  async function benchDoExport(){
+    const msg=document.getElementById("benchExpMsg");
+    msg.textContent="Building backup…";
+    try{
+      const inc=!!(document.getElementById("benchExpPhotos")&&document.getElementById("benchExpPhotos").checked);
+      const r=await BenchExport.buildExport(BenchEnv.store, BenchEnv.files(), {now:Date.now(), includePhotos:inc, appVersion:"vC5"});
+      const json=JSON.stringify(r.export);
+      const fname=BenchExport.exportFileName(Date.now());
+      const FSp=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
+      const SHp=BenchEnv.share();
+      if(FSp && SHp){
+        await FSp.writeFile({path:fname, data:json, directory:"CACHE", encoding:"utf8", recursive:true});
+        const u=await FSp.getUri({path:fname, directory:"CACHE"});
+        await SHp.share({title:"Fieldstrip backup", url:u.uri, dialogTitle:"Save your Fieldstrip backup"});
+      } else {
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(new Blob([json],{type:"application/json"}));
+        a.download=fname; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+      }
+      msg.textContent=`Backup built — ${r.report.keys} data keys${r.export.meta.photos?`, ${r.report.files} photo files`:""}${r.report.missing&&r.report.missing.length?` · ${r.report.missing.length} missing file${r.report.missing.length===1?"":"s"} skipped (listed in the file)`:""}.`;
+    }catch(e){
+      if(String(e&&e.message||e).indexOf("canceled")>=0){ msg.textContent=""; return; }
+      msg.textContent="Backup failed: "+(e&&e.message||e);
+    }
+  }
+  document.getElementById("benchBtn").addEventListener("click",()=>{ renderBench(); show("scr-bench"); });
+  /* ============ BENCH UI (full build) — ends ============ */
 
   /* boot */
   renderSafe();
