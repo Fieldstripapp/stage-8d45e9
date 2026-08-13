@@ -473,6 +473,14 @@
   .toastline{background:rgba(95,163,107,.12);border:1px solid rgba(95,163,107,.45);border-radius:10px;padding:11px 13px;color:var(--text);font-size:13px;line-height:1.5}
   .toastline b{color:var(--green)}
   .fa-card .cardclean{display:inline-block;text-align:center}
+  /* ---------- text guides (ruling-textguides-suppressors-20260813) ---------- */
+  #textArtPane .refill{background:#0e1013;border:1px solid var(--edge);border-radius:12px;position:relative;display:flex;align-items:center;justify-content:center;padding:8px}
+  #textArtPane .refill svg{width:72%;max-height:96px;display:block}
+  #textArtPane .refill .rtag{position:absolute;right:8px;top:8px;font-family:var(--display);font-size:8px;letter-spacing:1px;color:var(--muted);border:1px solid var(--edge);border-radius:4px;padding:2px 6px;text-transform:uppercase}
+  .textartline{color:var(--muted);font-size:11.5px;line-height:1.5;text-align:center;padding:7px 22px 0;font-style:italic}
+  .pickref{flex:none;width:52px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--edge);border-radius:8px;background:#0e1013;overflow:hidden}
+  .pickref svg{width:88%;height:auto}
+  .gun-card .tag.textg{color:var(--text);border-color:var(--muted)}
 </style>
 </head>
 <body>
@@ -5774,6 +5782,754 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
   document.getElementById("benchBtn").addEventListener("click",()=>{ renderBench(); show("scr-bench"); });
   /* ============ BENCH UI (full build) — ends ============ */
+
+  /* ============ TEXT GUIDES + SUPPRESSOR SECTION — begins ============ */
+  /* ================================================================
+     TEXT GUIDES + SUPPRESSOR SECTION
+     (ruling-textguides-suppressors-20260813.md — both scopes, one build)
+     Prior typeset/wording deep-dive: NOT FOUND in repo lineage (search
+     filed 2026-08-13) — authored fresh, per the ruling.
+     Batch 1 note: Darren's safe (measured from the captured .debug data)
+     holds one firearm, a G19 — already fully guided. Batch 1 is empty by
+     measurement, so this build opens the catalog with 14 PISTOL platform
+     families (47 rows) the author can write with genuine mechanical
+     specificity, plus the three ruled suppressor type guides. Long-gun
+     families are deferred to the next batch: the ruled art exception is
+     EXACTLY ONE new silhouette (the small can), and honest long-gun rows
+     deserve a long-gun silhouette — queued, not invented.
+     ================================================================ */
+
+  /* ---------- generic reference art (walked pistol schematic + the ONE
+       ruled small-can) ---------- */
+  const TEXT_ART = {
+    pistol: '<svg viewBox="0 0 300 130" fill="none" stroke="#4A5563" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">'
+      +'<rect x="46" y="28" width="236" height="26" rx="6"/>'
+      +'<rect x="257" y="21" width="7" height="7" rx="1.5" stroke="#3A4350"/>'
+      +'<rect x="76" y="21" width="10" height="7" rx="1.5" stroke="#3A4350"/>'
+      +'<path d="M198 34 h36 v10 h-36 z" stroke="#3A4350" stroke-width="2"/>'
+      +'<path d="M88 54 v13 h134 v-13"/>'
+      +'<path d="M88 54 L46 54 L31 114 q0 6 6 6 L64 120 q5 0 7 -5 L88 67 Z"/>'
+      +'<path d="M100 67 q-8 30 22 31 q26 1 24 -21 l-3 -10" stroke-width="2.5"/>'
+      +'<path d="M40 78 l30 8 M37 90 l29 8" stroke="#3A4350" stroke-width="2"/></svg>',
+    /* ART EXCEPTION, EXACTLY ONE (ruled): generic small-can, rimfire scale */
+    smallcan: '<svg viewBox="0 0 300 130" fill="none" stroke="#4A5563" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">'
+      +'<rect x="96" y="44" width="128" height="42" rx="10"/>'
+      +'<path d="M96 52 h128 M96 78 h128" stroke="#3A4350" stroke-width="2"/>'
+      +'<path d="M224 54 h14 v22 h-14" stroke="#3A4350"/>'
+      +'<path d="M238 60 h20 M238 70 h20" stroke="#3A4350" stroke-width="2"/>'
+      +'<path d="M104 44 v42 M112 44 v42" stroke="#3A4350" stroke-width="1.5"/></svg>'
+  };
+  const TEXT_QUIET_LINE = "Custom plates for this model are in the works — the full guide below doesn't wait.";
+
+  /* text-art pane, injected beside the layer viewport */
+  (function(){
+    const pane=document.createElement("div");
+    pane.id="textArtPane"; pane.hidden=true;
+    pane.innerHTML='<div class="refill" style="margin:8px 14px 0"><span class="rtag">Reference illustration</span><span id="textArtSvg"></span></div>'
+      +'<div class="textartline" id="textArtLine"></div>';
+    const vp=document.getElementById("layerViewport");
+    vp.parentNode.insertBefore(pane, vp.nextSibling);
+  })();
+
+  /* ---------- shared gates already defined above (DEFAULT_GATE / SUPPRESSOR_GATE) ---------- */
+  const TG_CLEAR_WARN = "Magazine out FIRST, then lock the slide and look INTO the chamber — eyes and a fingertip. The round that hurts someone is the one that was 'definitely' not there.";
+
+  function tgStep(phase, title, body, extra){ return Object.assign({phase, title, body, t:{}, hl:[], labels:[], arrow:null}, extra||{}); }
+  const TG_DONE = (parts) => tgStep("Strip","Field strip complete",
+    "You're holding: "+parts+". That's the whole field strip — nothing deeper comes apart without tools, and nothing deeper needs to for routine cleaning. Work through the checklist next.",
+    {branch:true});
+
+  /* ================= BATCH 1 — PISTOL PLATFORM TEXT GUIDES ================= */
+  const TEXT_GUIDES = {
+
+  tx_p320: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"A P320 cleans as four pieces: slide, barrel, recoil assembly, and the grip module with the fire-control unit still inside. The FCU stays put for routine cleaning — wipe what you can reach and leave the rest alone.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Drop the magazine, lock the slide back with the slide catch, and look into the chamber and down the magwell — then touch the chamber with a fingertip. The P320 will strip without touching the trigger, which is exactly how you should work anyway.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Rotate the takedown lever",
+        "With the slide still locked open, rotate the takedown lever down and forward — a quarter turn, from pointing at the muzzle to pointing at the ground. It moves with firm thumb pressure and stops positively. If it won't turn, the slide isn't fully locked back; fix that instead of forcing the lever."),
+      tgStep("Strip","Run the slide off",
+        "Hold the slide, release the slide catch, and ease the slide forward off the rails under control — the recoil spring is pushing on it the whole way. No trigger pull required, ever, on this platform. If the slide binds halfway, the takedown lever didn't finish its quarter turn."),
+      tgStep("Strip","Recoil assembly out",
+        "Turn the slide over. The recoil spring assembly sits captive under the barrel — press its rear face slightly forward, lift it up and out. It's one captive unit; nothing flies. Set it where it can't roll."),
+      tgStep("Strip","Barrel out",
+        "Tip the barrel up by its locking block and draw it back and out of the slide. If it hangs up, the barrel is still partly in battery — push it slightly forward first, then lift."),
+      TG_DONE("slide, barrel, recoil assembly, and the grip module")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent patch, bronze brush 5–8 passes, dry patches until they come out clean","Scrub the breech face and under the extractor claw — this is where failures to extract are born","Wipe the slide's inner rails and the striker channel opening DRY — oil in the striker channel gums the works","Barrel exterior: wipe the locking surfaces and the hood clean"]},
+      {name:"FRAME / GRIP MODULE",tasks:["Wipe the four metal FCU rails the slide rides on — then one drop of oil on each","Brush the magwell and the takedown lever recess clean","Leave the FCU seated — routine cleaning never requires removing it"]},
+      {name:"FUNCTION",tasks:["Reassemble, then rack hard several times — the slide should run like glass","Safety check: slide forward on an empty chamber, trigger dead with the magazine out only if your model has a mag disconnect (most don't) — know yours"]}
+    ],
+    reassembly:["Barrel into the slide — drop it in hood-first, seat it flat.","Recoil assembly back under the barrel, rear end seated in its half-moon cut.","Slide onto the rails from the front, run it all the way back, and lock it open.","Rotate the takedown lever back up to horizontal.","Release the slide, rack twice. <strong>Function check:</strong> point safe, dry press — one clean break, then hold the trigger, rack, release to reset."]
+  },
+
+  tx_p365: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"Same architecture as its bigger brother: slide, barrel, recoil assembly, grip module with the FCU inside. Small gun, small parts — work over a mat so nothing walks away.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out first, then lock the little slide back and inspect the chamber by eye and fingertip. The P365 strips without a trigger pull. Micro pistols get handled MORE carefully than duty guns, not less — small slides invite sloppy grips.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Rotate the takedown lever",
+        "Slide locked back, rotate the takedown lever down a quarter turn until it points at the floor. It's stiffer than a P320's — use the base of your thumb, not a fingernail. If it fights you, check the slide is fully locked open."),
+      tgStep("Strip","Ease the slide off",
+        "Control the slide, release the slide catch, and let the recoil spring walk the slide forward off the rails into your hand. Don't let it launch — the flat wire spring in these is stout for its size."),
+      tgStep("Strip","Recoil assembly and barrel out",
+        "Flip the slide. Lift the captive recoil assembly out first — nose it slightly forward, then up. Then tip the barrel up at the rear and draw it back out of the slide. Two parts, ten seconds."),
+      TG_DONE("slide, barrel, recoil assembly, and the grip module")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent patch, brush, dry patches — short barrel, don't skip passes","Breech face and extractor claw scrubbed — carbon here is the classic micro-nine stoppage","Striker channel opening wiped DRY","Feed ramp polished clean with a patch — no tools, just solvent and cloth"]},
+      {name:"FRAME / GRIP MODULE",tasks:["One drop of oil on each FCU rail after wiping them clean","Brush out the magwell — pocket guns eat lint","Check the takedown lever recess for grit"]},
+      {name:"FUNCTION",tasks:["Reassembled: rack hard, watch the slide return to full battery every time","Dry press point-safe — clean break, positive reset"]}
+    ],
+    reassembly:["Barrel into the slide, hood first.","Recoil assembly seated under the barrel — flat end to the rear.","Slide onto the rails, run it back, lock it open.","Takedown lever back up to horizontal, release the slide.","<strong>Function check:</strong> point safe, dry press, hold, rack, release to reset — then wipe your prints off the slide."]
+  },
+
+  tx_mp2: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The M&P comes apart into slide, barrel, guide rod assembly, and frame. The sear deactivation lever means you never have to pull the trigger to strip it — use it every time and the habit will save you eventually.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out, slide locked back, chamber checked by eye and fingertip. Leave the slide locked open — the next step happens down the magwell.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Flip the sear deactivation lever",
+        "Look down the magwell at the back wall: a small yellow-green lever points up toward the slide. Push it DOWN and forward with a fingertip or a pen. That releases the sear so the slide can come off without a trigger press. It only needs to move once — you'll feel it pivot."),
+      tgStep("Strip","Rotate the takedown lever",
+        "On the left side above the trigger, rotate the takedown lever down a quarter turn — from horizontal to pointing at the ground. It should move easily with the slide locked back; force means the sear lever didn't flip."),
+      tgStep("Strip","Run the slide off",
+        "Hold the slide, release the slide stop, and ease the slide forward off the frame. It should glide with only spring pressure resisting. If it stops dead at the rear, the sear lever is still up — go back one step; never muscle it."),
+      tgStep("Strip","Guide rod and barrel out",
+        "Turn the slide over. Press the guide rod assembly slightly forward, lift it out — it's captive, nothing separates. Then tip the barrel up by the hood and pull it back and out of the slide."),
+      TG_DONE("slide, barrel, guide rod assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor claw scrubbed — brush at an angle so grit falls out, not in","Wipe the striker channel opening dry, no oil","Barrel hood and locking surfaces wiped; feed ramp cleaned to a shine with a patch"]},
+      {name:"FRAME",tasks:["Wipe the frame rails clean, then a drop of oil on each","Brush the sear housing area gently from above — don't flood it","Magwell brushed out; check the sear deactivation lever flipped back up during reassembly"]},
+      {name:"FUNCTION",tasks:["Rack several times — full battery every time","Dry press point-safe: clean break, audible reset on the way back out"]}
+    ],
+    reassembly:["Barrel into the slide, then the guide rod assembly seated under it, flat end rearward.","Slide onto the frame rails from the front, run it back and lock it open — this re-sets the sear automatically on the M2.0.","Takedown lever back up to horizontal.","Release the slide. <strong>Function check:</strong> point safe, dry press, hold, rack, release to the reset click. If the trigger is dead, the sear lever needs the slide racked once more."]
+  },
+
+  tx_shield: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"A Shield strips exactly like a full-size M&P, just smaller: slide, barrel, captive guide rod, frame. Use the sear deactivation lever — no trigger pull, no exceptions.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out first. Lock the slide back and check the chamber twice — eye, then fingertip. Carry guns are the ones that ride chambered every day; treat this one as loaded until YOUR OWN eyes have proven otherwise.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Sear lever down, takedown lever down",
+        "Down the magwell, flip the small yellow sear deactivation lever down and forward with a pen tip. Then rotate the left-side takedown lever a quarter turn down. Two small motions, and the trigger never gets touched."),
+      tgStep("Strip","Ease the slide off",
+        "Control the slide, drop the slide stop, and walk the slide forward off the rails. The Shield's recoil assembly is a stiff dual-spring — keep your grip until it's fully off."),
+      tgStep("Strip","Guide rod and barrel out",
+        "Lift the captive guide rod assembly out — press slightly forward first, then up. Tip the barrel and draw it out the back of the slide. Everything stays as an assembly; if something came apart in your hand, stop and look before going further."),
+      TG_DONE("slide, barrel, guide rod assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Short bore, full effort: solvent patch, brush, dry to clean","Breech face and extractor claw scrubbed","Feed ramp wiped bright — a carry gun's feed ramp earns weekly attention","Striker channel opening dry"]},
+      {name:"FRAME",tasks:["Rails wiped then oiled, one drop each","Magwell brushed — pocket lint and holster dust collect here","Wipe the exterior with a barely-oiled cloth; carry guns rust from sweat, not rain"]},
+      {name:"FUNCTION",tasks:["Rack hard several times, full battery every time","Dry press, reset check, then reload ONLY when you're done at the bench"]}
+    ],
+    reassembly:["Barrel into the slide, guide rod under it, flat end to the rear.","Slide onto the rails, run it back, lock open — sear resets on the rack.","Takedown lever back to horizontal, release the slide.","<strong>Function check:</strong> point safe, dry press, hold, rack, release to reset. Then, and only then, reload for carry."]
+  },
+
+  tx_cz75: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The CZ 75 strips to slide, barrel, recoil spring and rod, slide stop, and frame. The frame rails ride INSIDE the slide on this design — cleaning them properly matters more here than on almost anything else you own.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out, rack the slide and lock it back, check the chamber by eye and fingertip. Then let the slide forward and cock the hammer — a cocked hammer takes its spring tension off the slide's travel for the next step.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Line up the witness marks",
+        "At the left rear of the slide and frame you'll find two small vertical lines — witness marks. Draw the slide back about a centimeter until the marks align. Hold it there with your firing hand; your other hand works the pin."),
+      tgStep("Strip","Push out the slide stop",
+        "With the marks aligned, push the slide stop pin from the RIGHT side of the frame — a fingertip starts it, the pin's own left-side lever gives you something to pull. On a tight CZ, tap the pin's right end with a nylon tool. It comes out as one piece, left side."),
+      tgStep("Strip","Slide assembly forward and off",
+        "Ease the slide, barrel and spring forward off the frame as one unit. The frame rails run inside the slide — feel how long the engagement is as it comes off; that's the fit that makes these shoot."),
+      tgStep("Strip","Spring and barrel out",
+        "Under the barrel, the recoil spring and rod are compressed — press the rod slightly toward the muzzle, lift it away from the barrel, and let it extend under control. Then drop the barrel's locking lugs out of the slide and draw the barrel out the rear."),
+      TG_DONE("slide, barrel, recoil spring and rod, slide stop, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, bronze brush, dry patches to clean","Breech face and extractor claw scrubbed","Barrel locking lugs — top of the barrel — cleaned and then lightly greased; they carry the lockup","Slide's internal rail channels wiped clean with a patch over a thin tool"]},
+      {name:"FRAME",tasks:["Frame rails wiped, then oiled — these run inside the slide, so a thin film everywhere the finish is shiny","Slide stop pin wiped and its cam surface lightly oiled","Hammer face and the frame's bridge wiped clean"]},
+      {name:"FUNCTION",tasks:["Reassembled: rack and watch the witness marks fly past — smooth, no grate","Dry press in double action, then cock and press single action — two different breaks, both clean"]}
+    ],
+    reassembly:["Barrel into the slide, lugs seated; spring and rod compressed back into place under the barrel, rod head against its seat.","Slide assembly onto the frame from the front, rails engaged, run it back to the witness marks.","Slide stop pin in from the LEFT at the aligned marks — it clicks home flush.","Rack twice. <strong>Function check:</strong> point safe — double-action press, clean break; cock, single-action press, clean break; safety (if yours has one) on, trigger dead."]
+  },
+
+  tx_beretta92: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The 92 opens into slide, barrel with its locking block, recoil spring and rod, and frame. The open slide design sheds dirt in use and shows you everything at the bench — an honest pistol to clean.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out, rack the slide, and with that big open slide top you can SEE the chamber — look anyway, then touch it. Decock with the lever if the hammer is back; let the slide sit forward for takedown.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Press the button, rotate the latch",
+        "On the RIGHT side of the frame, press the round takedown button in and hold it. On the LEFT side, rotate the disassembly latch DOWN until it stops. The button unlocks the latch; if the latch won't turn, you're not holding the button fully in."),
+      tgStep("Strip","Slide assembly forward and off",
+        "With the latch down, the slide, barrel and spring slide forward off the frame together — straight forward, no trigger, no tricks. Catch the assembly under your palm; it's heavy for a pistol slide."),
+      tgStep("Strip","Recoil spring and rod out",
+        "Inside the slide, the spring and rod press against the barrel's locking block. Compress the spring slightly toward the muzzle, lift the rod's rear end clear of the block, and let it extend under control. It is under real tension — keep it pointed into the bench.",
+        {warn:"The recoil spring is compressed and WILL launch the rod if you let go mid-lift. Fingers on top, pressure controlled, eyes away from the line of flight."}),
+      tgStep("Strip","Barrel and locking block out",
+        "Push the barrel assembly slightly forward and lift it up and out of the slide, locking block and all. The block stays on the barrel — do not separate them for routine cleaning; that plunger and pin come apart at an armorer's bench, not this one."),
+      TG_DONE("slide, barrel with locking block, recoil spring and rod, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor scrubbed","Locking block cleaned around its wings, then a drop of oil on each wing — this is the 92's hardest-working part","Slide rails' grooves wiped with a patch"]},
+      {name:"FRAME",tasks:["Frame rails wiped and oiled","Brush around the disassembly latch and its button","Wipe the decocker/safety pivots; one drop of oil worked in"]},
+      {name:"FUNCTION",tasks:["Rack the reassembled pistol — the slide should carry itself home","Decocker check: cock, sweep the lever, hammer falls SAFELY to intercept — trigger dead with the lever down"]}
+    ],
+    reassembly:["Barrel assembly into the slide, block seated in its recess.","Spring and rod compressed back against the locking block — rod head seated in the block's cup.","Slide assembly onto the frame rails from the front, run fully rearward.","Rotate the disassembly latch UP — it clicks and the takedown button pops back out.","Rack twice. <strong>Function check:</strong> point safe — decock lever down: trigger dead. Lever up: double-action press, clean break."]
+  },
+
+  tx_pdp: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"Walther's takedown is two tabs and done: slide, barrel, captive recoil assembly, frame. The trigger must be pressed to release the striker before the slide comes off — which makes your clearing routine the entire safety system. Do it like it matters.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked — twice",
+        "Magazine out FIRST. Rack the slide three times, lock it back, and check the chamber by eye and fingertip. This platform requires a trigger press during takedown, so the clearing step is not a formality — it is the whole ballgame.",
+        {warn:"This pistol requires a trigger press to strip. The magazine must be OUT and the chamber PROVEN empty — eye and fingertip — before the next step. Muzzle into something that can take a bullet."}),
+      tgStep("Strip","Release the striker",
+        "Slide forward on the proven-empty chamber, muzzle pointed at something that would stop a round — press the trigger. The striker releases with a click. That click is the slide's permission to come off."),
+      tgStep("Strip","Pull the takedown tabs",
+        "On both sides of the frame above the trigger guard, pull the serrated takedown tabs straight DOWN together — thumb and forefinger, one pinch. Hold them down and nudge the slide forward; it releases and runs off the rails into your other hand."),
+      tgStep("Strip","Recoil assembly and barrel out",
+        "Turn the slide over. Lift the captive recoil assembly out — press toward the muzzle first, then up and out. Tip the barrel up at the rear and draw it out of the slide."),
+      TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor claw scrubbed","Striker channel opening wiped DRY — nothing gums a Walther faster than oil migrating back there","Feed ramp patched to a shine"]},
+      {name:"FRAME",tasks:["Rails wiped then oiled, one drop each","Brush around the takedown tabs — grit here makes the next takedown a fight","Magwell brushed out"]},
+      {name:"FUNCTION",tasks:["Rack hard, full battery every time","Dry press point-safe: the PDP break should be crisp; a gritty pull after cleaning means solvent residue in the trigger bar path — wipe and re-oil"]}
+    ],
+    reassembly:["Barrel into the slide, recoil assembly under it — flat end rearward.","Slide onto the rails from the front and run it fully back; the takedown tabs snap back up on their own.","Rack twice. <strong>Function check:</strong> point safe, dry press, hold, rack, release to the reset click."]
+  },
+
+  tx_hellcat: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The Hellcat strips with a lever and no trigger press: slide, barrel, captive recoil assembly, frame. Small parts, stiff spring — keep control of the slide the whole way.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out, lock the slide back, check the chamber by eye and fingertip. Leave the slide locked open — the takedown lever needs it there.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Rotate the takedown lever up",
+        "With the slide locked back, rotate the left-side takedown lever UP — from pointing forward to pointing at the sky. It sweeps through about a quarter turn and stops. No button, no trigger."),
+      tgStep("Strip","Ease the slide off",
+        "Hold the slide, release the slide stop, and let the slide run forward off the frame under control. The dual captive spring in a gun this small is stout — respect it."),
+      tgStep("Strip","Recoil assembly and barrel out",
+        "Lift the captive recoil assembly out of the slide — forward pressure, then up. Tip the barrel and draw it out the rear. Two parts in the palm of one hand."),
+      TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean — three inches deserves the same passes as five","Breech face and extractor scrubbed","Feed ramp wiped bright","Striker channel opening dry"]},
+      {name:"FRAME",tasks:["Rails wiped and oiled","Magwell and takedown lever recess brushed — carry lint collects in both","Exterior wiped with a barely-oiled cloth against sweat"]},
+      {name:"FUNCTION",tasks:["Rack hard — watch for full battery every single time","Dry press, reset check; reload only when the bench work is done"]}
+    ],
+    reassembly:["Barrel in, recoil assembly seated under it.","Slide onto the rails, run it back and lock it open.","Rotate the takedown lever back DOWN to horizontal.","Release the slide, rack twice. <strong>Function check:</strong> point safe, dry press, hold, rack, release to reset."]
+  },
+
+  tx_xd: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The XD family strips to slide, barrel, recoil assembly, frame. The takedown lever does the unlocking; a trigger press releases the slide at the end — so the clearing routine carries the weight here.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked — twice",
+        "Magazine out FIRST, slide locked back, chamber checked by eye and fingertip. A trigger press comes later in this takedown, so prove the chamber empty like you mean it, muzzle somewhere that could take a round.",
+        {warn:"This takedown ends with a trigger press. Magazine OUT, chamber PROVEN empty — eye and fingertip — muzzle pointed at something that would stop a bullet."}),
+      tgStep("Strip","Rotate the takedown lever up",
+        "With the slide locked back, rotate the left-side takedown lever UP a quarter turn until it points at the sky. The grip safety means the gun fights you less here than you'd expect — just don't ride the slide stop yet."),
+      tgStep("Strip","Slide forward, press, and off",
+        "Release the slide stop and let the slide come forward to battery. Now — muzzle safe, grip safety depressed — press the trigger and run the slide assembly forward off the frame. It carries the barrel and spring with it."),
+      tgStep("Strip","Recoil assembly and barrel out",
+        "Turn the slide over. Lift out the recoil assembly — two-spring captive unit on most XD-M and Mod.2 guns — then tip the barrel and draw it out the rear of the slide."),
+      TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor claw scrubbed","Feed ramp patched to a shine","Striker channel opening wiped dry"]},
+      {name:"FRAME",tasks:["Rails wiped and oiled, one drop each","Grip safety pivot: one drop, worked in with a few compressions","Magwell brushed out"]},
+      {name:"FUNCTION",tasks:["Rack hard, full battery each time","Grip safety check: trigger DEAD with the backstrap not depressed — hold it loose and prove it","Dry press with a proper grip: clean break, positive reset"]}
+    ],
+    reassembly:["Barrel into the slide, recoil assembly seated under it.","Slide onto the frame rails, run it fully back, lock it open.","Rotate the takedown lever back DOWN.","Release the slide, rack twice. <strong>Function check:</strong> loose grip — trigger dead. Full grip — dry press, clean break, reset."]
+  },
+
+  tx_fn509: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The 509 strips with no trigger press: slide, barrel, captive recoil assembly, frame. The takedown notch does the work — find it once and the whole thing takes thirty seconds.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out, slide locked back, chamber checked by eye and fingertip. Then let the slide forward — this takedown starts from battery, not lock-back.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Find the takedown notch",
+        "Draw the slide back about a quarter inch until the takedown notch on the slide's left rail sits over the takedown lever's axis — you'll feel a soft index. Hold the slide right there; the position matters more than the pressure."),
+      tgStep("Strip","Rotate the lever, ease the slide off",
+        "Holding the notch aligned, rotate the takedown lever DOWN toward the muzzle until it stops, then let the slide run forward off the frame under control. No trigger press — if the slide won't release, the notch wasn't aligned; realign rather than force."),
+      tgStep("Strip","Recoil assembly and barrel out",
+        "Turn the slide over, lift the captive recoil assembly out, then tip the barrel up and draw it out the rear. The 509's barrel has a substantial hood — it likes to be pushed slightly forward before it tips."),
+      TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean","Breech face and extractor scrubbed","Feed ramp and chamber mouth wiped bright","Striker channel opening dry"]},
+      {name:"FRAME",tasks:["Rails wiped then oiled","Brush the takedown lever recess — the notch trick only works clean","Magwell brushed"]},
+      {name:"FUNCTION",tasks:["Rack hard, full battery every time","Dry press point-safe: clean break, audible reset"]}
+    ],
+    reassembly:["Barrel into the slide, recoil assembly under it.","Slide onto the rails and fully rearward once — the takedown lever snaps back up as the slide passes.","Rack twice. <strong>Function check:</strong> point safe, dry press, hold, rack, release to reset."]
+  },
+
+  tx_taurusg: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The G-series strips to slide, barrel, recoil assembly, frame. It's the two-tab pattern with a trigger press up front — so the clearing routine is the safety system. Treat it that way.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked — twice",
+        "Magazine out FIRST. Rack three times, lock the slide, check the chamber by eye and fingertip. This takedown starts with a trigger press, so this step is the whole game. Muzzle at something that would stop a round.",
+        {warn:"Trigger press required to strip. Magazine OUT, chamber PROVEN empty — eye AND fingertip — before anything else."}),
+      tgStep("Strip","Press the trigger",
+        "Slide forward on the proven-empty chamber, muzzle safe — press the trigger to release the striker. One click. On a G2C/G3 with the manual safety, sweep it OFF first or the trigger stays dead."),
+      tgStep("Strip","Pull both takedown tabs down",
+        "Pinch the two serrated tabs on either side of the frame above the trigger guard and pull them straight DOWN together while nudging the slide forward slightly. Hold, and the slide releases."),
+      tgStep("Strip","Slide off, spring and barrel out",
+        "Run the slide forward off the rails under control. Lift out the recoil assembly — captive on these — then tip the barrel and draw it out the rear."),
+      TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean","Breech face and extractor scrubbed","Feed ramp patched bright — budget guns feed like customs when the ramp is clean","Striker channel opening dry"]},
+      {name:"FRAME",tasks:["Rails wiped and oiled","Magwell and tab recesses brushed","Manual safety (if present): wipe, one drop at the detent, work it a few times"]},
+      {name:"FUNCTION",tasks:["Rack hard, full battery","Safety on (if present): trigger dead. Off: dry press, clean break, reset"]}
+    ],
+    reassembly:["Barrel in, recoil assembly seated.","Slide onto the rails, run it fully back once, release — the tabs pop back up on their own.","Rack twice. <strong>Function check:</strong> point safe — safety on, trigger dead; off, dry press, hold, rack, release to reset."]
+  },
+
+  tx_vp9: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The VP9 strips with no trigger press: slide, barrel, captive recoil assembly, frame. HK built the takedown around the locked-back slide — let the gun hold itself while you work the lever.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out — paddle release, both sides work — then lock the slide back and check the chamber by eye and fingertip. Leave it locked open.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Rotate the takedown lever",
+        "With the slide locked back, rotate the left-side takedown lever DOWN — a full quarter turn until it points at the ground. It moves deliberately; HK detents are firm, not stuck."),
+      tgStep("Strip","Ease the slide off",
+        "Hold the slide, release the slide stop, and walk the slide forward off the rails. No trigger press on this platform, ever. The captive flat spring gives even resistance the whole way off."),
+      tgStep("Strip","Recoil assembly and barrel out",
+        "Turn the slide over, lift the recoil assembly out, then tip the barrel up at the rear and draw it out. Note the barrel's O-ring if yours has one — it stays put; don't pick at it."),
+      TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean","Breech face and extractor claw scrubbed","Charging supports (the rear wings) wiped — grip surfaces collect carbon-oil paste","Striker channel opening dry"]},
+      {name:"FRAME",tasks:["Rails wiped then oiled, one drop each","Paddle release pivots: wipe, single drop, work them","Magwell brushed"]},
+      {name:"FUNCTION",tasks:["Rack hard, full battery every time","Dry press point-safe: the break should be clean and the reset sharp"]}
+    ],
+    reassembly:["Barrel in, recoil assembly seated flat-end rearward.","Slide onto the rails, run back, lock open.","Takedown lever back UP to horizontal, release the slide.","Rack twice. <strong>Function check:</strong> point safe, dry press, hold, rack, release to reset."]
+  },
+
+  tx_1911micro: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The micro 1911s strip like their big brothers minus the barrel bushing: slide, barrel, recoil spring and guide, slide stop, frame. Small pins, real spring tension — bench mat mandatory.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out, rack and lock the slide, check the chamber by eye and fingertip. Cock the hammer and leave it cocked — the takedown notch only lines up with the hammer back on most of these.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Align the takedown notch",
+        "Draw the slide back until the small half-moon takedown notch on the slide's left edge sits directly over the slide stop's tab. Hold it there. On the SIG micros the thumb safety can be eased up to help hold this position — use it if yours allows it."),
+      tgStep("Strip","Push out the slide stop",
+        "Press the slide stop pin from the RIGHT side of the frame and draw the stop out the LEFT. It resists for the first millimeter, then walks out. Don't let the slide creep while the pin is halfway — that's how notches get peened."),
+      tgStep("Strip","Slide assembly forward and off",
+        "Ease the slide, barrel, and spring forward off the frame as one unit into your palm. The recoil spring on a micro is short and stiff — keep it captive under your fingers."),
+      tgStep("Strip","Spring, guide, and barrel out",
+        "Compress the recoil spring and guide slightly, lift them out of the slide, and let the spring extend under control. Then tip the barrel free and draw it out of the slide — no bushing to turn on these; the barrel and slide fit directly.",
+        {warn:"The recoil spring is under real compression in a short slide. Control it with your fingertips the whole way out, muzzle end pointed into the bench."}),
+      TG_DONE("slide, barrel, recoil spring and guide, slide stop, and frame")
+    ],
+    cleaning:[
+      {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean — short and quick","Breech face and extractor scrubbed","Barrel exterior and the slide's barrel channel wiped — direct fit means these surfaces ARE the accuracy","Feed ramp (barrel and frame halves both) patched bright"]},
+      {name:"FRAME",tasks:["Rails wiped and oiled","Slide stop pin wiped, light oil on its shaft","Hammer face and disconnector track wiped — no flooding; drops, not pours"]},
+      {name:"FUNCTION",tasks:["Rack the reassembled pistol — smooth, no bushing means no tight spot at the muzzle","Thumb safety on: trigger dead. Off: single-action press, crisp break","Hammer at rest, then cocked — no follow-down when the slide slams"]}
+    ],
+    reassembly:["Barrel into the slide, then spring and guide compressed back into their tunnel.","Slide assembly onto the frame rails, drawn back to the takedown notch.","Slide stop back in from the LEFT, tab through the barrel link/cam slot, pin seated flush with a click.","Rack twice, cock, safety on. <strong>Function check:</strong> safety on — trigger dead. Safety off — clean single-action break. Grip safety (if present) — trigger dead unless depressed."]
+  },
+
+  tx_mk4: { textMode:true, genericArt:"pistol", gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"The Mark IV is the one-button rimfire: press, tilt, and the upper comes off. Bolt out the back, clean from the breech like a rifle, and the whole reason this generation exists makes itself obvious.",
+    steps:[
+      tgStep("Clear","Magazine out, chamber checked",
+        "Magazine out, rack the bolt by its ears and lock it back, check the chamber by eye through the ejection port. Rimfire chambers hide rounds in shadow — angle the pistol to the light and LOOK.",
+        {warn:TG_CLEAR_WARN}),
+      tgStep("Strip","Press the takedown button",
+        "Let the bolt close on the empty chamber, point the muzzle safe, and press the recessed takedown button at the rear of the frame, just below the bolt ears. Hold it in — you'll feel the barreled upper unlatch from the grip frame."),
+      tgStep("Strip","Tilt and lift the upper off",
+        "With the button held, tilt the barreled receiver up at the muzzle — it pivots on its front lug — and lift it off the grip frame. Two assemblies, zero tools. Set the grip frame aside, hammer left where it is."),
+      tgStep("Strip","Bolt out the back",
+        "Pull the bolt straight out the REAR of the receiver by its ears. That opens the receiver tube for cleaning from the breech end — which is the entire point; .22 fouling lives in the chamber mouth and the bolt face.",
+        {branch:true})
+    ],
+    deepSteps:[
+      tgStep("Deep Clean","Scrub the bolt",
+        "The bolt face collects a hard ring of wax and carbon around the firing pin slot — scrape it gently with a brass or nylon pick, never steel against the firing pin. Wipe the extractor claw and check it snaps back freely. The firing pin stays in the bolt; it needs a wipe, not a removal."),
+      tgStep("Deep Clean","Receiver tube and chamber",
+        "From the breech end, brush the receiver tube and then the chamber — a .22 chamber mop with solvent, then dry. The chamber mouth ring of wax is what causes sticky extraction on a dirty Mark series; get it all."),
+      tgStep("Deep Clean","Rebuild the bolt into the tube",
+        "Slide the bolt back in through the rear, ears aligned to their slots. It should run the full stroke with no grate. If it binds, back out and check nothing rode in on the bolt's underside.")
+    ],
+    cleaning:[
+      {name:"BARREL & CHAMBER",tasks:["Bore from the BREECH: solvent patch, brush, dry to clean — never from the muzzle on a rimfire","Chamber mop with solvent; dry it after","Wipe the feed ramp and chamber mouth — wax buildup here is the classic Ruger rimfire stoppage"]},
+      {name:"BOLT & RECEIVER",tasks:["Bolt face scraped clean around the firing pin slot (brass/nylon only)","Extractor claw cleaned; snaps freely","Receiver tube brushed and patched dry","LIGHT oil film on the bolt body — rimfires gum up when over-oiled; less is more"]},
+      {name:"GRIP FRAME",tasks:["Brush out the magwell and around the hammer","Wipe, don't flood — the fire control group wants almost nothing","Check the takedown button recess for grit"]}
+    ],
+    reassembly:["Bolt into the receiver from the rear, ears in their slots.","Hook the upper's front lug into the grip frame, then rotate the rear down until the latch CLICKS — press the takedown button if it needs the help, then confirm the click.","Rack the bolt; dry press point-safe. <strong>Function check:</strong> the Mark IV will not fire out of battery — if the trigger is dead, the upper isn't latched; re-seat it until the click."]
+  },
+
+  /* ================= SUPPRESSOR TYPE GUIDES (Scope B item 9) ================= */
+
+  txsup_rimfire: { textMode:true, genericArt:"smallcan", gate:SUPPRESSOR_GATE, parts:{}, origins:{},
+    cleanIntro:"Rimfire is the dirtiest thing you can put through a can — lead and bullet wax with every round. A serviceable rimfire can is MEANT to be opened and scrubbed. Gloves on for all of it, and everything lead-touched gets cleaned WET.",
+    steps:[
+      tgStep("Clear","Host cleared, can cool, gloves on",
+        "The host firearm gets cleared first — magazine out, chamber proven empty — because a suppressor strip starts at the muzzle of a gun. Let the can cool to hand-warm. Nitrile gloves go on now and stay on: everything inside a rimfire can is dressed in lead.",
+        {warn:"Lead exposure is the real hazard of rimfire can cleaning. Gloves on, work wet (never dry-brush lead dust into the air), wash hands and wipe the bench after."}),
+      tgStep("Strip","Unthread the can from the host",
+        "Muzzle safe, grip the can at its base — the mount end — and unthread it counterclockwise off the host. Seized after a long session is normal for rimfire; a strap wrench beats pliers, and warmth beats force. Never crush the tube to win a grip fight."),
+      tgStep("Strip","Open the can",
+        "Unscrew the end cap or base (per your can's design — most rimfire cans open from one threaded end) and slide the baffle stack or monocore out of the tube. If fouling has cemented it in place, stand the can in solvent and come back — soaking beats hammering, every time."),
+      tgStep("Strip","Lay out the internals in order",
+        "If yours is a STACK of individual baffles, lay them out muzzle-to-rear IN ORDER as they come out — most stacks are directional and many are position-specific. A monocore is one piece and can't be mis-stacked; that's its whole sales pitch. Photograph the layout the first time; future-you says thanks.",
+        {warn:"Baffle stacks are directional. Mixed-up or reversed baffles cause strikes. Keep the order, keep the orientation, photograph it."}),
+      TG_DONE("tube, end cap or base, and the baffle stack or monocore")
+    ],
+    cleaning:[
+      {name:"BAFFLES / CORE",tasks:["Soak in mineral spirits or a purpose-made suppressor cleaner — hours, not minutes","Scrub WET with a nylon brush; brass picks for the baffle clip points","ALUMINUM baffles: NO aggressive alkaline solvents and NO ultrasonic with hot caustic solutions — they eat aluminum; mineral spirits and patience instead","Do NOT use the peroxide-vinegar 'dip' — it converts lead to lead acetate, genuinely toxic to handle and hazardous to dispose of","Wet-tumbling is the deep-clean of choice for stainless stacks — never for aluminum"]},
+      {name:"TUBE & CAPS",tasks:["Scrub the tube bore wet; patch it dry","Clean both thread sets — tube and mount — and inspect for crossed or flattened threads","Check the bore path of each cap for strikes; any nick gets looked at hard before the next shot"]},
+      {name:"MOUNT & CLOSE-OUT",tasks:["Thin film of anti-seize on the tube threads so the next opening isn't a fight","Gloves off LAST, then wash hands and wipe the bench — lead residue doesn't announce itself"]}
+    ],
+    reassembly:["Stack or core back into the tube in its recorded order and orientation.","End cap threaded on snug — not gorilla-tight; the anti-seize is doing the work.","Thread the can back onto the host until hand-tight against the shoulder.","Sight down the bore path by eye before the first round — checking alignment is free; a baffle strike is not.","Log the session's rounds against the can: rimfire cans want opening every 300–500 rounds, not every 3,000."]
+  },
+
+  txsup_booster: { textMode:true, genericArt:"smallcan", gate:SUPPRESSOR_GATE, parts:{}, origins:{},
+    cleanIntro:"A pistol can lives or dies by its booster — the spring-loaded piston assembly that lets a tilting barrel cycle. The stack may be sealed or serviceable, but the booster strips every time: piston, spring, housing. Carbon in the booster is the number-one pistol-can malfunction.",
+    steps:[
+      tgStep("Clear","Host cleared, can cool, gloves on",
+        "Clear the host completely — magazine out, chamber proven empty by eye and fingertip. Let the can cool. Gloves on: pistol-caliber fouling carries lead just like rimfire, only slightly less of it.",
+        {warn:"Clear the HOST first, always. A suppressor job starts at the muzzle of a firearm and gets the same discipline as any other bench work."}),
+      tgStep("Strip","Unthread the can from the host",
+        "Grip the can body and unthread it counterclockwise off the barrel's threads. The piston stays on the barrel or in the can depending on the design — either way, nothing is under spring load until the next step."),
+      tgStep("Strip","Open the booster housing",
+        "Unscrew the booster housing (the rear cap assembly) from the can body. The spring inside is under mild compression — unscrew the last turns with your palm over the cap and let it extend into your hand.",
+        {warn:"The booster spring is compressed. Last turns under palm control, pointed into the bench — not at your face."}),
+      tgStep("Strip","Piston and spring out",
+        "Slide the piston and spring out of the housing and off the can. Three parts: piston, spring, housing. Note which way the piston faces — flange to the rear on nearly all designs — and lay them out in order."),
+      TG_DONE("can body, booster housing, piston, and spring")
+    ],
+    cleaning:[
+      {name:"BOOSTER GROUP",tasks:["Scrape and scrub the piston's flange and body — hard carbon here is what makes a pistol can stop suppressing the cycle","Wipe the spring; check it for kinks or crushed coils","Clean the housing's interior where the piston strokes","Reassemble the booster DRY or with the barest film per your manufacturer — oil in a booster cooks into varnish"]},
+      {name:"CAN BODY",tasks:["Serviceable stack: strip and soak per the rimfire routine (wet, gloves, no dip)","Sealed body: wipe the bore path ends and the exterior — never attempt to open a sealed unit","Clean both thread sets; inspect for damage"]},
+      {name:"CLOSE-OUT",tasks:["Piston threads cleaned on the barrel side too — carbon lock lives there","Gloves off last, wash hands, wipe the bench"]}
+    ],
+    reassembly:["Spring onto the piston, piston into the housing — flange orientation as you noted it.","Booster housing threaded back onto the can body, snug.","Can onto the host's piston threads until hand-tight.","Push the can straight back against the spring once by hand — it should stroke and return freely. That stroke IS the function check; a booster that won't return will not cycle the host.","Log the rounds; boosters want a strip every few hundred rounds of dirty pistol ammo."]
+  },
+
+  txsup_sealed: { textMode:true, genericArt:"smallcan", gate:SUPPRESSOR_GATE, parts:{}, origins:{},
+    cleanIntro:"A sealed rifle can never opens — its maintenance is the MOUNT: clean threads, correct torque, straight alignment. Centerfire rifle pressure keeps the internals mostly self-cleaning; your job is everything from the muzzle device back.",
+    steps:[
+      tgStep("Clear","Host cleared, can cool",
+        "Clear the host — magazine out, chamber proven empty. Let the can cool fully; rifle cans hold heat far longer than they look like they do, and a 300-degree tube will brand you through a glove.",
+        {warn:"Rifle cans stay dangerously hot long after the last round. Hand-warm or cooler before any of this — heat gloves are for range changes, not bench work."}),
+      tgStep("Strip","Remove the can from its mount",
+        "Direct-thread: unthread counterclockwise, strap wrench if needed. QD: operate the latch or cam exactly per its design and rotate off. If a direct-thread can is carbon-locked, penetrating oil at the shoulder and patience — heat cycles and force are how tubes get dented and shoulders get galled."),
+      tgStep("Strip","Do not open the can",
+        "There is nothing user-serviceable inside a sealed can, and 'getting it open' ends its warranty and often its alignment. Everything you can maintain is now in your hands: the can as a unit, and the mount on the rifle.",
+        {warn:"Never attempt to open a sealed suppressor. No cap wrenches, no vises, no heat. Internals are factory-serviced only."}),
+      tgStep("Strip","Inspect the mount",
+        "Look at the muzzle device or thread shoulder on the rifle: carbon cake, thread condition, and — on QD mounts — the locking surfaces. This interface is what keeps a can concentric with the bore; grit here is a baffle strike waiting for a place to happen."),
+      TG_DONE("the can (sealed, as a unit) and its mount hardware")
+    ],
+    cleaning:[
+      {name:"MOUNT INTERFACE",tasks:["Brush the muzzle device / thread shoulder clean of carbon — nylon first, brass if it's caked","Wipe the can's mount recess or threads; solvent on a patch, then dry","QD mounts: clean the locking lugs/cam surfaces and check for peening or rounded corners"]},
+      {name:"MUZZLE DEVICE TORQUE",tasks:["Confirm the muzzle device itself is still torqued to ITS spec — the can rides on it, and a loose device is a wandering zero and worse","If the device uses shims or a crush washer, confirm the index hasn't moved"]},
+      {name:"CAN EXTERIOR",tasks:["Wipe the tube; check for dents, finish bubbling (overheating tell), or a shifted end cap","Sight down the bore path by eye — daylight all the way, centered"]}
+    ],
+    reassembly:["Mount the can per its design — direct-thread: hand-tight against the shoulder, firm hand torque, no tools unless the maker says so; QD: full engagement to the click or index.","Check alignment by eye down the bore path.","First rounds after remounting: confirm point of impact — a can that shifted POI more than its usual is telling you something about the mount.","Set a TIME-based check, not a round count: sealed cans want a mount-and-torque look every few months of use, and the can itself wants nothing."]
+  }
+
+  };
+  Object.assign(GUNS, TEXT_GUIDES);
+
+  /* ---------- routing ---------- */
+  const TEXT_GUIDE_FAM = {
+    "SIG-P320":"tx_p320", "SIG-P365":"tx_p365", "MP2":"tx_mp2", "MP-SHIELD":"tx_shield",
+    "CZ-75":"tx_cz75", "BERETTA-92":"tx_beretta92", "WALTHER-PDP":"tx_pdp",
+    "HELLCAT":"tx_hellcat", "XD":"tx_xd", "FN-509":"tx_fn509", "TAURUS-G":"tx_taurusg",
+    "HK-VP9":"tx_vp9", "1911-MICRO":"tx_1911micro", "RUGER-MK4":"tx_mk4"
+  };
+  function textGuideKey(modelId){
+    const c = CATALOG.find(x=>x.i===modelId);
+    return (c && TEXT_GUIDE_FAM[c.fm]) || null;
+  }
+  const SUPP_TYPE_GUIDE = {rimfire:"txsup_rimfire", pistol:"txsup_booster", sealed:"txsup_sealed"};
+  fkey = function(f){
+    if(f && f.custom){
+      if(f.supp && f.supp.type && f.ctype==="Suppressor") return SUPP_TYPE_GUIDE[f.supp.type]||null;
+      return (isPro() && f.cfam) ? f.cfam : null;
+    }
+    const model = f && f.model;
+    const c = CATALOG.find(x=>x.i===model);
+    /* suppressor TYPE routing: an owner-declared type beats the generic family guide;
+       the Sparrow keeps its own dedicated art guide on the rimfire path */
+    if(c && c.gp==="Suppressors" && f.supp && f.supp.type){
+      if(f.supp.type==="rimfire" && model==="rfsup") return "rfsup";
+      return SUPP_TYPE_GUIDE[f.supp.type];
+    }
+    return guideKey(model) || textGuideKey(model);
+  };
+
+  /* ---------- MODEL_NOTES — per-model divergence callouts (batch 1) ---------- */
+  Object.assign(MODEL_NOTES, {
+    sigsauerm17:{1:"M17: sweep the manual thumb safety OFF before the takedown lever will rotate — the safety blocks the lever's arc."},
+    sigsauerm18:{1:"M18: manual thumb safety OFF before the lever turns, same as the M17."},
+    sigsauerp320xfive:{0:"X-Five: identical takedown; the flared magwell just means the magazine falls freer. Nothing else changes."},
+    sigsauerp365xmacro:{4:"X-Macro: the integrated compensator ports are part of the slide — brush them from the outside during cleaning; nothing extra comes apart."},
+    sigsauerp365380:{0:"P365-380: identical manual of arms; the .380 recoil assembly is lighter — same control, less fight."},
+    smithwessonmp45m20:{0:"M&P45: identical procedure; thumb-safety models sweep the safety OFF before the takedown lever rotates."},
+    smithwessonmpshieldplus:{0:"Shield Plus: identical takedown to the original Shield — the difference is the magazine, not the strip."},
+    czshadow2:{3:"Shadow 2: heavier slide, tighter fit — the witness-mark alignment is fussier. Take the extra second to line them up exactly before pushing the pin."},
+    cz75sp01:{0:"SP-01: identical strip; the rail adds nose weight but changes nothing at the bench."},
+    iwijericho941:{0:"Jericho 941: CZ-pattern rails and takedown — same witness marks, same slide stop. Slide-mounted-safety versions: decock per your manual BEFORE clearing."},
+    berettam9a4:{1:"M9A4: same button-and-latch takedown; the threaded barrel just rides along. Cap stays on for the strip."},
+    beretta92x:{0:"92X: identical takedown across the whole 92X line — Vertec grip changes your hold, not the procedure."},
+    girsanregardmc:{0:"Regard MC: faithful 92-pattern clone — every step applies as written."},
+    waltherppqm2:{0:"PPQ M2: identical takedown to the PDP — trigger press, tabs down, slide off."},
+    waltherpdpfseries:{0:"F-Series: reduced-reach frame, identical takedown."},
+    springfieldarmoryhellcatpr:{0:"Hellcat Pro: identical takedown; the longer slide just gives you more to hold."},
+    springfieldarmoryxdsmod2:{0:"XD-S: same lever-up takedown; single-stack, so expect the slide to feel snappier off the rails."},
+    fn509tactical:{3:"509 Tactical: thread protector stays ON the barrel for the strip; check it snug during cleaning — a loose protector will walk under fire."},
+    tauruspt111millenniumg2leg:{0:"PT111 G2: same tab takedown as the G2C — it's the same platform under an older name."},
+    taurusg3x:{0:"G3X: G3 frame, G3C-length slide — takedown identical."},
+    hecklerkochvp9sk:{0:"VP9SK: identical takedown; the SK spring is stiffer per inch — control the slide the whole way off."},
+    sigsauerp238:{1:"P238: single-action carry gun — hammer stays cocked for the notch alignment, thumb safety can help hold the slide at the notch."},
+    sigsauerp938:{1:"P938: same as P238 — cocked hammer, notch over the stop, and the thumb safety is your third hand."},
+    kimbermicro9:{4:"Micro 9: the recoil spring is a two-piece captive-ish assembly on current guns — if yours comes out as one unit, cleaner still, nothing extra to control."},
+    browning1911380:{0:"1911-380: scaled 1911 — same notch-and-slide-stop strip; the full-length guide rod comes out with the spring."},
+    springfieldarmoryemp:{0:"EMP: true bushingless bull-barrel 1911 — every step applies; the barrel tips out exactly as written."},
+    rugermarkiv2245:{0:"22/45: identical one-button takedown; the polymer grip frame holds the same fire-control group where it is."}
+  });
+
+  /* ---------- picker: full-strength cards + Text Guide badge (Coming soon struck) ---------- */
+  renderPicker = function(){
+    const q=searchInput.value.trim().toLowerCase();
+    let list=CATALOG.filter(c=>pickGroup==="All"||c.gp===pickGroup);
+    if(q){
+      const toks=q.split(/\s+/);
+      list=list.filter(c=>{
+        const hay=(c.mk+" "+c.md+" "+c.ch+" "+c.ct+" "+c.gp).toLowerCase();
+        return toks.every(t=>hay.includes(t));
+      });
+    }
+    list.sort((a,b)=> (a.mk+" "+a.md).localeCompare(b.mk+" "+b.md));
+    let shown=list, capped=false;
+    if(!q && pickGroup==="All"){
+      shown=list.filter(c=>c.tr===1);
+      resultNote.textContent=`Showing the ${shown.length} most-owned models of ${CATALOG.length} — search or pick a category for the rest`;
+    } else {
+      if(list.length>100){ shown=list.slice(0,100); capped=true; }
+      resultNote.textContent = list.length
+        ? (capped?`Showing 100 of ${list.length} — keep typing to narrow`:`${list.length} match${list.length===1?"":"es"}`)
+        : "No matches — try just the model number, or check the spelling";
+    }
+    pickList.innerHTML="";
+    shown.forEach(c=>{
+      const art=!!guideKey(c.i);
+      const text=!art && !!textGuideKey(c.i);
+      const b=document.createElement("button");
+      b.className="gun-card";
+      const thumb = text ? `<span class="pickref">${TEXT_ART.pistol}</span>` : "";
+      b.innerHTML=`${thumb}<span class="meta"><div class="name">${c.mk} ${c.md}</div><div class="sub">${c.ch} · ${c.ct}</div></span>
+        <span class="tag ${art?"ready":(text?"textg":"")}">${art?"Guide Ready":(text?"Text Guide":"Log Only")}</span>`;
+      b.addEventListener("click",()=>{
+        if(!isPro() && safe.length>=FREE_MAX_GUNS){ openProSheet(); return; }
+        const f={id:Date.now().toString(36), model:c.i, totalRounds:0, roundsSinceClean:0, roundsSinceSpring:0, lastClean:null, lastChems:"",
+                 cleanInterval:(c.gp==="Suppressors"?400:((c.fm==="PUMP-500"||c.fm==="PUMP-590")?200:500)),
+                 log:[{ts:Date.now(), type:"note", msg:"Added to safe", mags:[], magRotDays:90, reminders:[], service:[], zeros:[]}]};
+        safe.unshift(f); saveSafe();
+        activeId=f.id; show("scr-detail");
+      });
+      pickList.appendChild(b);
+    });
+    if(list.length===0) pickList.appendChild(buildPickMore());
+    else if(q.length>=2) pickList.appendChild(buildPickFooter());
+  };
+
+  /* the shipped input listener captured the ORIGINAL renderPicker reference at
+     bind time — bind a second listener so typing re-renders with the new badges
+     (the old render runs first and is immediately repainted; cheap and safe) */
+  searchInput.addEventListener("input",()=>renderPicker());
+
+  /* ---------- player: text-mode start + step render ---------- */
+  const benchOrigStartGuide = startGuide;
+  startGuide = function(){
+    const gun=activeGuide();
+    if(!gun.textMode){
+      document.getElementById("textArtPane").hidden=true;
+      benchOrigStartGuide();
+      return;
+    }
+    document.getElementById("layerViewport").hidden=true;
+    document.querySelectorAll(".gun-svg").forEach(s=>s.classList.remove("active"));
+    const pane=document.getElementById("textArtPane");
+    document.getElementById("textArtSvg").innerHTML=TEXT_ART[gun.genericArt||"pistol"];
+    document.getElementById("textArtLine").textContent=TEXT_QUIET_LINE;
+    pane.hidden=false;
+    branched=false;
+    buildProgress();
+    document.getElementById("explodedBtn").hidden=true;
+    document.getElementById("explodedOverlay").hidden=true;
+    stepIndex=0; renderStep(false);
+  };
+  const benchOrigRenderStep = renderStep;
+  renderStep = function(animateText=true){
+    const gun=activeGuide();
+    if(!gun.textMode){ benchOrigRenderStep(animateText); return; }
+    const steps=curSteps();
+    const s=steps[stepIndex];
+    document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
+    const bb=document.getElementById("branchBtn");
+    bb.hidden=!(s.branch && !branched && gun.deepSteps);
+    bb.innerHTML = "Deep Clean ▸" + (isPro() ? "" : ' <span class="protag">PRO</span>');
+    bb.parentElement.classList.toggle("three",!bb.hidden);
+    document.getElementById("stepPhase").textContent=s.phase;
+    document.getElementById("stepTitle").textContent=s.title;
+    document.getElementById("stepBody").innerHTML=s.body;
+    const mnEl=document.getElementById("stepMnote");
+    const mn=(MODEL_NOTES[(byId(activeId)||{}).model]||{})[stepIndex];
+    if(mn){ mnEl.hidden=false; mnEl.innerHTML="<b>YOUR MODEL</b> &nbsp;"+mn; } else { mnEl.hidden=true; mnEl.innerHTML=""; }
+    const warn=document.getElementById("stepWarn");
+    if(s.warn){warn.hidden=false;warn.textContent=s.warn;}else{warn.hidden=true;warn.textContent="";}
+    if(animateText){
+      stepInfo.classList.remove("anim");
+      void stepInfo.offsetWidth;
+      stepInfo.classList.add("anim");
+    }
+    [...progressEl.children].forEach((dot,i)=>{dot.className=i<stepIndex?"done":(i===stepIndex?"cur":"");});
+    document.getElementById("prevBtn").disabled=stepIndex===0;
+    document.getElementById("nextBtn").textContent=stepIndex===steps.length-1?"Start Cleaning":"Next Step";
+  };
+
+  /* guideBtn: text routes light up like art routes; rows with NO guide of any
+     kind hide the button — "Coming soon" is struck everywhere (ruled) */
+  const benchOrigRenderDetail2 = renderDetail;
+  renderDetail = function(){
+    benchOrigRenderDetail2();
+    const f=byId(activeId); if(!f) return;
+    const g=document.getElementById("guideBtn");
+    const gk=fkey(f);
+    g.style.display = gk ? "" : "none";
+    g.textContent = "Clean — Guided";
+    g.disabled = !gk;
+    benchRenderSupp(f);
+  };
+
+  /* ================= SCOPE B — SUPPRESSOR SPEC / TYPE / HOST-LINK ================= */
+  BenchData.OPTIONS.SUPP_TYPES = [
+    {id:"rimfire", label:"Rimfire (serviceable)"},
+    {id:"pistol",  label:"Pistol (booster/piston)"},
+    {id:"sealed",  label:"Sealed rifle can"}
+  ];
+  BenchData.OPTIONS.SUPP_MOUNTS = ["Direct thread 1/2x28","Direct thread 5/8x24","Direct thread (other pitch)","HUB","Proprietary QD","Piston/booster"];
+  /* ruled default clocks per type — suggestions, fully user-editable afterward */
+  BenchData.OPTIONS.SUPP_CLOCK_DEFAULTS = {
+    rimfire:{label:"Disassemble and clean the can", clock:{type:"rounds", every:400}},
+    pistol:{label:"Strip and clean the booster", clock:{type:"rounds", every:500}},
+    sealed:{label:"Mount + torque check", clock:{type:"time", every:6, unit:"months"}}
+  };
+
+  function benchIsSuppressor(f){
+    const c=fcat(f);
+    return (c && c.gp==="Suppressors") || (f.custom && f.ctype==="Suppressor") || f.nfaItemType==="Suppressor";
+  }
+  /* host-link (ruled default): a rounds clock carrying hostId ticks from the HOST's
+     logged rounds. Manual adjustment = editing anchorRounds via 'adjust'. */
+  const benchOrigDue = benchDue;
+  benchDue = function(f, r){
+    if(r.clock && r.clock.type==="rounds" && r.clock.hostId){
+      const host=byId(r.clock.hostId);
+      const rounds=host ? (host.totalRounds||0) : (f.totalRounds||0);
+      const anchor=(r.clock.anchorRounds!=null)?r.clock.anchorRounds:0;
+      const used=Math.max(0, rounds-anchor);
+      return {type:"rounds", used, every:r.clock.every, due:used>=r.clock.every, nextDueAt:null, hosted:!!host};
+    }
+    return benchOrigDue(f, r);
+  };
+  function benchRenderSupp(f){
+    let box=document.getElementById("suppBox");
+    if(!benchIsSuppressor(f)){ if(box) box.style.display="none"; return; }
+    if(!box){
+      box=document.createElement("div");
+      box.className="lifebox"; box.id="suppBox";
+      const anchor=document.getElementById("attBox");
+      anchor.parentNode.insertBefore(box, anchor);
+    }
+    box.style.display="block";
+    const O=BenchData.OPTIONS;
+    const sp=f.supp||{};
+    const hosts=safe.filter(x=>x.id!==f.id && !benchIsSuppressor(x));
+    box.innerHTML=`<div class="lrow"><span class="lt">Suppressor Spec</span><span class="lv">${sp.type?(O.SUPP_TYPES.find(t=>t.id===sp.type)||{}).label||"":"Not set"}</span></div>
+      <div class="lmsg">${sp.type?"Type drives the written guide and the suggested care clock below.":"Set the can's type — it selects the right written guide and care clock."}</div>
+      <div class="nfagrid">
+        <div class="nf wide"><label>Type</label><select id="suppType"><option value="">Unset</option>${O.SUPP_TYPES.map(t=>`<option value="${t.id}"${sp.type===t.id?" selected":""}>${t.label}</option>`).join("")}</select></div>
+        <div class="nf"><label>Bore / caliber rating</label><input type="text" id="suppBore" maxlength="30" value="${escAttr(sp.bore||"")}" placeholder="e.g. .36 cal / 9mm–.350L"></div>
+        <div class="nf"><label>Mount</label><select id="suppMount">${["",...O.SUPP_MOUNTS].map(m=>`<option${sp.mount===m?" selected":""}>${m}</option>`).join("")}</select></div>
+        <div class="nf"><label>Length</label><input type="text" id="suppLen" maxlength="15" value="${escAttr(sp.len||"")}" placeholder='e.g. 6.2"'></div>
+        <div class="nf"><label>Diameter</label><input type="text" id="suppDia" maxlength="15" value="${escAttr(sp.dia||"")}" placeholder='e.g. 1.57"'></div>
+        <div class="nf"><label>Weight</label><input type="text" id="suppWt" maxlength="15" value="${escAttr(sp.wt||"")}" placeholder="e.g. 9.9 oz"></div>
+        <div class="nf"><label>Serviceable</label><select id="suppSvc"><option value=""></option><option value="yes"${sp.svc==="yes"?" selected":""}>Yes — user-serviceable</option><option value="no"${sp.svc==="no"?" selected":""}>No — sealed</option></select></div>
+        <div class="nf wide"><label>Modular config (optional)</label><input type="text" id="suppMod" maxlength="60" value="${escAttr(sp.mod||"")}" placeholder="e.g. runs short config w/o front module"></div>
+      </div>
+      <button class="btn sm primary" id="suppSave" style="margin-top:10px">Save Spec</button>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--edge)">
+        <div class="lrow"><span class="lt">Host firearm</span><span class="lv">${f.hostId&&byId(f.hostId)?esc(faInfo(byId(f.hostId)).name):"Unassigned"}</span></div>
+        <div class="lmsg">The can's round clocks tick from its host's logged rounds — reassign any time; adjust the count from the reminder's Done/adjust controls.</div>
+        <div class="nfagrid"><div class="nf wide"><label>Assigned host</label><select id="suppHost"><option value="">None</option>${hosts.map(h=>`<option value="${h.id}"${f.hostId===h.id?" selected":""}>${esc(faInfo(h).name)}</option>`).join("")}</select></div></div>
+        ${sp.type?`<button class="btn sm" id="suppClockBtn" style="margin-top:10px">Add suggested care clock</button>`:""}
+      </div>`;
+    document.getElementById("suppSave").onclick=()=>{
+      const f2=byId(activeId); if(!f2) return;
+      f2.supp={type:document.getElementById("suppType").value||null,
+        bore:document.getElementById("suppBore").value.trim(),
+        mount:document.getElementById("suppMount").value,
+        len:document.getElementById("suppLen").value.trim(),
+        dia:document.getElementById("suppDia").value.trim(),
+        wt:document.getElementById("suppWt").value.trim(),
+        svc:document.getElementById("suppSvc").value,
+        mod:document.getElementById("suppMod").value.trim()};
+      addLog(f2,"svc","Suppressor spec updated"+(f2.supp.type?" — "+f2.supp.type:""));
+      saveSafe(); renderDetail();
+    };
+    document.getElementById("suppHost").onchange=e=>{
+      const f2=byId(activeId); if(!f2) return;
+      f2.hostId=e.target.value||null;
+      /* re-anchor host-linked clocks to the NEW host's current count so a reassignment
+         never instantly fires a clock (manual adjust stays available via Done) */
+      (f2.reminders||[]).forEach(r=>{
+        if(r.clock&&r.clock.type==="rounds"&&r.clock.hostId!==undefined){
+          r.clock.hostId=f2.hostId;
+          const h=f2.hostId?byId(f2.hostId):null;
+          r.clock.anchorRounds=h?(h.totalRounds||0):(f2.totalRounds||0);
+        }
+      });
+      addLog(f2,"svc", f2.hostId?("Host assigned — "+faInfo(byId(f2.hostId)).name):"Host unassigned");
+      saveSafe(); renderDetail();
+    };
+    const cb=document.getElementById("suppClockBtn");
+    if(cb) cb.onclick=()=>{
+      const f2=byId(activeId); if(!f2||!f2.supp||!f2.supp.type) return;
+      const d=BenchData.OPTIONS.SUPP_CLOCK_DEFAULTS[f2.supp.type];
+      if((f2.reminders||[]).some(r=>r.label===d.label)){ alert("That clock already exists on this can."); return; }
+      const clock=Object.assign({}, d.clock);
+      const r=BenchData.createReminder(f2, {label:d.label}, clock, Date.now());
+      if(r.clock.type==="rounds"){
+        r.clock.hostId=f2.hostId||null;
+        const h=f2.hostId?byId(f2.hostId):null;
+        r.clock.anchorRounds=h?(h.totalRounds||0):(f2.totalRounds||0);
+      } else {
+        const unitDays={days:1,weeks:7,months:30.4375}[r.clock.unit]||1;
+        r.everyDays=Math.max(1,Math.round(r.clock.every*unitDays));
+        r.last=r.lastDone;
+      }
+      addLog(f2,"care",`Suggested clock added — ${d.label}`);
+      saveSafe(); renderDetail();
+    };
+  }
+  renderPicker();   /* re-render with the text-guide badges live */
+  /* ============ TEXT GUIDES + SUPPRESSOR SECTION — ends ============ */
 
   /* boot */
   renderSafe();
