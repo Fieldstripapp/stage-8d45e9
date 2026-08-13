@@ -1393,6 +1393,418 @@
     };
   })();
 
+  /* ===================== BENCH DATA LAYER (Stage 3 slice 1) =====================
+     Spliced VERBATIM from scratchpad/bench/datalayer/ (snapshot.js, bench_data.js,
+     stamp_migrate.js) — the exact files the committed 50/50 test suite ran on.
+     Do not edit here; edit the module files, re-run tests, re-splice.
+     ============================================================================ */
+/* BENCH STAGE 2 — SNAPSHOT GATE (Darren's order item 1, WALK-RECORD-STAGE1.md).
+   Full JSON snapshot of ALL fs_* stored data, written to the filesystem and verified
+   readable BEFORE any migration runs. Retained afterward. No migration executes
+   unless the verify passes: verify = read-back + JSON parse + per-key byte compare
+   + per-key record-count compare (parse-back), never file-exists.
+
+   Adapters (kept tiny so the same module runs in node tests and the webview):
+     store: { keys():string[], getRaw(k):string|null, setRaw(k,v):void, remove(k):void }
+     files: { write(path,text):Promise<void>, read(path):Promise<string> }
+   On device (Stage 3 wiring) files maps to Capacitor Filesystem with encoding:'utf8',
+   directory:'DATA'; store maps to localStorage. */
+(function(root, factory){
+  if(typeof module!=="undefined" && module.exports) module.exports = factory();
+  else root.BenchSnapshot = factory();
+})(typeof self!=="undefined" ? self : this, function(){
+  "use strict";
+  const PREFIX = "fs_";
+
+  function countOf(v){
+    if(Array.isArray(v)) return {kind:"array", n:v.length};
+    if(v && typeof v==="object") return {kind:"object", n:Object.keys(v).length};
+    if(typeof v==="string") return {kind:"string", n:v.length};
+    return {kind:(v===null?"null":typeof v), n:v===null?0:1};
+  }
+
+  /* every fs_* key's RAW stored string — raw, so a value that was never valid JSON
+     (nothing known today, but the gate must not assume) still snapshots faithfully */
+  function gather(store){
+    const data = {};
+    store.keys().filter(k=>k.indexOf(PREFIX)===0).sort().forEach(k=>{
+      const raw = store.getRaw(k);
+      if(raw!==null && raw!==undefined) data[k] = raw;
+    });
+    return data;
+  }
+
+  function snapshotPath(now){ return "bench/snapshots/pre-migration-"+now+".json"; }
+
+  async function snapshotAndVerify(store, files, now){
+    const data = gather(store);
+    const path = snapshotPath(now);
+    const payload = {meta:{takenAt:now, keys:Object.keys(data).length,
+                           note:"raw fs_* values verbatim; verify = parse-back + counts"},
+                     data};
+    const problems = [];
+    try{ await files.write(path, JSON.stringify(payload)); }
+    catch(e){ return {ok:false, path, problems:["snapshot write failed: "+(e&&e.message||e)]}; }
+
+    let text;
+    try{ text = await files.read(path); }
+    catch(e){ return {ok:false, path, problems:["snapshot unreadable: "+(e&&e.message||e)]}; }
+    let parsed;
+    try{ parsed = JSON.parse(text); }
+    catch(e){ return {ok:false, path, problems:["snapshot not valid JSON: "+(e&&e.message||e)]}; }
+
+    const snapData = (parsed && parsed.data) || {};
+    const liveKeys = Object.keys(data).sort(), snapKeys = Object.keys(snapData).sort();
+    if(JSON.stringify(liveKeys) !== JSON.stringify(snapKeys))
+      problems.push("key set mismatch: live "+liveKeys.length+" vs snapshot "+snapKeys.length);
+
+    const counts = [];
+    liveKeys.forEach(k=>{
+      const a = data[k], b = snapData[k];
+      if(a !== b){ problems.push("byte mismatch at "+k); return; }
+      let va, vb, pa=false, pb=false;
+      try{ va = JSON.parse(a); pa = true; }catch(e){}
+      try{ vb = JSON.parse(b); pb = true; }catch(e){}
+      if(pa !== pb){ problems.push("parse divergence at "+k); return; }
+      const ca = pa ? countOf(va) : countOf(a), cb = pa ? countOf(vb) : countOf(b);
+      if(ca.kind !== cb.kind || ca.n !== cb.n) problems.push("count mismatch at "+k+": "+ca.kind+":"+ca.n+" vs "+cb.kind+":"+cb.n);
+      counts.push(k+" = "+ca.kind+":"+ca.n);
+    });
+    return {ok:problems.length===0, path, problems, keys:liveKeys.length, counts};
+  }
+
+  /* THE GATE. migrateFn runs ONLY on a verified snapshot; the snapshot is retained
+     either way (never deleted here — retention is the ruling). */
+  async function runGatedMigration(store, files, now, migrateFn){
+    const gate = await snapshotAndVerify(store, files, now);
+    if(!gate.ok) return {ok:false, gate, migrated:false};
+    const result = await migrateFn();
+    return {ok:true, gate, migrated:true, result, snapshotRetained:gate.path};
+  }
+
+  return {PREFIX, countOf, gather, snapshotPath, snapshotAndVerify, runGatedMigration};
+});
+/* BENCH STAGE 2 — SCHEMA + MIGRATION (order item 2, WALK-RECORD-STAGE1.md).
+   Data layer only — NO UI. Stage 3 splices this into www/index.html's IIFE.
+
+   Design constraints from the ruled spec + addendum:
+   - mags: batch -> INDIVIDUAL records, per-mag status active/retired/problem,
+     numbering meant to match physically marked mags, NO per-trip round counting.
+   - zeros: brand AND lot, before/after photo refs (attachment ids, files-not-DB).
+   - reminders: structured fields + free note; TWO clocks (rounds + time);
+     time clocks expose an absolute nextDueAt so local notifications bolt on
+     later WITHOUT a migration.
+   - NFA: expanded option sets + first-class user-named custom filings
+     (ruling-bench-nfa-options-20260813.md). Presets are Darren-strikeable defaults.
+   - Migration is ADDITIVE and IDEMPOTENT: legacy fields (f.nfa, f.nfaClass,
+     f.nfaDate, mag/reminder/zero shapes) are upgraded in place, never deleted —
+     Stage 3 owns any retirement of legacy read paths. */
+(function(root, factory){
+  if(typeof module!=="undefined" && module.exports) module.exports = factory();
+  else root.BenchData = factory();
+})(typeof self!=="undefined" ? self : this, function(){
+  "use strict";
+
+  const SCHEMA_VERSION = 2;
+  const VERSION_KEY = "fs_schema_v";
+  const DAY = 86400000;
+
+  /* ---- OPTION SETS (defaults; Darren may strike or extend — surfaced on the
+          Stage 2 sheet per the NFA options ruling) ---- */
+  const OPTIONS = {
+    NFA_ITEM_TYPES: ["Suppressor","SBR","SBS","AOW","Machine Gun","Destructive Device","Other"],
+    NFA_FILING_TYPES: [
+      {id:"form1", label:"Form 1 (make)"},
+      {id:"form4", label:"Form 4 (transfer)"},
+      {id:"form5", label:"Form 5 (tax-exempt transfer)"},
+      {id:"custom", label:"Custom filing (user-named)"}   /* first-class, same fields+attachments */
+    ],
+    NFA_ENTITIES: ["Individual","Trust","Corporation/LLC"],
+    NFA_STATUS: ["Draft","Submitted","Pending","Approved","Denied","Withdrawn"],
+    MAG_STATUS: ["active","retired","problem"],
+    MAG_ROLES: ["Range","Carry","Storage"],               /* Role blessed by the Stage 1 walk */
+    REMINDER_CLOCKS: ["rounds","time"],
+    TIME_UNITS: [{id:"days",ms:DAY},{id:"weeks",ms:7*DAY},{id:"months",ms:30.4375*DAY}]
+  };
+
+  let seq = 0;
+  function makeId(prefix, now){ seq = (seq+1) % 46656; return prefix + "_" + (now||0).toString(36) + "_" + seq.toString(36); }
+
+  /* =============== MIGRATION v1 -> v2 (pure; runs under the snapshot gate) =============== */
+
+  function migrateMag(m, i, now){
+    if(m && m.id && m.num) return m;                       /* already v2 */
+    return Object.assign({}, m, {
+      id: makeId("mag", now), num: i+1, model:"", brand:"",
+      status:"active", note:"", addedAt: now
+    });
+  }
+  function migrateReminder(r, now){
+    if(r && r.id && r.clock) return r;
+    return Object.assign({}, r, {
+      id: makeId("rem", now),
+      structured:{component:"", battery:"", torque:"", lube:""},
+      note:"",
+      clock:{type:"time", every:(r && r.everyDays)||365, unit:"days"},
+      lastDone:(r && r.last)||null
+      /* legacy label/everyDays/last kept in place, additive */
+    });
+  }
+  function migrateZero(z, now){
+    if(z && z.id) return z;
+    return Object.assign({}, z, {id:makeId("zero", now), lot:"", photoBefore:null, photoAfter:null});
+  }
+  const FORM_MAP = {"Form 4 — Transfer":"form4", "Form 1 — Maker":"form1"};
+  const OWN_MAP  = {"Individual":"Individual", "Trust":"Trust", "Corporation":"Corporation/LLC"};
+  function legacyNfaFiling(n, now){
+    return {
+      id: makeId("nfaf", now),
+      type: FORM_MAP[n.form] || "form4",
+      customName: null,
+      entity: OWN_MAP[n.own] || "Individual",
+      status: n.app ? "Approved" : (n.sub ? "Pending" : "Draft"),
+      submitted: n.sub || null,
+      approved: n.app || null,
+      ref: n.stamp || "",
+      note: "",
+      attachments: []
+    };
+  }
+  const CLASS_MAP = {sbr:"SBR", sbs:"SBS", aow:"AOW"};
+  function migrateFirearm(f, now){
+    const out = Object.assign({}, f);
+    out.mags = (Array.isArray(f.mags)?f.mags:[]).map((m,i)=>migrateMag(m,i,now));
+    out.reminders = (Array.isArray(f.reminders)?f.reminders:[]).map(r=>migrateReminder(r,now));
+    out.zeros = (Array.isArray(f.zeros)?f.zeros:[]).map(z=>migrateZero(z,now));
+    if(!Array.isArray(out.nfaFilings)){
+      out.nfaFilings = [];
+      if(f.nfa && (f.nfa.form||f.nfa.sub||f.nfa.app||f.nfa.stamp)) out.nfaFilings.push(legacyNfaFiling(f.nfa, now));
+    }
+    if(out.nfaItemType===undefined){
+      out.nfaItemType = CLASS_MAP[f.nfaClass] || (f.nfa ? "Suppressor" : null);
+    }
+    return out;
+  }
+  function migrateSafeV2(safe, now){ return (Array.isArray(safe)?safe:[]).map(f=>migrateFirearm(f, now)); }
+
+  /* store-level migration — pass THIS to BenchSnapshot.runGatedMigration */
+  function migrateStoreV2(store, now){
+    const cur = parseInt(store.getRaw(VERSION_KEY)||"1", 10);
+    const raw = store.getRaw("fs_safe");
+    let safe = [];
+    if(raw){ try{ safe = JSON.parse(raw); }catch(e){ throw new Error("fs_safe unparseable — refuse to migrate"); } }
+    const out = migrateSafeV2(safe, now);
+    store.setRaw("fs_safe", JSON.stringify(out));
+    store.setRaw(VERSION_KEY, String(SCHEMA_VERSION));
+    return {from:cur, to:SCHEMA_VERSION, firearms:out.length};
+  }
+
+  /* =============== MAGAZINES =============== */
+  function nextMagNum(f){ return (f.mags||[]).reduce((a,m)=>Math.max(a, m.num||0), 0) + 1; }
+  /* qty -> individual records sharing the spec; numbering continues the fleet */
+  function batchCreateMags(f, spec, qty, now){
+    if(!Array.isArray(f.mags)) f.mags = [];
+    qty = Math.floor(+qty||0);
+    if(qty<1 || qty>500) throw new Error("bad qty");
+    if(!(spec.cap>0)) throw new Error("bad capacity");
+    if(OPTIONS.MAG_ROLES.indexOf(spec.role)<0) throw new Error("bad role");
+    const start = nextMagNum(f), made = [];
+    for(let i=0;i<qty;i++){
+      const m = {id:makeId("mag", now), num:start+i, model:String(spec.model||""),
+                 brand:String(spec.brand||""), cap:Math.floor(+spec.cap), role:spec.role,
+                 status:"active", note:"", addedAt:now};
+      if(spec.role==="Carry") m.lastRot = now;             /* house behavior, PRO #10 unaffected */
+      f.mags.push(m); made.push(m);
+    }
+    return made;
+  }
+  function setMagStatus(m, status, note){
+    if(OPTIONS.MAG_STATUS.indexOf(status)<0) throw new Error("bad status");
+    m.status = status;
+    if(note!==undefined) m.note = String(note);
+    return m;
+  }
+
+  /* =============== CARE REMINDERS (two clocks; notification-ready) =============== */
+  function unitMs(unit){ const u = OPTIONS.TIME_UNITS.find(x=>x.id===unit); return u ? u.ms : DAY; }
+  function createReminder(f, fields, clock, now){
+    if(!Array.isArray(f.reminders)) f.reminders = [];
+    if(OPTIONS.REMINDER_CLOCKS.indexOf(clock.type)<0) throw new Error("bad clock type");
+    if(!(clock.every>0)) throw new Error("bad clock interval");
+    const r = {
+      id: makeId("rem", now),
+      label: String(fields.label||"").trim(),
+      structured:{component:String(fields.component||""), battery:String(fields.battery||""),
+                  torque:String(fields.torque||""), lube:String(fields.lube||"")},
+      note: String(fields.note||""),
+      clock: clock.type==="time"
+        ? {type:"time", every:Math.floor(+clock.every), unit:(clock.unit||"days")}
+        : {type:"rounds", every:Math.floor(+clock.every), anchorRounds:(f.totalRounds||0)},
+      lastDone: now
+    };
+    if(!r.label) throw new Error("label required");
+    f.reminders.push(r);
+    return r;
+  }
+  /* pure read-time due-ness. time clocks return absolute nextDueAt (schedulable later
+     with zero migration); rounds clocks are in-app indicators only, by ruling. */
+  function reminderState(f, r, now){
+    if(r.clock && r.clock.type==="rounds"){
+      const anchor = (r.clock.anchorRounds!=null) ? r.clock.anchorRounds : 0;
+      const used = Math.max(0, (f.totalRounds||0) - anchor);
+      return {type:"rounds", used, every:r.clock.every, due: used >= r.clock.every, nextDueAt:null};
+    }
+    const every = r.clock ? r.clock.every*unitMs(r.clock.unit) : ((r.everyDays||365)*DAY);
+    const last = r.lastDone || r.last || now;
+    const nextDueAt = last + every;
+    return {type:"time", nextDueAt, due: now >= nextDueAt, overdueDays: Math.floor((now-nextDueAt)/DAY)};
+  }
+  function markReminderDone(f, r, now){
+    r.lastDone = now;
+    if(r.last!==undefined) r.last = now;                    /* keep legacy mirror coherent */
+    if(r.clock && r.clock.type==="rounds") r.clock.anchorRounds = (f.totalRounds||0);
+    return r;
+  }
+
+  /* =============== ZERO RECORDS =============== */
+  function createZero(f, z, now){
+    if(!Array.isArray(f.zeros)) f.zeros = [];
+    if(!(z.dist>0)) throw new Error("bad distance");
+    const rec = {id:makeId("zero", now), ts:now, dist:Math.floor(+z.dist), unit:(z.unit==="m"?"m":"yd"),
+                 ammo:String(z.ammo||""), lot:String(z.lot||""), note:String(z.note||""),
+                 photoBefore:z.photoBefore||null, photoAfter:z.photoAfter||null};
+    f.zeros.push(rec);
+    return rec;
+  }
+
+  /* =============== NFA FILINGS (presets + first-class custom) =============== */
+  function createFiling(f, spec, now){
+    if(!Array.isArray(f.nfaFilings)) f.nfaFilings = [];
+    const typeOk = OPTIONS.NFA_FILING_TYPES.some(t=>t.id===spec.type);
+    if(!typeOk) throw new Error("bad filing type");
+    const customName = spec.type==="custom" ? String(spec.customName||"").trim() : null;
+    if(spec.type==="custom" && !customName) throw new Error("custom filing needs a name");
+    if(OPTIONS.NFA_ENTITIES.indexOf(spec.entity)<0) throw new Error("bad entity");
+    if(OPTIONS.NFA_STATUS.indexOf(spec.status)<0) throw new Error("bad status");
+    const rec = {id:makeId("nfaf", now), type:spec.type, customName,
+                 entity:spec.entity, status:spec.status,
+                 submitted:spec.submitted||null, approved:spec.approved||null,
+                 ref:String(spec.ref||""), note:String(spec.note||""), attachments:[]};
+    f.nfaFilings.push(rec);
+    return rec;
+  }
+  function setItemType(f, itemType){
+    if(itemType!==null && OPTIONS.NFA_ITEM_TYPES.indexOf(itemType)<0) throw new Error("bad item type");
+    f.nfaItemType = itemType;
+    return f;
+  }
+
+  return {SCHEMA_VERSION, VERSION_KEY, OPTIONS, makeId,
+          migrateSafeV2, migrateStoreV2, migrateFirearm,
+          batchCreateMags, setMagStatus, nextMagNum,
+          createReminder, reminderState, markReminderDone,
+          createZero, createFiling, setItemType};
+});
+/* BENCH STAGE 2 — NFA STAMP base64 -> FILE MIGRATION (order item 3; ruled by the
+   Stage-1 walk message: "verified, then base64 removed").
+   Runs ONLY under the snapshot gate. For every firearm whose stamp record says
+   store:"ls" (the shipped fallback used whenever the Filesystem plugin was absent —
+   which was ALWAYS, until Stage 2 installed it):
+     read b64 from fs_stamp_<id>  ->  write to the shipped stamps/stamp_<id>.jpg
+     path  ->  read the file back  ->  byte-compare  ->  ONLY THEN flip f.stamp to
+     store:"fs" and remove the localStorage key.
+   Any verify failure leaves the base64 untouched and is reported, never silent. */
+(function(root, factory){
+  if(typeof module!=="undefined" && module.exports) module.exports = factory();
+  else root.BenchStampMigrate = factory();
+})(typeof self!=="undefined" ? self : this, function(){
+  "use strict";
+
+  const lsKey = id => "fs_stamp_" + id;
+  const fsPath = id => "stamps/stamp_" + id + ".jpg";   /* shipped stampPath convention */
+
+  /* safe: parsed fs_safe array (mutated in place); caller persists it after.
+     filesB64: {writeB64, readB64} — device: Capacitor Filesystem, DATA dir. */
+  async function migrateStamps(store, filesB64, safe, now){
+    const report = {migrated:[], missing:[], failed:[], skipped:[]};
+    for(const f of (safe||[])){
+      if(!f || !f.stamp){ continue; }
+      if(f.stamp.store !== "ls"){ report.skipped.push(f.id); continue; }
+      const b64 = store.getRaw(lsKey(f.id));
+      if(!b64){ report.missing.push(f.id); continue; }    /* record says ls, key gone — report, do not invent */
+      const path = fsPath(f.id);
+      try{
+        await filesB64.writeB64(path, b64);
+        const back = await filesB64.readB64(path);
+        if(back !== b64) throw new Error("read-back mismatch");
+        f.stamp = {store:"fs", path, ts:now};
+        store.remove(lsKey(f.id));                        /* removed ONLY after verify */
+        report.migrated.push(f.id);
+      }catch(e){
+        report.failed.push({id:f.id, err:(e&&e.message)||String(e)});
+        /* base64 stays; f.stamp stays store:"ls" — nothing lost */
+      }
+    }
+    return report;
+  }
+
+  return {migrateStamps, lsKey, fsPath};
+});
+  /* ===== BENCH STAGE 3 SLICE 1 — boot-time gated migration + stamp migration =====
+     Ruled: scratchpad/plan/ruling-bench-stage2-pass-20260813.md item 3. Device-only:
+     without the Capacitor Filesystem plugin (plain web / staging) this is a silent
+     no-op — the snapshot gate cannot exist there, so migration MUST NOT run there.
+     On success the app reloads ONCE (sessionStorage-guarded) — the house
+     boot-restore pattern — so in-memory state re-reads the migrated store. */
+  const BenchBoot = (function(){
+    function P(){ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences; }
+    function storeAdapter(){
+      return {
+        keys(){ const a=[]; for(let i=0;i<localStorage.length;i++) a.push(localStorage.key(i)); return a; },
+        getRaw(k){ return localStorage.getItem(k); },
+        setRaw(k,v){ localStorage.setItem(k,String(v)); try{ const p=P(); if(p) p.set({key:k, value:String(v)}); }catch(e){} },
+        remove(k){ localStorage.removeItem(k); try{ const p=P(); if(p) p.remove({key:k}); }catch(e){} }
+      };
+    }
+    function filesAdapter(FS){
+      return {
+        async write(p,t){ await FS.writeFile({path:p, data:t, directory:"DATA", recursive:true, encoding:"utf8"}); },
+        async read(p){ const r=await FS.readFile({path:p, directory:"DATA", encoding:"utf8"}); return r && r.data; },
+        async writeB64(p,b){ await FS.writeFile({path:p, data:b, directory:"DATA", recursive:true}); },
+        async readB64(p){ const r=await FS.readFile({path:p, directory:"DATA"}); return r && r.data; }
+      };
+    }
+    async function run(){
+      const REPORT = "fs_bench_mig";
+      try{
+        const FS = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
+        if(!FS) return;
+        const st = storeAdapter();
+        const cur = parseInt(st.getRaw(BenchData.VERSION_KEY)||"1", 10);
+        if(cur >= BenchData.SCHEMA_VERSION) return;
+        const files = filesAdapter(FS);
+        const res = await BenchSnapshot.runGatedMigration(st, files, Date.now(), async ()=>{
+          const mig = BenchData.migrateStoreV2(st, Date.now());
+          const migSafe = JSON.parse(st.getRaw("fs_safe")||"[]");
+          const stamps = await BenchStampMigrate.migrateStamps(st, files, migSafe, Date.now());
+          st.setRaw("fs_safe", JSON.stringify(migSafe));
+          return {mig, stamps:{migrated:stamps.migrated, missing:stamps.missing, failed:stamps.failed, skipped:stamps.skipped}};
+        });
+        st.setRaw(REPORT, JSON.stringify({at:Date.now(), ok:res.ok, migrated:!!res.migrated,
+          gate:{ok:res.gate.ok, path:res.gate.path, keys:res.gate.keys, problems:res.gate.problems},
+          result:res.result||null}));
+        if(res.ok && res.migrated && !sessionStorage.getItem("__fs_bench_mig_reload")){
+          sessionStorage.setItem("__fs_bench_mig_reload", "1");
+          location.reload();
+        }
+      }catch(e){
+        try{ localStorage.setItem(REPORT, JSON.stringify({at:Date.now(), ok:false, error:String(e&&e.message||e)})); }catch(_){}
+      }
+    }
+    return {run};
+  })();
+  /* =================== END BENCH DATA LAYER (Stage 3 slice 1) =================== */
+
   /* boot restore: if the WebView evicted localStorage, recover from native Preferences */
   (function(){
     try{
@@ -4317,6 +4729,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
   /* boot */
   renderSafe();
+  BenchBoot.run();
 })();
 </script>
 </body>
