@@ -485,6 +485,19 @@
   .lockdim{opacity:.45;pointer-events:none}
   .benchlocked{cursor:pointer}
   .benchlocked .benchrow{cursor:pointer}
+  /* v9: direct card removal + user art + logo watermark pane */
+  .lifebox{position:relative}
+  .boxhide{position:absolute;right:6px;top:6px;background:none;border:none;color:var(--muted);opacity:.55;font-size:15px;line-height:1;padding:4px 7px;cursor:pointer;z-index:2}
+  .boxhide:hover{opacity:1;color:var(--text)}
+  .hiddenrow{border:1px dashed var(--edge);border-radius:12px;padding:4px 12px 8px;margin-top:2px}
+  .hiddenrow-head{width:100%;background:none;border:none;color:var(--muted);font-family:var(--display);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 0;cursor:pointer;text-align:center}
+  .uartwrap{position:relative;border:1px solid var(--edge);border-radius:12px;overflow:hidden;background:#0e1013}
+  .uartwrap img{display:block;width:100%;max-height:220px;object-fit:cover;cursor:pointer}
+  .uartbtn{position:absolute;right:8px;top:8px;background:rgba(12,14,17,.85);border:1px solid var(--edge);border-radius:7px;color:var(--text);font-size:13px;line-height:1;padding:6px 9px;cursor:pointer}
+  .uartbtn.del{right:auto;left:8px;color:var(--safe-red)}
+  .uartadd{border:1px dashed var(--edge);border-radius:10px;padding:10px 12px;color:var(--muted);font-family:var(--display);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;text-align:center;cursor:pointer}
+  #textArtPane .refill svg{width:24%;max-height:70px}
+  #textArtPane .refill img{display:block;width:100%;max-height:230px;object-fit:contain;cursor:default}
 </style>
 </head>
 <body>
@@ -5860,37 +5873,29 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      deserve a long-gun silhouette — queued, not invented.
      ================================================================ */
 
-  /* ---------- generic reference art (walked pistol schematic + the ONE
-       ruled small-can) ---------- */
-  const TEXT_ART = {
-    pistol: '<svg viewBox="0 0 300 130" fill="none" stroke="#4A5563" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">'
-      +'<rect x="46" y="28" width="236" height="26" rx="6"/>'
-      +'<rect x="257" y="21" width="7" height="7" rx="1.5" stroke="#3A4350"/>'
-      +'<rect x="76" y="21" width="10" height="7" rx="1.5" stroke="#3A4350"/>'
-      +'<path d="M198 34 h36 v10 h-36 z" stroke="#3A4350" stroke-width="2"/>'
-      +'<path d="M88 54 v13 h134 v-13"/>'
-      +'<path d="M88 54 L46 54 L31 114 q0 6 6 6 L64 120 q5 0 7 -5 L88 67 Z"/>'
-      +'<path d="M100 67 q-8 30 22 31 q26 1 24 -21 l-3 -10" stroke-width="2.5"/>'
-      +'<path d="M40 78 l30 8 M37 90 l29 8" stroke="#3A4350" stroke-width="2"/></svg>',
-    /* ART EXCEPTION, EXACTLY ONE (ruled): generic small-can, rimfire scale */
-    smallcan: '<svg viewBox="0 0 300 130" fill="none" stroke="#4A5563" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">'
-      +'<rect x="96" y="44" width="128" height="42" rx="10"/>'
-      +'<path d="M96 52 h128 M96 78 h128" stroke="#3A4350" stroke-width="2"/>'
-      +'<path d="M224 54 h14 v22 h-14" stroke="#3A4350"/>'
-      +'<path d="M238 60 h20 M238 70 h20" stroke="#3A4350" stroke-width="2"/>'
-      +'<path d="M104 44 v42 M112 44 v42" stroke="#3A4350" stroke-width="1.5"/></svg>'
-  };
+  /* v9: reference illustrations are GONE (ruled) — the Fieldstrip logomark at
+     watermark weight stands in wherever a guide has no plate and no user photo */
+  const FS_LOGO_WM = '<svg viewBox="0 0 184 122" aria-hidden="true" style="opacity:.22"><rect x="52" y="0" width="132" height="30" rx="9" fill="#3E4652"/><rect x="62" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="73" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="84" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="26" y="46" width="132" height="30" rx="9" fill="#E8A33D"/><circle cx="49" cy="61" r="7.5" fill="#14161A"/><rect x="0" y="92" width="132" height="30" rx="9" fill="#3E4652"/><circle cx="112" cy="107" r="4" fill="#14161A"/><circle cx="96" cy="107" r="4" fill="#14161A"/></svg>';
   const TEXT_QUIET_LINE = "Custom plates for this model are in the works — the full guide below doesn't wait.";
 
-  /* text-art pane, injected beside the layer viewport */
+  /* art pane, injected beside the layer viewport: user photo > plate > logo */
   (function(){
     const pane=document.createElement("div");
     pane.id="textArtPane"; pane.hidden=true;
-    pane.innerHTML='<div class="refill" style="margin:8px 14px 0"><span class="rtag">Reference illustration</span><span id="textArtSvg"></span></div>'
+    pane.innerHTML='<div class="refill" style="margin:8px 14px 0"><span id="textArtSvg"></span><img id="textArtImg" alt="Your firearm" hidden></div>'
       +'<div class="textartline" id="textArtLine"></div>';
     const vp=document.getElementById("layerViewport");
     vp.parentNode.insertBefore(pane, vp.nextSibling);
   })();
+  async function benchShowUserArtInPane(rec){
+    const img=document.getElementById("textArtImg");
+    const svg=document.getElementById("textArtSvg");
+    svg.innerHTML=""; img.hidden=false;
+    try{
+      const fA=BenchEnv.files();
+      if(fA && rec.file){ const b=await fA.readB64(rec.file); img.src="data:image/jpeg;base64,"+b; }
+    }catch(e){}
+  }
 
   /* ---------- shared gates already defined above (DEFAULT_GATE / SUPPRESSOR_GATE) ---------- */
   const TG_CLEAR_WARN = "Magazine out FIRST, then lock the slide and look INTO the chamber — eyes and a fingertip. The round that hurts someone is the one that was 'definitely' not there.";
@@ -6385,14 +6390,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       : "No matches — try just the model number, or check the spelling";
     pickList.innerHTML="";
     shown.forEach(c=>{
-      const art=!!guideKey(c.i);
-      const text=!art && !!textGuideKey(c.i);
       const b=document.createElement("button");
       b.className="gun-card";
-      /* v8: no card silhouettes anywhere; illustrated = NO badge (normal isn't
-         labeled), text guides = one quiet TEXT chip, Log Only stays honest */
-      b.innerHTML=`<span class="meta"><div class="name">${c.mk} ${c.md}</div><div class="sub">${c.ch} · ${c.ct}</div></span>
-        ${art?"":(text?`<span class="tag textg">TEXT</span>`:`<span class="tag">Log Only</span>`)}`;
+      /* v9: ALL badges struck — every pick card renders identical and blank:
+         name and model, nothing else. Guide differences reveal only inside the
+         firearm page. */
+      b.innerHTML=`<span class="meta"><div class="name">${c.mk} ${c.md}</div><div class="sub">${c.ch} · ${c.ct}</div></span>`;
       b.addEventListener("click",()=>{
         if(!isPro() && safe.length>=FREE_MAX_GUNS){ openProSheet(); return; }
         const f={id:Date.now().toString(36), model:c.i, totalRounds:0, roundsSinceClean:0, roundsSinceSpring:0, lastClean:null, lastChems:"",
@@ -6413,10 +6416,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   searchInput.addEventListener("input",()=>renderPicker());
 
   /* ---------- player: text-mode start + step render ---------- */
+  /* v9 precedence: user photo > illustrated plate > logo watermark. A user photo
+     puts ANY guide (illustrated included, by ruling — "replacing the plate if the
+     owner prefers their own gun") into the photo/text presentation; Remove reverts
+     to whatever sits beneath. The Parts Diagram stays functional regardless — it
+     is the diagram, not the gun's art slot. */
+  function benchPhotoMode(){
+    const f=byId(activeId);
+    return f ? (benchUserArtRec(f)||null) : null;
+  }
   const benchOrigStartGuide = startGuide;
   startGuide = function(){
     const gun=activeGuide();
-    if(!gun.textMode){
+    const photo=benchPhotoMode();
+    if(!gun.textMode && !photo){
       document.getElementById("textArtPane").hidden=true;
       benchOrigStartGuide();
       return;
@@ -6424,19 +6437,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("layerViewport").hidden=true;
     document.querySelectorAll(".gun-svg").forEach(s=>s.classList.remove("active"));
     const pane=document.getElementById("textArtPane");
-    document.getElementById("textArtSvg").innerHTML=TEXT_ART[gun.genericArt||"pistol"];
-    document.getElementById("textArtLine").textContent=TEXT_QUIET_LINE;
+    const img=document.getElementById("textArtImg");
+    img.hidden=true; img.removeAttribute("src");
+    if(photo){
+      benchShowUserArtInPane(photo);
+      /* the plates-in-the-works line shows ONLY when the logo is displayed */
+      document.getElementById("textArtLine").textContent="";
+    } else {
+      document.getElementById("textArtSvg").innerHTML=FS_LOGO_WM;
+      document.getElementById("textArtLine").textContent=TEXT_QUIET_LINE;
+    }
     pane.hidden=false;
     branched=false;
     buildProgress();
-    document.getElementById("explodedBtn").hidden=true;
+    document.getElementById("explodedBtn").hidden=!(gun.exploded && photo && gun.layerMode);
     document.getElementById("explodedOverlay").hidden=true;
     stepIndex=0; renderStep(false);
   };
   const benchOrigRenderStep = renderStep;
   renderStep = function(animateText=true){
     const gun=activeGuide();
-    if(!gun.textMode){ benchOrigRenderStep(animateText); return; }
+    if(!gun.textMode && !benchPhotoMode()){ benchOrigRenderStep(animateText); return; }
     const steps=curSteps();
     const s=steps[stepIndex];
     document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
@@ -6711,7 +6732,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     });
   })();
 
-  /* ---------- item 9: firearm page customization ---------- */
+  /* ================================================================
+     V9 (ruling-v9-20260813.md): customize mode STRUCK -> direct card
+     removal + one quiet restore row · user art on every firearm.
+     ================================================================ */
+
+  /* ---------- v9 item 1: direct card removal ---------- */
   const BENCH_BOXES=[
     {id:"cleanBox",  label:"Cleaning interval", twins:[]},
     {id:"nfaBox",    label:"NFA record",        twins:["proNfaLock"],   count:f=>(f.nfaFilings||[]).length},
@@ -6725,108 +6751,125 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {id:"springBox", label:"Spring life",       twins:["proSpringLock"]},
     {id:"intelBox",  label:"Ammo intel",        twins:[]}
   ];
-  function benchBoxEls(def){
-    return [def.id].concat(def.twins).map(id=>document.getElementById(id)).filter(Boolean);
+  function benchHiddenList(f){ return (f.layout && Array.isArray(f.layout.hidden)) ? f.layout.hidden : []; }
+  function benchHideBox(f, id){
+    if(!f.layout) f.layout={hidden:[]};
+    if(!Array.isArray(f.layout.hidden)) f.layout.hidden=[];
+    if(f.layout.hidden.indexOf(id)<0) f.layout.hidden.push(id);
+    saveSafe(); renderDetail();
   }
-  function benchDomOrder(){
-    return BENCH_BOXES
-      .filter(d=>document.getElementById(d.id))
-      .sort((a,b)=>{
-        const ea=document.getElementById(a.id), eb=document.getElementById(b.id);
-        return (ea.compareDocumentPosition(eb) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
-      })
-      .map(d=>d.id);
+  function benchShowBox(f, id){
+    const h=benchHiddenList(f);
+    const i=h.indexOf(id);
+    if(i>=0){ h.splice(i,1); if(!h.length) delete f.layout; saveSafe(); }
+    renderDetail();
   }
-  function benchApplyLayout(f){
-    const lay=f.layout;
-    if(!lay) return;                       /* uncustomized = untouched */
-    (lay.hidden||[]).forEach(id=>{
-      const def=BENCH_BOXES.find(d=>d.id===id); if(!def) return;
-      benchBoxEls(def).forEach(el=>{ el.style.display="none"; });
-    });
-    if(Array.isArray(lay.order) && lay.order.length){
-      const marker=document.querySelector(".roundsbox");
-      if(marker){
-        lay.order.forEach(id=>{
-          const def=BENCH_BOXES.find(d=>d.id===id); if(!def) return;
-          benchBoxEls(def).forEach(el=>marker.parentNode.insertBefore(el, marker));
-        });
+  let benchHiddenOpen=false;
+  function benchApplyCards(f){
+    const hidden=benchHiddenList(f);
+    BENCH_BOXES.forEach(def=>{
+      const el=document.getElementById(def.id); if(!el) return;
+      const isHidden=hidden.indexOf(def.id)>=0;
+      [def.id].concat(def.twins).forEach(tid=>{
+        const t=document.getElementById(tid);
+        if(t && isHidden) t.style.display="none";
+      });
+      if(isHidden) return;
+      /* small corner x — tap it, card's hidden, done (re-added idempotently:
+         some boxes rebuild their innerHTML every render) */
+      if(!el.querySelector(":scope > .boxhide")){
+        const x=document.createElement("button");
+        x.className="boxhide"; x.type="button"; x.setAttribute("aria-label","Hide this card");
+        x.textContent="×";
+        x.addEventListener("click",e=>{ e.stopPropagation(); const f2=byId(activeId); if(f2) benchHideBox(f2, def.id); });
+        el.appendChild(x);
       }
-    }
-  }
-  function benchCustomizeSheet(){
-    const f=byId(activeId); if(!f) return;
-    let sh=document.getElementById("custSheet");
-    if(!sh){
-      sh=document.createElement("div");
-      sh.id="custSheet"; sh.className="prosheet";
-      document.body.appendChild(sh);
-      sh.addEventListener("click",e=>{ if(e.target.id==="custSheet") sh.classList.remove("open"); });
-    }
-    const lay=f.layout || {hidden:[], order:benchDomOrder()};
-    const order=(lay.order&&lay.order.length)?lay.order:benchDomOrder();
-    let rows="";
-    order.forEach((id,i)=>{
-      const def=BENCH_BOXES.find(d=>d.id===id); if(!def||!document.getElementById(id)) return;
-      const hid=(lay.hidden||[]).indexOf(id)>=0;
-      const n=def.count?def.count(f):0;
-      rows+=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn" style="${hid?'color:var(--muted)':''}">${def.label}</div>
-        ${hid&&n?`<div class="bs">${n} record${n===1?"":"s"} stored — hidden, not deleted</div>`:(n?`<div class="bs">${n} record${n===1?"":"s"}</div>`:"")}</div>
-        <button class="magbtn" data-mv="-1" data-id="${id}" ${i===0?"disabled":""}>▲</button>
-        <button class="magbtn" data-mv="1" data-id="${id}" ${i===order.length-1?"disabled":""}>▼</button>
-        <button class="magbtn ${hid?"":"del"}" data-tg="${id}">${hid?"Show":"Hide"}</button></div>`;
     });
-    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="custX">×</button>
-      <h3>CUSTOMIZE THIS PAGE</h3>
-      <p class="pp">Hide what you don't use, order the rest your way. Nothing is deleted — a hidden box keeps its records and comes back the moment you show it.</p>
-      ${rows}
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button class="btn sm" id="custReset">Reset to default</button>
-        <button class="btn sm" id="custAll">Apply to all firearms</button>
-        <button class="btn sm primary" id="custDone" style="margin-left:auto">Done</button>
-      </div></div>`;
-    sh.classList.add("open");
-    const save=(l)=>{ f.layout=l; saveSafe(); renderDetail(); benchCustomizeSheet(); };
-    sh.querySelectorAll("[data-tg]").forEach(b=>b.onclick=()=>{
-      const id=b.dataset.tg;
-      const l=f.layout||{hidden:[],order:benchDomOrder()};
-      const i=l.hidden.indexOf(id);
-      if(i>=0) l.hidden.splice(i,1); else l.hidden.push(id);
-      save(l);
-    });
-    sh.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{
-      const id=b.dataset.id, mv=+b.dataset.mv;
-      const l=f.layout||{hidden:[],order:benchDomOrder()};
-      if(!l.order||!l.order.length) l.order=benchDomOrder();
-      const i=l.order.indexOf(id);
-      const j=i+mv;
-      if(i<0||j<0||j>=l.order.length) return;
-      l.order.splice(i,1); l.order.splice(j,0,id);
-      save(l);
-    });
-    document.getElementById("custReset").onclick=()=>{ delete f.layout; saveSafe(); renderDetail(); benchCustomizeSheet(); };
-    document.getElementById("custAll").onclick=()=>{
-      const l=f.layout; if(!l){ alert("This page is at the default — nothing to apply."); return; }
-      safe.forEach(x=>{ x.layout=JSON.parse(JSON.stringify(l)); });
-      saveSafe(); alert("Applied to every firearm. Each page can still be reset individually.");
-    };
-    document.getElementById("custDone").onclick=()=>sh.classList.remove("open");
-    document.getElementById("custX").onclick=()=>sh.classList.remove("open");
-  }
-  (function(){
+    /* one quiet restore row at the bottom when anything is hidden */
+    let row=document.getElementById("benchHiddenRow");
     const rb=document.getElementById("removeBtn");
-    if(rb && !document.getElementById("customizeBtn")){
-      const b=document.createElement("button");
-      b.className="btn sm"; b.id="customizeBtn"; b.style.cssText="margin:2px auto 0;display:block";
-      b.textContent="Customize This Page";
-      rb.parentNode.insertBefore(b, rb);
-      b.addEventListener("click",benchCustomizeSheet);
+    if(!hidden.length){ if(row) row.remove(); benchHiddenOpen=false; return; }
+    if(!row && rb){
+      row=document.createElement("div");
+      row.id="benchHiddenRow"; row.className="hiddenrow";
+      rb.parentNode.insertBefore(row, rb);
     }
-  })();
-  const benchPrevRenderDetail_v8 = renderDetail;
+    if(!row) return;
+    const items=hidden.map(id=>{
+      const def=BENCH_BOXES.find(d=>d.id===id); if(!def) return "";
+      const n=def.count?def.count(f):0;
+      return `<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">${def.label}</div>${n?`<div class="bs">${n} record${n===1?"":"s"} stored — hidden, not deleted</div>`:""}</div><button class="magbtn" data-show="${id}">Show</button></div>`;
+    }).join("");
+    row.innerHTML=`<button class="hiddenrow-head" type="button">Show hidden cards (${hidden.length}) ${benchHiddenOpen?"▴":"▾"}</button>`
+      + (benchHiddenOpen?`<div>${items}</div>`:"");
+    row.querySelector(".hiddenrow-head").onclick=()=>{ benchHiddenOpen=!benchHiddenOpen; renderDetail(); };
+    row.querySelectorAll("[data-show]").forEach(b=>b.onclick=()=>{ const f2=byId(activeId); if(f2) benchShowBox(f2, b.dataset.show); });
+  }
+
+  /* ---------- v9 item 4: user art (rides the attachments pipeline) ---------- */
+  function benchUserArtRec(f){
+    if(!f || !f.userArt) return null;
+    return BenchAttach.readReg(BenchEnv.store).find(a=>a.id===f.userArt) || null;
+  }
+  async function benchSetUserArt(f){
+    benchPickPhoto(async (b64,dims)=>{
+      try{
+        const old=benchUserArtRec(f);
+        const rec=await benchImport({kind:"firearm", id:f.id}, b64, dims, "userart");
+        if(old) await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), old.id);
+        f.userArt=rec.id;
+        addLog(f,"note","Photo set as this firearm's art");
+        saveSafe(); renderDetail();
+      }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+    });
+  }
+  async function benchRemoveUserArt(f){
+    const rec=benchUserArtRec(f);
+    if(rec) await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), rec.id);
+    f.userArt=null;
+    addLog(f,"note","Firearm photo removed — art reverts");
+    saveSafe(); renderDetail();
+  }
+  function benchRenderUserArtSlot(f){
+    let slot=document.getElementById("userArtSlot");
+    if(!slot){
+      const head=document.querySelector("#scr-detail .d-head");
+      if(!head) return;
+      slot=document.createElement("div");
+      slot.id="userArtSlot";
+      head.parentNode.insertBefore(slot, head.nextSibling);
+    }
+    const rec=benchUserArtRec(f);
+    if(rec){
+      slot.className="uartwrap";
+      slot.innerHTML=`<img id="userArtImg" alt="Your firearm">
+        <button class="uartbtn" id="uartReplace" title="Replace photo">✎</button>
+        <button class="uartbtn del" id="uartRemove" title="Remove photo">×</button>`;
+      benchLoadThumb(document.getElementById("userArtImg"), rec);
+      document.getElementById("userArtImg").onclick=()=>benchViewAtt(rec);
+      document.getElementById("uartReplace").onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
+      let armed=false;
+      document.getElementById("uartRemove").onclick=e=>{
+        e.stopPropagation();
+        const b=e.target;
+        if(!armed){ armed=true; b.textContent="✓?"; setTimeout(()=>{armed=false; b.textContent="×";},3000); return; }
+        benchRemoveUserArt(f);
+      };
+    } else if(BenchEnv.hasFS()){
+      slot.className="uartadd";
+      slot.innerHTML=`＋ Add a photo of your gun`;
+      slot.onclick=()=>benchSetUserArt(f);
+    } else {
+      slot.className=""; slot.innerHTML=""; slot.onclick=null;
+    }
+  }
+
+  const benchPrevRenderDetail_v9 = renderDetail;
   renderDetail = function(){
-    benchPrevRenderDetail_v8();
-    const f=byId(activeId); if(f) benchApplyLayout(f);
+    benchPrevRenderDetail_v9();
+    const f=byId(activeId); if(!f) return;
+    benchRenderUserArtSlot(f);
+    benchApplyCards(f);
   };
   /* ============ V8 PRESENTATION ROUND — ends ============ */
 
