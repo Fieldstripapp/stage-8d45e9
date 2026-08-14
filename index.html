@@ -501,9 +501,69 @@
   /* owner examples + first-minute art affordance */
   .artadd-line{background:none;border:none;color:var(--amber);font-family:var(--body);font-size:11.5px;font-style:normal;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
   .uarttag{position:absolute;left:8px;bottom:8px;font-family:var(--display);font-size:8.5px;letter-spacing:1.2px;color:var(--muted);background:rgba(12,14,17,.82);border-radius:4px;padding:2px 7px;text-transform:uppercase}
+  /* ---------- SAFE DOOR + DIAL (machined UI chrome) ---------- */
+  #safeDoor{position:fixed;inset:0;z-index:220;background:#0a0c0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px}
+  #safeDoor.opening{pointer-events:none}
+  .sd-scene{width:min(86vw,380px);max-height:52vh;aspect-ratio:4/5;perspective:1400px}
+  .sd-door{position:relative;width:100%;height:100%;border-radius:16px;transform-origin:left center;
+    background:linear-gradient(148deg,#2b3038 0%,#1d2127 55%,#242a32 100%);
+    border:1px solid #3a424d;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 -14px 30px rgba(0,0,0,.45),0 18px 44px rgba(0,0,0,.6);
+    transition:transform .62s cubic-bezier(.45,0,.18,1)}
+  .sd-door::after{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;
+    background:repeating-linear-gradient(115deg,rgba(255,255,255,.014) 0 2px,transparent 2px 5px)}
+  .sd-door.open{transform:rotateY(-104deg)}
+  .sd-hinge{position:absolute;left:-4px;top:10%;bottom:10%;width:9px;display:flex;flex-direction:column;justify-content:space-between}
+  .sd-hinge i{display:block;height:24%;width:100%;border-radius:5px;background:linear-gradient(90deg,#40485380,#20252c);border:1px solid #3a424d}
+  .sd-brand{position:absolute;top:7%;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:4px;color:#39414c;text-shadow:0 1px 0 rgba(255,255,255,.05)}
+  .sd-brand span{color:#4a4025}
+  .sd-bolts{position:absolute;right:7px;top:16%;bottom:16%;width:16px;display:flex;flex-direction:column;justify-content:space-between}
+  .sd-bolts i{display:block;height:13px;border-radius:7px;background:linear-gradient(180deg,#5a6470,#39404a 60%,#4a525e);border:1px solid #2c333d;box-shadow:0 1px 3px rgba(0,0,0,.5);transition:transform .24s ease-in}
+  .sd-bolts i:nth-child(2){transition-delay:.05s}.sd-bolts i:nth-child(3){transition-delay:.1s}.sd-bolts i:nth-child(4){transition-delay:.15s}
+  .sd-door.unbolted .sd-bolts i{transform:translateX(-15px)}
+  .sd-dial{position:absolute;left:50%;top:52%;width:62%;transform:translate(-50%,-50%)}
+  .sd-dial.shudder{animation:sdshake .34s linear}
+  @keyframes sdshake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 4px),-50%) rotate(-1.2deg)}40%{transform:translate(calc(-50% + 4px),-50%) rotate(1.2deg)}60%{transform:translate(calc(-50% - 3px),-50%)}80%{transform:translate(calc(-50% + 2px),-50%)}}
+  #sdDisc{transition:transform .5s cubic-bezier(.35,0,.25,1);transform-origin:100px 100px}
+  .sd-dots{position:absolute;bottom:6%;left:0;right:0;text-align:center;font-size:13px;letter-spacing:8px;color:var(--muted)}
+  .sd-dots b{color:var(--amber)}
+  .sd-pad{display:grid;grid-template-columns:repeat(3,72px);gap:9px}
+  .sd-pad button{height:52px;border-radius:11px;font-family:var(--display);font-weight:600;font-size:17px;color:var(--text);cursor:pointer;
+    background:linear-gradient(180deg,#262b33,#1b1f25);border:1px solid #333b45;box-shadow:0 2px 5px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
+  .sd-pad button:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(0,0,0,.4)}
+  #safeDoor.brand-open{pointer-events:none;background:transparent}
+  #safeDoor.brand-open .sd-pad{display:none}
+  #safeDoor.fadeout{opacity:0;transition:opacity .28s ease .34s}
 </style>
 </head>
 <body>
+  <!-- ============ SAFE DOOR (ruling-safedoor-20260813) — UI chrome, not art ============ -->
+  <div id="safeDoor" style="display:none">
+    <div class="sd-scene">
+      <div class="sd-door" id="sdDoor">
+        <div class="sd-hinge"><i></i><i></i><i></i></div>
+        <div class="sd-brand">FIELD<span>STRIP</span></div>
+        <div class="sd-bolts" id="sdBolts"><i></i><i></i><i></i><i></i></div>
+        <svg class="sd-dial" id="sdDial" viewBox="0 0 200 200" aria-label="Combination dial">
+          <circle cx="100" cy="100" r="96" fill="#171b20" stroke="#3a424d" stroke-width="2"/>
+          <circle cx="100" cy="100" r="88" fill="none" stroke="#242a32" stroke-width="10"/>
+          <path d="M100 2 l7 12 h-14 z" fill="#E8A33D"/>
+          <g id="sdDisc">
+            <circle cx="100" cy="100" r="78" fill="#1d2127" stroke="#333b45" stroke-width="2"/>
+            <g id="sdTicks"></g>
+            <circle cx="100" cy="100" r="30" fill="#171b20" stroke="#3a424d" stroke-width="2"/>
+            <circle cx="100" cy="100" r="6" fill="#2c333d"/>
+          </g>
+        </svg>
+        <div class="sd-dots" id="sdDots"></div>
+      </div>
+    </div>
+    <div class="sd-pad" id="sdPad"></div>
+  </div>
+  <script>
+    /* pre-app gate: cover the screen from first paint when the lock is on */
+    try{ if((JSON.parse(localStorage.getItem("fs_lock")||"{}")).on) document.getElementById("safeDoor").style.display="flex"; }catch(e){}
+  </script>
 <div class="phone">
 
   <div class="topbar">
@@ -2093,9 +2153,13 @@
       if(localStorage.getItem("fs_safe")!==null) return;          // data present, nothing to do
       if(sessionStorage.getItem("__fs_restored")) return;          // already tried this session
       sessionStorage.setItem("__fs_restored","1");
-      Promise.all([P.get({key:"fs_safe"}), P.get({key:"fs_ammo"}), P.get({key:"fs_pro"})]).then(rs=>{
+      /* v10: bench keys + the lock join the recovery list (fs_lock especially —
+         an evicted webview must not silently unlock the safe door) */
+      Promise.all([P.get({key:"fs_safe"}), P.get({key:"fs_ammo"}), P.get({key:"fs_pro"}),
+                   P.get({key:"fs_lock"}), P.get({key:"fs_vendors"}), P.get({key:"fs_attachments"}), P.get({key:"fs_schema_v"})]).then(rs=>{
         let recovered=false;
-        [["fs_safe",rs[0]],["fs_ammo",rs[1]],["fs_pro",rs[2]]].forEach(([k,r])=>{
+        [["fs_safe",rs[0]],["fs_ammo",rs[1]],["fs_pro",rs[2]],
+         ["fs_lock",rs[3]],["fs_vendors",rs[4]],["fs_attachments",rs[5]],["fs_schema_v",rs[6]]].forEach(([k,r])=>{
           if(r && r.value!=null){ localStorage.setItem(k, r.value); recovered=true; }
         });
         if(recovered) location.reload();
@@ -6911,6 +6975,271 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     benchRenderUserArtSlot(f);
     benchApplyCards(f);
   };
+  /* ================================================================
+     V10 — SAFE DOOR + DIAL LOCK (ruling-safedoor-20260813).
+     Optional local app lock, off by default. PIN stored as
+     SHA-256(salt|pin) — never plaintext, never transmitted. The door
+     is UI chrome; the dial turns to each digit; bolts retract and the
+     door swings only on a correct code. Lock OFF = brief branded
+     door-open on cold start, never blocking input.
+     ================================================================ */
+
+  /* compact synchronous SHA-256 (hex) — public-domain construction */
+  function benchSha256(ascii){
+    function rr(v,c){ return (v>>>c)|(v<<(32-c)); }
+    const mathPow=Math.pow, maxWord=mathPow(2,32);
+    let result="", words=[], asciiBitLength=ascii.length*8;
+    let hash=[], k=[], primeCounter=0;
+    const isComposite={};
+    for(let candidate=2; primeCounter<64; candidate++){
+      if(!isComposite[candidate]){
+        for(let i=0;i<313;i+=candidate) isComposite[i]=candidate;
+        hash[primeCounter]=(mathPow(candidate,.5)*maxWord)|0;
+        k[primeCounter++]=(mathPow(candidate,1/3)*maxWord)|0;
+      }
+    }
+    ascii+="\x80";
+    while(ascii.length%64-56) ascii+="\x00";
+    for(let i=0;i<ascii.length;i++){
+      const j=ascii.charCodeAt(i);
+      if(j>>8) return "";                       /* ASCII-only input by construction */
+      words[i>>2]|=j<<((3-i)%4)*8;
+    }
+    words[words.length]=(asciiBitLength/maxWord)|0;
+    words[words.length]=asciiBitLength;
+    for(let j=0;j<words.length;){
+      const w=words.slice(j,j+=16), oldHash=hash.slice(0);
+      for(let i=0;i<64;i++){
+        const w15=w[i-15], w2=w[i-2];
+        const a=hash[0], e=hash[4];
+        const temp1=hash[7]
+          +(rr(e,6)^rr(e,11)^rr(e,25))
+          +((e&hash[5])^((~e)&hash[6]))
+          +k[i]
+          +(w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+        const temp2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+        hash=[(temp1+temp2)|0].concat(hash);
+        hash[4]=(hash[4]+temp1)|0;
+      }
+      for(let i=0;i<8;i++) hash[i]=(hash[i]+oldHash[i])|0;
+    }
+    for(let i=0;i<8;i++){
+      for(let j=3;j+1;j--){
+        const b=(hash[i]>>(j*8))&255;
+        result+=((b<16)?0:"")+b.toString(16);
+      }
+    }
+    return result;
+  }
+  function benchLockGet(){ try{ return JSON.parse(BenchEnv.store.getRaw("fs_lock")||"{}"); }catch(e){ return {}; } }
+  function benchLockSave(o){ BenchEnv.store.setRaw("fs_lock", JSON.stringify(o)); }
+  function benchPinHash(salt, pin){ return benchSha256(salt+"|"+pin); }
+  function benchNewSalt(){
+    const a=new Uint8Array(16); crypto.getRandomValues(a);
+    return [...a].map(x=>x.toString(16).padStart(2,"0")).join("");
+  }
+
+  /* ---------- dial mechanics ---------- */
+  const sdState={buf:"", rot:0, open:false};
+  (function buildDial(){
+    const g=document.getElementById("sdTicks"); if(!g) return;
+    let h="";
+    for(let i=0;i<40;i++){
+      const a=i*9, major=i%4===0;
+      h+=`<line x1="100" y1="${major?26:29}" x2="100" y2="34" stroke="${major?"#5a6470":"#39414c"}" stroke-width="${major?2:1}" transform="rotate(${a} 100 100)"/>`;
+    }
+    for(let d=0; d<10; d++){
+      const a=d*36;
+      h+=`<text x="100" y="48" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-size="13" font-weight="600" fill="#78828F" transform="rotate(${a} 100 100)">${d}</text>`;
+    }
+    g.innerHTML=h;
+  })();
+  function sdTurnTo(digit, idx){
+    /* alternate direction per digit like a real combination — at least a half
+       turn each time so the motion reads mechanical */
+    const target=-digit*36;
+    const cur=((sdState.rot%360)+360)%360;
+    let delta=((target - -cur)%360+360)%360;   /* cw delta to land digit at 12 o'clock */
+    if(idx%2===0){ sdState.rot+=delta+ (delta<180?360:0); }
+    else { sdState.rot-=(360-delta)+((360-delta)<180?360:0); }
+    const disc=document.getElementById("sdDisc");
+    if(disc) disc.style.transform=`rotate(${sdState.rot}deg)`;
+  }
+  function sdDots(){
+    const lock=benchLockGet();
+    const el=document.getElementById("sdDots"); if(!el) return;
+    const len=lock.len||4;
+    el.innerHTML=Array.from({length:len},(x,i)=>i<sdState.buf.length?"<b>●</b>":"○").join(" ");
+  }
+  function sdFinish(){
+    const doorEl=document.getElementById("safeDoor");
+    if(doorEl){ doorEl.style.display="none"; doorEl.classList.remove("opening","fadeout","brand-open"); }
+    document.getElementById("sdDoor").classList.remove("open","unbolted");
+    sdState.open=false;
+  }
+  function sdOpenSequence(fast){
+    const overlay=document.getElementById("safeDoor");
+    const door=document.getElementById("sdDoor");
+    sdState.open=true;
+    overlay.classList.add("opening");
+    if(fast){ sdFinish(); return; }
+    /* dial settle beat -> bolts retract -> door swings -> fade */
+    setTimeout(()=>door.classList.add("unbolted"), 160);
+    setTimeout(()=>door.classList.add("open"), 560);
+    setTimeout(()=>overlay.classList.add("fadeout"), 560);
+    setTimeout(sdFinish, 1180);
+    overlay.addEventListener("click",()=>sdFinish(),{once:true});
+  }
+  function sdWrong(){
+    const dial=document.getElementById("sdDial");
+    dial.classList.remove("shudder"); void dial.offsetWidth; dial.classList.add("shudder");
+    sdState.buf=""; sdDots();
+  }
+  function sdDigit(d){
+    if(sdState.open) return;
+    const lock=benchLockGet();
+    if(sdState.buf.length>=(lock.len||8)) return;
+    sdState.buf+=String(d);
+    sdTurnTo(d, sdState.buf.length-1);
+    sdDots();
+    if(sdState.buf.length===(lock.len||4)){
+      setTimeout(()=>{
+        if(benchPinHash(lock.salt, sdState.buf)===lock.hash){ sdState.buf=""; sdOpenSequence(false); }
+        else sdWrong();
+      }, 420);   /* let the last turn settle before the verdict */
+    }
+  }
+  (function buildPad(){
+    const pad=document.getElementById("sdPad"); if(!pad) return;
+    const keys=[1,2,3,4,5,6,7,8,9,"",0,"⌫"];
+    pad.innerHTML=keys.map(k=>k===""?`<button style="visibility:hidden"></button>`:`<button data-k="${k}">${k}</button>`).join("");
+    pad.querySelectorAll("[data-k]").forEach(b=>b.addEventListener("click",()=>{
+      const k=b.dataset.k;
+      if(k==="⌫"){ sdState.buf=sdState.buf.slice(0,-1); sdDots(); return; }
+      sdDigit(+k);
+    }));
+  })();
+
+  /* ---------- boot behavior ---------- */
+  (function(){
+    const lock=benchLockGet();
+    const overlay=document.getElementById("safeDoor"); if(!overlay) return;
+    if(lock.on){ overlay.style.display="flex"; sdDots(); }
+    else{
+      /* brief branded door-open on cold start — never blocks input */
+      overlay.style.display="flex";
+      overlay.classList.add("brand-open");
+      const door=document.getElementById("sdDoor");
+      setTimeout(()=>door.classList.add("unbolted"), 120);
+      setTimeout(()=>door.classList.add("open"), 380);
+      setTimeout(()=>overlay.classList.add("fadeout"), 380);
+      setTimeout(sdFinish, 950);
+    }
+  })();
+
+  /* ---------- setup / manage (My Safe row + sheet) ---------- */
+  function benchQuickExport(msgEl){
+    (async ()=>{
+      try{
+        msgEl.textContent="Building backup…";
+        const r=await BenchExport.buildExport(BenchEnv.store, BenchEnv.files(), {now:Date.now(), includePhotos:false, appVersion:"vC10"});
+        const json=JSON.stringify(r.export);
+        const fname=BenchExport.exportFileName(Date.now());
+        const FSp=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
+        const SHp=BenchEnv.share();
+        if(FSp && SHp){
+          await FSp.writeFile({path:fname, data:json, directory:"CACHE", encoding:"utf8", recursive:true});
+          const u=await FSp.getUri({path:fname, directory:"CACHE"});
+          await SHp.share({title:"Fieldstrip backup", url:u.uri, dialogTitle:"Save your Fieldstrip backup"});
+        } else {
+          const a=document.createElement("a");
+          a.href=URL.createObjectURL(new Blob([json],{type:"application/json"}));
+          a.download=fname; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+        }
+        msgEl.textContent="Backup exported ✓ — keep it somewhere safe.";
+      }catch(e){ msgEl.textContent="Backup failed: "+(e&&e.message||e); }
+    })();
+  }
+  function benchLockSheet(){
+    let sh=document.getElementById("lockSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="lockSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="lockSheet") sh.classList.remove("open"); });
+    }
+    const lock=benchLockGet();
+    if(!lock.on){
+      sh.innerHTML=`<div class="sheet"><button class="sheetx" id="lsX">×</button>
+        <h3>SAFE LOCK</h3>
+        <p class="pp">A combination-dial lock on the app itself. All local — the PIN never leaves this phone.</p>
+        <div class="proreason"><b>This PIN cannot be recovered.</b> No accounts, no cloud — that's the point, and it means nobody can reset it for you, including us. Your backup file is your safety net — export one now.</div>
+        <div class="field"><label for="lsPin1">PIN (4–8 digits)</label><input type="password" id="lsPin1" inputmode="numeric" maxlength="8" autocomplete="off"></div>
+        <div class="field"><label for="lsPin2">Confirm PIN</label><input type="password" id="lsPin2" inputmode="numeric" maxlength="8" autocomplete="off"></div>
+        <button class="btn sm" id="lsExport">Export a backup first</button>
+        <div class="hint" id="lsExportMsg" style="margin:6px 0 10px"></div>
+        <button class="btn primary full" id="lsOn">Turn On Safe Lock</button></div>`;
+      sh.querySelector("#lsExport").onclick=()=>benchQuickExport(sh.querySelector("#lsExportMsg"));
+      sh.querySelector("#lsOn").onclick=()=>{
+        const p1=sh.querySelector("#lsPin1").value.trim(), p2=sh.querySelector("#lsPin2").value.trim();
+        if(!/^\d{4,8}$/.test(p1)){ alert("PIN must be 4–8 digits."); return; }
+        if(p1!==p2){ alert("PINs don't match."); return; }
+        const salt=benchNewSalt();
+        benchLockSave({on:true, salt, hash:benchPinHash(salt,p1), len:p1.length, ts:Date.now()});
+        sh.classList.remove("open");
+        benchLockRow();   /* the row flips to "on" — that IS the confirmation */
+      };
+    } else {
+      sh.innerHTML=`<div class="sheet"><button class="sheetx" id="lsX">×</button>
+        <h3>SAFE LOCK — ON</h3>
+        <p class="pp">Enter your current PIN to change it or turn the lock off. There is no recovery path — by design.</p>
+        <div class="field"><label for="lsCur">Current PIN</label><input type="password" id="lsCur" inputmode="numeric" maxlength="8" autocomplete="off"></div>
+        <div class="field"><label for="lsNew">New PIN (leave blank to keep)</label><input type="password" id="lsNew" inputmode="numeric" maxlength="8" autocomplete="off"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn sm primary" id="lsSave">Save</button>
+          <button class="btn sm" id="lsOff" style="color:var(--safe-red)">Turn Off Lock</button>
+        </div></div>`;
+      const check=()=>{
+        const cur=sh.querySelector("#lsCur").value.trim();
+        if(benchPinHash(lock.salt,cur)!==lock.hash){ alert("Wrong PIN."); return false; }
+        return true;
+      };
+      sh.querySelector("#lsSave").onclick=()=>{
+        if(!check()) return;
+        const nv=sh.querySelector("#lsNew").value.trim();
+        if(nv){
+          if(!/^\d{4,8}$/.test(nv)){ alert("PIN must be 4–8 digits."); return; }
+          const salt=benchNewSalt();
+          benchLockSave({on:true, salt, hash:benchPinHash(salt,nv), len:nv.length, ts:Date.now()});
+        }
+        sh.classList.remove("open"); benchLockRow();
+      };
+      sh.querySelector("#lsOff").onclick=()=>{
+        if(!check()) return;
+        benchLockSave({on:false});
+        sh.classList.remove("open"); benchLockRow();
+      };
+    }
+    sh.querySelector("#lsX").onclick=()=>sh.classList.remove("open");
+    sh.classList.add("open");
+  }
+  function benchLockRow(){
+    let row=document.getElementById("lockRow");
+    const pr=document.getElementById("proRow");
+    if(!row && pr){
+      row=document.createElement("button");
+      row.id="lockRow"; row.className="prorow";
+      pr.parentNode.insertBefore(row, pr);
+      row.addEventListener("click",benchLockSheet);
+    }
+    if(row){
+      const on=benchLockGet().on;
+      row.innerHTML = on ? "<b>Safe Lock</b> — on · dial at launch" : "<b>Safe Lock</b> — off · put a combination dial on the app";
+    }
+  }
+  benchLockRow();
+  const benchPrevUpdateProRow_v10 = updateProRow;
+  updateProRow = function(){ benchPrevUpdateProRow_v10(); benchLockRow(); };
   /* ============ V8 PRESENTATION ROUND — ends ============ */
 
   /* boot */
