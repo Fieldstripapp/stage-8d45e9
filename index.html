@@ -491,8 +491,14 @@
   .benchlocked .benchrow{cursor:pointer}
   /* v9: direct card removal + user art + logo watermark pane */
   .lifebox{position:relative}
-  .boxhide{position:absolute;right:6px;top:6px;background:none;border:none;color:var(--muted);opacity:.55;font-size:15px;line-height:1;padding:4px 7px;cursor:pointer;z-index:2}
-  .boxhide:hover{opacity:1;color:var(--text)}
+  /* v13 walk fix 3 (2026-08-14): the old ghost-x (muted, .55 opacity, bare glyph)
+     sat ON each card's right-aligned header content (values, PRO tags) and read as
+     absent on device. Removal must be VISIBLY available: a bordered chip in its own
+     reserved corner. */
+  .boxhide{position:absolute;right:8px;top:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:50%;color:var(--text);opacity:.85;font-size:16px;line-height:1;padding:0;cursor:pointer;z-index:3}
+  .boxhide:hover{opacity:1;background:rgba(255,255,255,.12)}
+  /* reserve the corner: header rows shift their right-aligned content clear of the chip */
+  #scr-detail .lifebox .lrow{padding-right:30px}
   .hiddenrow{border:1px dashed var(--edge);border-radius:12px;padding:4px 12px 8px;margin-top:2px}
   .hiddenrow-head{width:100%;background:none;border:none;color:var(--muted);font-family:var(--display);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 0;cursor:pointer;text-align:center}
   .uartwrap{position:relative;border:1px solid var(--edge);border-radius:12px;overflow:hidden;background:#0e1013}
@@ -2541,6 +2547,11 @@
     },
 
     x95: {
+      /* v13 ruling 5 (2026-08-14): first-gen self-made SVG art STRUCK — textMode
+         routes this guide into the standard no-plate presentation (user photo →
+         owner example → logo + invitation). Steps and copy untouched; the svg
+         markup below is dead and never activates. */
+      textMode:true,
       svg:"svg-x95", arrow:"x95-arrow", gate:DEFAULT_GATE,
       parts:{mag:"x95-mag",bcg:"x95-bcg",bolt:"x95-bolt",chassis:"x95-chassis",ch:"x95-ch",pin:"x95-pin",butt:"x95-butt",port:"x95-port",trigger:"x95-trigger"},
       origins:{butt:"50% 92%"},
@@ -2569,6 +2580,10 @@
     },
 
     r870: {
+      /* v13 ruling 5 (2026-08-14): first-gen self-made SVG art STRUCK — same
+         no-plate fallback as x95. svg-rfsup (suppressor) is KEPT by the same
+         ruling; svg-g19/svg-ar15 are dead markup (layer art renders instead). */
+      textMode:true,
       svg:"svg-r870", arrow:"r870-arrow", gate:SHOTGUN_GATE,
       parts:{body:"r870-body",port:"r870-port",barrel:"r870-barrel",magcap:"r870-magcap",forend:"r870-forend",tg:"r870-tg",pins:"r870-pins"},
       origins:{},
@@ -4813,7 +4828,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
   function renderLayerStep(){
     const set=LAYER_SETS[lstKey||activeLayerKey()];
-    const cfg=set.lsteps[Math.min(stepIndex,set.lsteps.length-1)];
+    /* v13 ruling 4: the synthetic deep-safety step (origStepIndex -1) shows the
+       field-strip-complete scene (the step before it); real steps map to their
+       own lstep rows, unshifted. */
+    const oi0=origStepIndex(stepIndex);
+    const cfg=set.lsteps[Math.min(oi0<0?stepIndex-1:oi0,set.lsteps.length-1)];
     const vpEl=document.getElementById("layerViewport");
     const f=artFit(vpEl,set);          /* live box -> art sub-rectangle, every render */
     set.layers.forEach(L=>{
@@ -4993,7 +5012,34 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const stepInfo=document.getElementById("stepInfo");
   let stepIndex=0, branched=false;
   const activeGuide=()=> GUNS[fkey(byId(activeId))];
-  const curSteps=()=>{ const g=activeGuide(); return (branched&&g.deepSteps)? g.steps.concat(g.deepSteps) : g.steps; };
+  /* v13 ruling 4 (2026-08-14): STEP-1 SAFETY CARRIES INTO DEEP CLEAN — the deep
+     branch opens with an engine-synthesized safety re-verify step; safety rides
+     every fork, never skipped because the user "already did it" in standard.
+     COPY IS FRESH-DRAFTED, awaiting Darren's read (same gate as the generic
+     guides). origStepIndex() maps a live index back to the guide's own
+     step/lstep/MODEL_NOTES numbering: the synthetic step maps to -1 (no data
+     row of its own), every later deep step shifts down one — so no family's
+     lsteps or notes move. Function declarations on purpose (hoisted — the
+     ffb5b01 TDZ lesson). */
+  function deepSafetyStep(g){
+    if(!g._deepSafety) g._deepSafety={
+      phase:(g.deepSteps&&g.deepSteps[0]&&g.deepSteps[0].phase)||"Deep Clean",
+      title:"Safety check — going deeper",
+      body:"Step 1's discipline rides every fork, so it repeats here on purpose. Before working at the breech and inside the action, re-verify: no ammunition at the bench, chamber and magazine confirmed empty by sight and feel. If the firearm left your hands since the field strip — even for a moment — clear it again before you continue.",
+      t:{},hl:[],labels:[],arrow:null,deepSafety:true};
+    return g._deepSafety;
+  }
+  function origStepIndex(i){
+    const g=activeGuide();
+    if(!(branched&&g.deepSteps)) return i;
+    const b=g.steps.length;            /* the synthetic step's live index */
+    return i===b ? -1 : (i>b ? i-1 : i);
+  }
+  function modelNoteFor(i){
+    const oi=origStepIndex(i);
+    return oi<0 ? null : (MODEL_NOTES[(byId(activeId)||{}).model]||{})[oi];
+  }
+  const curSteps=()=>{ const g=activeGuide(); return (branched&&g.deepSteps)? g.steps.concat([deepSafetyStep(g)],g.deepSteps) : g.steps; };
   function buildProgress(){ progressEl.innerHTML=""; curSteps().forEach(()=>progressEl.appendChild(document.createElement("i"))); }
 
   function startGuide(){
@@ -5051,7 +5097,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("stepTitle").textContent=s.title;
     document.getElementById("stepBody").innerHTML=s.body;
     const mnEl=document.getElementById("stepMnote");
-    const mn=(MODEL_NOTES[(byId(activeId)||{}).model]||{})[stepIndex];
+    const mn=modelNoteFor(stepIndex);   /* v13 ruling 4: notes keep the guide's own numbering across the synthetic step */
     if(mn){ mnEl.hidden=false; mnEl.innerHTML="<b>YOUR MODEL</b> &nbsp;"+mn; } else { mnEl.hidden=true; mnEl.innerHTML=""; }
     const warn=document.getElementById("stepWarn");
     if(s.warn){warn.hidden=false;warn.textContent=s.warn;}else{warn.hidden=true;warn.textContent="";}
@@ -5061,7 +5107,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       stepInfo.classList.add("anim");
     }
     [...progressEl.children].forEach((dot,i)=>{dot.className=i<stepIndex?"done":(i===stepIndex?"cur":"");});
-    document.getElementById("prevBtn").disabled=stepIndex===0;
+    document.getElementById("prevBtn").disabled=false;   /* v13 walk fix 1: Back is never dead — step 1 exits */
     document.getElementById("nextBtn").textContent=stepIndex===steps.length-1?"Start Cleaning":"Next Step";
   }
 
@@ -5072,6 +5118,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   });
   document.getElementById("prevBtn").addEventListener("click",()=>{
     if(stepIndex>0){stepIndex--;renderStep();}
+    else show("scr-detail");   /* v13 walk fix 1: from step 1, Back exits the guide to the firearm page */
   });
   document.getElementById("branchBtn").addEventListener("click",()=>{
     if(branched) return;
@@ -6567,12 +6614,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       });
     }
     list.sort((a,b)=> (a.mk+" "+a.md).localeCompare(b.mk+" "+b.md));
-    /* v8: default view is ALL (capped + keep-typing note); the most-owned subset
-       filter is retired by ruling */
-    let shown=list, capped=false;
-    if(list.length>100){ shown=list.slice(0,100); capped=true; }
+    /* v13 walk fix 2 (2026-08-14): ALL means ALL — the 100-row cap and the
+       keep-typing note are STRUCK. The complete list renders alphabetically and
+       scrolls; search remains for those who want it. */
+    const shown=list;
     resultNote.textContent = list.length
-      ? (capped?`Showing 100 of ${list.length} — keep typing or pick a category to narrow`:`${list.length} match${list.length===1?"":"es"}`)
+      ? (q ? `${list.length} match${list.length===1?"":"es"}`
+           : (pickGroup==="All" ? `All ${list.length} models — A to Z` : `${list.length} ${pickGroup.toLowerCase()} — A to Z`))
       : "No matches — try just the model number, or check the spelling";
     pickList.innerHTML="";
     shown.forEach(c=>{
@@ -6673,7 +6721,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("stepTitle").textContent=s.title;
     document.getElementById("stepBody").innerHTML=s.body;
     const mnEl=document.getElementById("stepMnote");
-    const mn=(MODEL_NOTES[(byId(activeId)||{}).model]||{})[stepIndex];
+    const mn=modelNoteFor(stepIndex);   /* v13 ruling 4: notes keep the guide's own numbering across the synthetic step */
     if(mn){ mnEl.hidden=false; mnEl.innerHTML="<b>YOUR MODEL</b> &nbsp;"+mn; } else { mnEl.hidden=true; mnEl.innerHTML=""; }
     const warn=document.getElementById("stepWarn");
     if(s.warn){warn.hidden=false;warn.textContent=s.warn;}else{warn.hidden=true;warn.textContent="";}
@@ -6683,7 +6731,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       stepInfo.classList.add("anim");
     }
     [...progressEl.children].forEach((dot,i)=>{dot.className=i<stepIndex?"done":(i===stepIndex?"cur":"");});
-    document.getElementById("prevBtn").disabled=stepIndex===0;
+    document.getElementById("prevBtn").disabled=false;   /* v13 walk fix 1: Back is never dead — step 1 exits (handler in the core player) */
     document.getElementById("nextBtn").textContent=stepIndex===steps.length-1?"Start Cleaning":"Next Step";
   };
 
