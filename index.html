@@ -502,9 +502,18 @@
   .artadd-line{background:none;border:none;color:var(--amber);font-family:var(--body);font-size:11.5px;font-style:normal;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
   .uarttag{position:absolute;left:8px;bottom:8px;font-family:var(--display);font-size:8.5px;letter-spacing:1.2px;color:var(--muted);background:rgba(12,14,17,.82);border-radius:4px;padding:2px 7px;text-transform:uppercase}
   /* ---------- SAFE DOOR + DIAL (machined UI chrome) ---------- */
-  #safeDoor{position:fixed;inset:0;z-index:220;background:#0a0c0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px}
-  #safeDoor.opening{pointer-events:none}
-  .sd-scene{width:min(86vw,380px);max-height:52vh;aspect-ratio:4/5;perspective:1400px}
+  #safeDoor{position:fixed;inset:0;z-index:220;background:#0a0c0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:14px;transition:background .4s ease .5s}
+  #safeDoor.opening{pointer-events:none;background:transparent}
+  /* the safe FRAME: the user is looking INTO their safe — jamb depth all round */
+  .sd-frame{padding:13px;border-radius:22px;
+    background:linear-gradient(150deg,#343b45,#20252c 55%,#2b313a);
+    border:1px solid #414a56;
+    box-shadow:inset 0 2px 6px rgba(255,255,255,.05),inset 0 -3px 10px rgba(0,0,0,.5),0 24px 60px rgba(0,0,0,.7);
+    transition:opacity .3s ease .55s}
+  #safeDoor.opening .sd-frame{background:linear-gradient(150deg,#343b4588,#20252c88 55%,#2b313a88)}
+  .sd-scene{width:min(88vw,400px);max-height:56vh;aspect-ratio:4/5;perspective:1400px;
+    background:#07080b;border-radius:14px;
+    box-shadow:inset 0 0 34px rgba(0,0,0,.9)}   /* the dark interior behind the door */
   .sd-door{position:relative;width:100%;height:100%;border-radius:16px;transform-origin:left center;
     background:linear-gradient(148deg,#2b3038 0%,#1d2127 55%,#242a32 100%);
     border:1px solid #3a424d;
@@ -531,15 +540,23 @@
   .sd-pad button{height:52px;border-radius:11px;font-family:var(--display);font-weight:600;font-size:17px;color:var(--text);cursor:pointer;
     background:linear-gradient(180deg,#262b33,#1b1f25);border:1px solid #333b45;box-shadow:0 2px 5px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
   .sd-pad button:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(0,0,0,.4)}
-  #safeDoor.brand-open{pointer-events:none;background:transparent}
-  #safeDoor.brand-open .sd-pad{display:none}
   #safeDoor.fadeout{opacity:0;transition:opacity .28s ease .34s}
+  .sd-setcombo{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);white-space:nowrap;
+    background:linear-gradient(180deg,#262b33,#1b1f25);border:1px solid #3a424d;border-radius:9px;
+    color:var(--amber);font-family:var(--display);font-weight:600;font-size:11px;letter-spacing:1.6px;padding:9px 14px;cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
+  .sd-pad[hidden]{display:none!important}
+  /* one-time invitation card inside My Safe */
+  .doorcard{border:1px solid var(--amber-dim);border-radius:14px;padding:15px 16px;margin-bottom:10px;background:rgba(232,163,61,.05)}
+  .doorcard .dc-h{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.5px;color:var(--text)}
+  .doorcard .dc-p{color:var(--muted);font-size:12.5px;line-height:1.5;margin:6px 0 11px}
+  .doorcard .dc-row{display:flex;gap:8px}
 </style>
 </head>
 <body>
   <!-- ============ SAFE DOOR (ruling-safedoor-20260813) — UI chrome, not art ============ -->
   <div id="safeDoor" style="display:none">
-    <div class="sd-scene">
+    <div class="sd-frame"><div class="sd-scene">
       <div class="sd-door" id="sdDoor">
         <div class="sd-hinge"><i></i><i></i><i></i></div>
         <div class="sd-brand">FIELD<span>STRIP</span></div>
@@ -556,8 +573,9 @@
           </g>
         </svg>
         <div class="sd-dots" id="sdDots"></div>
+        <button class="sd-setcombo" id="sdSetCombo" type="button" hidden>SET YOUR COMBINATION ▸</button>
       </div>
-    </div>
+    </div></div>
     <div class="sd-pad" id="sdPad"></div>
   </div>
   <script>
@@ -7120,22 +7138,53 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }));
   })();
 
-  /* ---------- boot behavior ---------- */
+  /* ---------- boot behavior: THE DOOR IS UNIVERSAL (consolidated spec) ----------
+     Every user, every open. No PIN = the bolts retract and the door swings open
+     ON ITS OWN after a beat — full animation, tap skips, the "Set your
+     combination" invitation lives on the door itself. PIN = the door waits. */
   (function(){
     const lock=benchLockGet();
     const overlay=document.getElementById("safeDoor"); if(!overlay) return;
-    if(lock.on){ overlay.style.display="flex"; sdDots(); }
-    else{
-      /* brief branded door-open on cold start — never blocks input */
-      overlay.style.display="flex";
-      overlay.classList.add("brand-open");
+    const combo=document.getElementById("sdSetCombo");
+    const pad=document.getElementById("sdPad");
+    overlay.style.display="flex";
+    if(lock.on){
+      if(pad) pad.hidden=false;
+      if(combo) combo.hidden=true;
+      sdDots();
+    } else {
+      if(pad) pad.hidden=true;
+      if(combo){
+        combo.hidden=false;
+        combo.addEventListener("click",e=>{ e.stopPropagation(); sdFinish(); benchLockSheet(); },{once:true});
+      }
+      overlay.addEventListener("click",()=>sdFinish(),{once:true});
       const door=document.getElementById("sdDoor");
-      setTimeout(()=>door.classList.add("unbolted"), 120);
-      setTimeout(()=>door.classList.add("open"), 380);
-      setTimeout(()=>overlay.classList.add("fadeout"), 380);
-      setTimeout(sdFinish, 950);
+      setTimeout(()=>{ overlay.classList.add("opening"); door.classList.add("unbolted"); }, 620);
+      setTimeout(()=>door.classList.add("open"), 1020);
+      setTimeout(()=>overlay.classList.add("fadeout"), 1020);
+      setTimeout(sdFinish, 1750);
     }
   })();
+
+  /* one-time invitation inside My Safe — an invitation, never a gate */
+  function benchDoorCard(){
+    const lock=benchLockGet();
+    const list=document.getElementById("safeList"); if(!list) return;
+    const existing=document.getElementById("doorCard");
+    if(lock.on || lock.cardDismissed){ if(existing) existing.remove(); return; }
+    if(existing) return;
+    const c=document.createElement("div");
+    c.className="doorcard"; c.id="doorCard";
+    c.innerHTML=`<div class="dc-h">Your safe. Your combination.</div>
+      <div class="dc-p">Put a combination dial on the app itself — the door only opens for your code. All local; nothing ever leaves this phone.</div>
+      <div class="dc-row"><button class="btn sm primary" id="dcSet">Set combination</button><button class="btn sm" id="dcNo">Not now</button></div>`;
+    list.parentNode.insertBefore(c, list);
+    c.querySelector("#dcSet").onclick=()=>benchLockSheet();
+    c.querySelector("#dcNo").onclick=()=>{ const l=benchLockGet(); l.cardDismissed=true; benchLockSave(l); c.remove(); };
+  }
+  const benchPrevRenderSafe_v11=renderSafe;
+  renderSafe=function(){ benchPrevRenderSafe_v11(); benchDoorCard(); };
 
   /* ---------- setup / manage (My Safe row + sheet) ---------- */
   function benchQuickExport(msgEl){
@@ -7197,7 +7246,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         <div class="field"><label for="lsNew">New PIN (leave blank to keep)</label><input type="password" id="lsNew" inputmode="numeric" maxlength="8" autocomplete="off"></div>
         <div style="display:flex;gap:8px">
           <button class="btn sm primary" id="lsSave">Save</button>
-          <button class="btn sm" id="lsOff" style="color:var(--safe-red)">Turn Off Lock</button>
+          <button class="btn sm" id="lsOff">Remove PIN — leave the door open</button>
         </div></div>`;
       const check=()=>{
         const cur=sh.querySelector("#lsCur").value.trim();
@@ -7234,7 +7283,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     if(row){
       const on=benchLockGet().on;
-      row.innerHTML = on ? "<b>Safe Lock</b> — on · dial at launch" : "<b>Safe Lock</b> — off · put a combination dial on the app";
+      row.innerHTML = on ? "<b>Safe Lock</b> — combination set · dial at launch" : "<b>Safe Lock</b> — door open · set your combination";
     }
   }
   benchLockRow();
