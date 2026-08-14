@@ -164,7 +164,11 @@
   .customrow input:focus{outline:none;border-color:var(--amber)}
   .actions{display:flex;gap:10px}
   .actions .btn{flex:1}
+  /* v12 item 2: the maintenance log is a card like every other card */
+  .logbox{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:14px;position:relative}
   .logbox .lt{font-family:var(--display);font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+  .roundsbox{position:relative}
+  .intelbox{position:relative}
   .logitem{display:flex;gap:12px;padding:11px 4px;border-bottom:1px solid var(--edge);font-size:13px}
   .logitem:last-child{border-bottom:none}
   .logitem .ic{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;border:1px solid var(--edge)}
@@ -524,8 +528,9 @@
   .sd-door.open{transform:rotateY(-104deg)}
   .sd-hinge{position:absolute;left:-4px;top:10%;bottom:10%;width:9px;display:flex;flex-direction:column;justify-content:space-between}
   .sd-hinge i{display:block;height:24%;width:100%;border-radius:5px;background:linear-gradient(90deg,#40485380,#20252c);border:1px solid #3a424d}
-  .sd-brand{position:absolute;top:7%;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:4px;color:#39414c;text-shadow:0 1px 0 rgba(255,255,255,.05)}
-  .sd-brand span{color:#4a4025}
+  /* v12 item 5: the name reads FIRST — bright engraved fill + amber, never a squint */
+  .sd-brand{position:absolute;top:7%;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:4px;color:#D5DCE6;text-shadow:0 1px 2px rgba(0,0,0,.65),0 0 14px rgba(213,220,230,.12)}
+  .sd-brand span{color:#E8A33D;text-shadow:0 1px 2px rgba(0,0,0,.65),0 0 14px rgba(232,163,61,.22)}
   .sd-bolts{position:absolute;right:7px;top:16%;bottom:16%;width:16px;display:flex;flex-direction:column;justify-content:space-between}
   .sd-bolts i{display:block;height:13px;border-radius:7px;background:linear-gradient(180deg,#5a6470,#39404a 60%,#4a525e);border:1px solid #2c333d;box-shadow:0 1px 3px rgba(0,0,0,.5);transition:transform .24s ease-in}
   .sd-bolts i:nth-child(2){transition-delay:.05s}.sd-bolts i:nth-child(3){transition-delay:.1s}.sd-bolts i:nth-child(4){transition-delay:.15s}
@@ -546,6 +551,19 @@
     color:var(--amber);font-family:var(--display);font-weight:600;font-size:11px;letter-spacing:1.6px;padding:9px 14px;cursor:pointer;
     box-shadow:0 2px 6px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
   .sd-pad[hidden]{display:none!important}
+  /* ---------- V12: hero card + drag reorder ---------- */
+  .herocard{padding:10px 10px 12px}
+  .heroart{position:relative;border-radius:10px;overflow:hidden;background:var(--panel2)}
+  .heroart>img{display:block;width:100%;max-height:260px;object-fit:cover}
+  .heroart.empty{border:1px dashed var(--edge);background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 12px;cursor:pointer;min-height:120px}
+  .heroart.empty svg{width:30%;max-height:74px}
+  .heroinvite{font-family:var(--display);font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--amber)}
+  .heroplate{position:relative;margin:6px auto}
+  .heroplate img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+  .heroacts{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(10,12,15,.6)}
+  .heroacts[hidden]{display:none!important}
+  .heroacts-row{margin-top:12px}
+  .carddrag{position:relative;z-index:30;box-shadow:0 12px 30px rgba(0,0,0,.55);opacity:.94}
   /* one-time invitation card inside My Safe */
   .doorcard{border:1px solid var(--amber-dim);border-radius:14px;padding:15px 16px;margin-bottom:10px;background:rgba(232,163,61,.05)}
   .doorcard .dc-h{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.5px;color:var(--text)}
@@ -2765,6 +2783,17 @@
   };
 
 
+  /* =============== FIELDSTRIP PRO =============== */
+  const FREE_MAX_GUNS = 2;
+  const PRO_PRICE_LABEL = "$14.99 · one time";
+  let proState = store.get("fs_pro", null) || {on:false, src:null, ts:null};
+  const isPro = ()=> !!proState.on;
+  const savePro = ()=> store.set("fs_pro", proState);
+
+  /* safe load + boot normalization — MUST sit below the Pro state consts:
+     defaultCleanIv -> fcat takes the custom branch through isPro(), and a
+     custom record missing cleanInterval would hit the const's dead zone and
+     kill the whole boot (empty My Safe). */
   let safe = store.get("fs_safe", []);
   const defaultCleanIv = f => { const c=fcat(f); return (c&&c.gp==="Suppressors")?400:500; };
   safe.forEach(f=>{ if(f.cleanInterval==null) f.cleanInterval=defaultCleanIv(f); if(!Array.isArray(f.mags)) f.mags=[]; if(f.magRotDays==null) f.magRotDays=90; if(!Array.isArray(f.reminders)) f.reminders=[]; if(!Array.isArray(f.service)) f.service=[]; if(!Array.isArray(f.zeros)) f.zeros=[]; });
@@ -2774,13 +2803,6 @@
   const saveSafe = ()=> { store.set("fs_safe", safe); queueNotifSync(); };
   let ammoInv = store.get("fs_ammo") || [];
   const saveAmmo = ()=> store.set("fs_ammo", ammoInv);
-
-  /* =============== FIELDSTRIP PRO =============== */
-  const FREE_MAX_GUNS = 2;
-  const PRO_PRICE_LABEL = "$14.99 · one time";
-  let proState = store.get("fs_pro", null) || {on:false, src:null, ts:null};
-  const isPro = ()=> !!proState.on;
-  const savePro = ()=> store.set("fs_pro", proState);
   function grantPro(src){ proState={on:true, src:src||"play", ts:Date.now()}; savePro(); updateProRow();
     if(document.getElementById("scr-detail").classList.contains("active")) renderDetail(); }
   function openProSheet(reason){
@@ -6397,6 +6419,68 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       {name:"CAN EXTERIOR",tasks:["Wipe the tube; check for dents, finish bubbling (overheating tell), or a shifted end cap","Sight down the bore path by eye — daylight all the way, centered"]}
     ],
     reassembly:["Mount the can per its design — direct-thread: hand-tight against the shoulder, firm hand torque, no tools unless the maker says so; QD: full engagement to the click or index.","Check alignment by eye down the bore path.","First rounds after remounting: confirm point of impact — a can that shifted POI more than its usual is telling you something about the mount.","Set a TIME-based check, not a round count: sealed cans want a mount-and-torque look every few months of use, and the can itself wants nothing."]
+  },
+
+  /* ============ GENERIC UNIVERSAL CHECKLISTS (item 1, 2026-08-14) ============
+     CLEAN IS UNIVERSAL: the fallback when a row has no illustrated guide and no
+     model text guide. Honest platform-general steps only — nothing model-specific
+     is claimed, the strip itself defers to the owner's manual, and the copy says
+     so out loud. Placeholder by ruling until batch-2 wording replaces it. */
+
+  tx_generic: { textMode:true, generic:true, gate:DEFAULT_GATE, parts:{}, origins:{},
+    cleanIntro:"This is the universal routine — the steps every firearm shares. A guide written specifically for this model is in the works; until it lands, work from your owner's manual for the strip and let this checklist keep the maintenance honest.",
+    steps:[
+      tgStep("Clear","Unload it — completely",
+        "Remove the source of ammunition first: drop the magazine, or empty the tube or cylinder. Then open the action and check the chamber — every chamber — by eye AND by touch. Do it in this order every time; an action closed on a 'definitely empty' chamber is how the worst day starts.",
+        {warn:"If you are not certain how to open this action, stop here and get the manual out. Certainty is the requirement, not confidence."}),
+      tgStep("Strip","Open it up per your manual",
+        "Field stripping is model-specific by design — pins, levers, buttons and notches differ even between guns that look alike, and guessing invites a launched spring or a mangled detent. Follow the manufacturer's manual to the basic field-strip state: action open or slide off, barrel reachable from the breech where the design allows. Never force anything; when a part fights you, the step order is wrong, not the part."),
+      tgStep("Strip","Lay it out and take stock",
+        "Set the parts on a clean mat in the order they came off — that order is your reassembly map. Look at each part as you set it down: cracks, peening, mushroomed metal, rust blooms. Cleaning time is inspection time; most broken parts announce themselves here first, not at the range.",
+        {branch:true})
+    ],
+    cleaning:[
+      {name:"BORE & CHAMBER",tasks:[
+        "Bore: solvent patch through, bronze or nylon brush several passes, then dry patches until they come out clean — from the breech end whenever the design allows",
+        "Chamber(s) scrubbed and dried — a fouled chamber causes more extraction trouble than a fouled bore",
+        "Feed path wiped clean — ramp, lips or carrier, wherever the round rides"]},
+      {name:"ACTION",tasks:[
+        "Carbon off the breech face / bolt face and around the extractor — solvent and a nylon brush, not a scraper",
+        "Wipe the rails, pivots and bearing surfaces your manual names, then oil them LIGHTLY — one drop where parts slide, none where ammunition sits",
+        "Springs and firing-pin/striker channels wiped DRY — oil in those channels gums up exactly when it's coldest"]},
+      {name:"EXTERIOR & FUNCTION",tasks:[
+        "Wipe the exterior down; light protectant film on exposed steel — sweat is corrosive and so is a damp case",
+        "Reassemble per the manual and run the action several times — it should feel like it did before the strip, or better",
+        "Function check pointed safe, per your manual, then log the cleaning"]}
+    ],
+    reassembly:["Reassemble in reverse order of the strip — the layout on your mat is the map.","Nothing gets forced going back together either; a part that won't seat is out of order or upside down.","Run the action hard several times, then function-check pointed safe per your manual.","Log it — the round counts and intervals in this app only mean something if the log is honest."]
+  },
+
+  txsup_generic: { textMode:true, generic:true, gate:SUPPRESSOR_GATE, parts:{}, origins:{},
+    cleanIntro:"Suppressor maintenance is decided by TYPE — rimfire cans open up and need it, most centerfire cans are sealed and must never be opened. Set this can's type in its Suppressor Spec card and the type-specific guide takes over. Until then, this covers what every can wants: clean threads, a straight mount, and an honest round count.",
+    steps:[
+      tgStep("Clear","Host clear, can cool",
+        "Clear the host firearm completely first — feeding source out, chamber checked by eye and touch. Then check the can's temperature with the back of a finger near the mount before you grip it.",
+        {warn:"A suppressor stays burn-hot for minutes after firing, long after the barrel feels fine. Back of a finger near the mount first, every time."}),
+      tgStep("Strip","Dismount from the host",
+        "Unthread or unlatch the can from its mount per its manual. If it fights, that's carbon lock, not a cross-thread — penetrating oil at the joint and patience beat force, which can wring the tube or damage the mount."),
+      tgStep("Strip","Inspect the mount and bore path",
+        "Look at the threads or QD interface: carbon is normal, damage is not. Then look through the bore against the light — you're checking that daylight runs straight and centered, not for shine; a can's bore is supposed to be filthy. A bright gouge on a baffle edge means stop shooting and call the maker.",
+        {branch:true})
+    ],
+    cleaning:[
+      {name:"MOUNT & THREADS",tasks:[
+        "Brush the threads or QD interface clean of carbon — nylon brush and solvent, on host and can both",
+        "Wipe the shoulder faces the can seats against; grit here is a misalignment waiting to happen",
+        "Confirm the mount goes back together smooth by hand before final seating — any grind means clean again, not tighten harder"]},
+      {name:"EXTERIOR",tasks:[
+        "Wipe the tube down; never soak a can in solvent unless its maker says it opens — solvent gets into a sealed stack and never fully leaves",
+        "Check the tube for dents, bulges or finish bubbling, and watch for a shifted point of impact on the host — any of those is a stop-shooting finding"]},
+      {name:"LOG & TYPE",tasks:[
+        "Log the rounds this can took, against the host that fired them — a can's service clock runs on rounds it can't count for itself",
+        "Set this can's TYPE in its Suppressor Spec card — the type-specific guide replaces this one the moment you do"]}
+    ],
+    reassembly:["Remount per the manual — threads started by hand, seated to the shoulder, then torqued or latched as its design specifies.","Check alignment by eye down the bore path before firing — an eccentric mount is how baffle strikes happen.","Log the session when you shoot it — rounds on the can, not just the host."]
   }
 
   };
@@ -6414,20 +6498,30 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     return (c && TEXT_GUIDE_FAM[c.fm]) || null;
   }
   const SUPP_TYPE_GUIDE = {rimfire:"txsup_rimfire", pistol:"txsup_booster", sealed:"txsup_sealed"};
+  /* item 1 (2026-08-14): CLEAN IS UNIVERSAL — fkey never returns null for a real
+     entry. Route: illustrated guide → model text guide → generic universal
+     checklist (suppressor-flavored for cans). PRO #8 is untouched: the "Strips
+     like…" cfam assignment still gates on isPro(); the generic fallback is what
+     every entry gets regardless, not the assigned guide. */
   fkey = function(f){
-    if(f && f.custom){
-      if(f.supp && f.supp.type && f.ctype==="Suppressor") return SUPP_TYPE_GUIDE[f.supp.type]||null;
-      return (isPro() && f.cfam) ? f.cfam : null;
+    if(!f) return null;
+    if(f.custom){
+      /* custom cans: benchIsSuppressor covers ctype AND nfaItemType — the old
+         ctype-only test never fired for real custom entries (ctype is never set) */
+      if(benchIsSuppressor(f) && f.supp && f.supp.type) return SUPP_TYPE_GUIDE[f.supp.type]||"txsup_generic";
+      if(isPro() && f.cfam) return f.cfam;
+      return benchIsSuppressor(f) ? "txsup_generic" : "tx_generic";
     }
-    const model = f && f.model;
+    const model = f.model;
     const c = CATALOG.find(x=>x.i===model);
     /* suppressor TYPE routing: an owner-declared type beats the generic family guide;
        the Sparrow keeps its own dedicated art guide on the rimfire path */
     if(c && c.gp==="Suppressors" && f.supp && f.supp.type){
       if(f.supp.type==="rimfire" && model==="rfsup") return "rfsup";
-      return SUPP_TYPE_GUIDE[f.supp.type];
+      return SUPP_TYPE_GUIDE[f.supp.type]||"txsup_generic";
     }
-    return guideKey(model) || textGuideKey(model);
+    return guideKey(model) || textGuideKey(model)
+      || ((c && c.gp==="Suppressors") ? "txsup_generic" : "tx_generic");
   };
 
   /* ---------- MODEL_NOTES — per-model divergence callouts (batch 1) ---------- */
@@ -6593,8 +6687,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("nextBtn").textContent=stepIndex===steps.length-1?"Start Cleaning":"Next Step";
   };
 
-  /* guideBtn: text routes light up like art routes; rows with NO guide of any
-     kind hide the button — "Coming soon" is struck everywhere (ruled) */
+  /* guideBtn: item 1 (2026-08-14) — the Clean button never disappears and never
+     dies; fkey always routes (art → model text → generic universal checklist),
+     so the hide branch below is now the no-entry case only */
   const benchOrigRenderDetail2 = renderDetail;
   renderDetail = function(){
     benchOrigRenderDetail2();
@@ -7289,6 +7384,287 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   benchLockRow();
   const benchPrevUpdateProRow_v10 = updateProRow;
   updateProRow = function(){ benchPrevUpdateProRow_v10(); benchLockRow(); };
+
+  /* ================================================================
+     V12 — WALK FIXES + ART SYSTEM (Darren consolidated spec, 2026-08-14)
+     item 1 (Clean is universal) routes in the text block: fkey now falls
+       back to the generic checklists, so guideBtn never dies.
+     item 2 (uniform cards): rounds + maintenance-log join the card
+       system; Pro-lock twins get the same corner ×.
+     item 3 (hero card): the firearm's face — photo + Clean on one card,
+       art precedence user photo → plate → owner example → logo. Never
+       ×-hideable, draggable like the rest.
+     item 4 (remove + move): press-and-hold drag reorder, persisted
+       additively at f.layout.order. × system is v9's, extended.
+     item 5 (door branding) is CSS in the head.
+     ================================================================ */
+
+  /* ---------- item 2: every card is a card — rounds + log join the system ---------- */
+  (function(){
+    const rb=document.querySelector("#scr-detail .roundsbox");
+    if(rb && !rb.id) rb.id="roundsBox";
+    const lb=document.querySelector("#scr-detail .logbox");
+    if(lb && !lb.id) lb.id="logBox";
+  })();
+  BENCH_BOXES.push(
+    {id:"roundsBox", label:"Log range session", twins:[]},
+    {id:"logBox",    label:"Maintenance log",   twins:[], count:f=>(f.log||[]).length}
+  );
+
+  /* keep f.layout when the last hidden card is restored — it may carry order now */
+  benchShowBox = function(f, id){
+    const h=benchHiddenList(f);
+    const i=h.indexOf(id);
+    if(i>=0){ h.splice(i,1); saveSafe(); }
+    renderDetail();
+  };
+
+  /* a visible Pro-lock twin gets the same corner × its box would have */
+  function benchApplyTwinX(){
+    BENCH_BOXES.forEach(def=>{
+      def.twins.forEach(tid=>{
+        const t=document.getElementById(tid);
+        if(!t || t.style.display==="none") return;
+        if(t.querySelector(":scope > .boxhide")) return;
+        const x=document.createElement("button");
+        x.className="boxhide"; x.type="button"; x.setAttribute("aria-label","Hide this card");
+        x.textContent="×";
+        x.addEventListener("click",e=>{ e.stopPropagation(); const f2=byId(activeId); if(f2) benchHideBox(f2, def.id); });
+        t.appendChild(x);
+      });
+    });
+  }
+
+  /* ---------- item 3: HERO CARD — photo + Clean, the firearm's face ---------- */
+  function benchHeroPlate(f){
+    /* the illustrated plate: the family's own layer art composed at its
+       assembled positions, using the engine's own asm mechanism. The box is
+       pinned to the ART's aspect (width solved from a height cap), so the
+       %-translate identity holds — nothing baked. */
+    const k=(f && f.model)?guideKey(f.model):null;
+    if(!k) return null;
+    const g=GUNS[k], ls=(typeof LAYER_SETS!=="undefined")?LAYER_SETS[k]:null;
+    if(!g || !g.layerMode || !ls || !ls.layers || !ls.art) return null;
+    const aw=ls.art[0], ah=ls.art[1];
+    const wCap=Math.round(236*aw/ah);   /* height-capped at 236px, width follows the art ratio */
+    const imgs=ls.layers.map(L=>{
+      if(L.eh) return "";                                  /* engine-hidden layers stay hidden */
+      const use=L.asmAlt ? (ls.layers.find(x=>x.n===L.asmAlt)||L) : L;   /* seated alternates seat */
+      const asm=use.asm||[0,0];
+      return `<img src="${use.src}" alt="" style="transform:translate(${asm[0]}%,${asm[1]}%)">`;
+    }).join("");
+    return `<div class="heroplate" style="aspect-ratio:${aw} / ${ah};width:min(100%,${wCap}px)">${imgs}</div>`;
+  }
+  benchRenderUserArtSlot = function(f){
+    const old=document.getElementById("userArtSlot"); if(old) old.remove();
+    let hero=document.getElementById("heroCard");
+    if(!hero){
+      const head=document.querySelector("#scr-detail .d-head");
+      if(!head) return;
+      hero=document.createElement("div");
+      hero.id="heroCard"; hero.className="lifebox herocard";
+      head.parentNode.insertBefore(hero, head.nextSibling);
+    }
+    const rec=benchUserArtRec(f);
+    const example=rec?null:benchOwnerExamplePath(f);
+    const plate=rec?null:benchHeroPlate(f);
+    const attach=BenchEnv.hasFS()?'<button class="uartbtn" id="heroAttach" title="Attach your piece">＋</button>':"";
+    let art;
+    if(rec){
+      art=`<div class="heroart" id="heroArt"><img id="heroImg" alt="Your firearm">
+        <div class="heroacts" id="heroActs" hidden>
+          <button class="btn sm primary" id="heroReplace">Replace</button>
+          <button class="btn sm" id="heroRemove">Remove</button>
+        </div></div>`;
+    } else if(plate){
+      art=`<div class="heroart" id="heroArt">${plate}${attach}</div>`;
+    } else if(example){
+      art=`<div class="heroart" id="heroArt"><img src="${example}" alt="Example photo"><span class="uarttag">EXAMPLE</span>${attach}</div>`;
+    } else {
+      /* the empty state IS the invitation — a visible framed box, never a
+         hidden tap zone */
+      art=`<div class="heroart empty" id="heroArt">${FS_LOGO_WM}${BenchEnv.hasFS()?'<div class="heroinvite">Attach your piece here.</div>':""}</div>`;
+    }
+    /* the Clean button LIVES on this card — move the real buttons in, listeners
+       and all. Grab the refs BEFORE the innerHTML wipe: on a re-render the
+       buttons are inside this card, and assigning innerHTML would destroy them
+       (a detached-but-referenced node survives and re-inserts intact). */
+    const gb=document.getElementById("guideBtn"), qc=document.getElementById("quickClean");
+    hero.innerHTML=art+'<div class="actions heroacts-row" id="heroBtnRow"></div>';
+    const row=hero.querySelector("#heroBtnRow");
+    if(gb) row.appendChild(gb);
+    if(qc) row.appendChild(qc);
+    const oldActs=document.querySelector("#scr-detail .actions:not(.heroacts-row)");
+    if(oldActs && !oldActs.children.length) oldActs.style.display="none";
+    /* state wiring */
+    if(rec){
+      benchLoadThumb(document.getElementById("heroImg"), rec);
+      const actsEl=document.getElementById("heroActs");
+      document.getElementById("heroImg").onclick=()=>{ actsEl.hidden=!actsEl.hidden; };
+      actsEl.onclick=e=>{ if(e.target===actsEl) actsEl.hidden=true; };
+      document.getElementById("heroReplace").onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
+      let armed=false;
+      document.getElementById("heroRemove").onclick=e=>{
+        e.stopPropagation();
+        const b=e.target;
+        if(!armed){ armed=true; b.textContent="Remove — sure?"; setTimeout(()=>{armed=false; b.textContent="Remove";},3000); return; }
+        benchRemoveUserArt(f);
+      };
+    } else {
+      const ha=document.getElementById("heroAttach");
+      if(ha) ha.onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
+      const box=document.getElementById("heroArt");
+      if(box.classList.contains("empty") && BenchEnv.hasFS()) box.onclick=()=>benchSetUserArt(f);
+    }
+  };
+
+  /* ---------- item 4: press-and-hold drag reorder, order persisted ---------- */
+  function benchDetEl(){ return document.querySelector("#scr-detail .detail"); }
+  function benchOrderIds(){ return ["heroCard"].concat(BENCH_BOXES.map(d=>d.id)); }
+  function benchBoxTwins(id){
+    const d=BENCH_BOXES.find(x=>x.id===id);
+    return d ? d.twins.map(t=>document.getElementById(t)).filter(Boolean) : [];
+  }
+  function benchOrderablesInDom(){
+    const det=benchDetEl(); if(!det) return [];
+    const ids=benchOrderIds();
+    return [...det.children].filter(el=>el.id && ids.indexOf(el.id)>=0);
+  }
+  function benchUnitId(el){
+    if(benchOrderIds().indexOf(el.id)>=0) return el.id;
+    const d=BENCH_BOXES.find(x=>x.twins.indexOf(el.id)>=0);
+    return d ? d.id : null;
+  }
+  function benchPersistOrder(){
+    const f=byId(activeId); if(!f) return;
+    if(!f.layout) f.layout={};
+    f.layout.order=benchOrderablesInDom().map(el=>el.id);   /* additive field — no migration */
+    saveSafe();
+  }
+  function benchApplyOrder(f){
+    const saved=(f.layout && Array.isArray(f.layout.order))?f.layout.order:null;
+    if(!saved || !saved.length) return;
+    const det=benchDetEl(); if(!det) return;
+    const present=benchOrderablesInDom();
+    if(present.length<2) return;
+    const want=saved.filter(id=>present.some(el=>el.id===id))
+      .concat(present.map(el=>el.id).filter(id=>saved.indexOf(id)<0));
+    if(want.every((id,i)=>present[i].id===id)) return;
+    /* permute WITHIN the orderable slots — fixed rows (d-head, stats, ammo…)
+       keep their absolute positions */
+    const markers=present.map(el=>{ const m=document.createComment("ord"); det.insertBefore(m, el); return m; });
+    want.forEach((id,i)=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      det.insertBefore(el, markers[i]);
+      let ref=el;
+      benchBoxTwins(id).forEach(t=>{ det.insertBefore(t, ref.nextSibling); ref=t; });
+    });
+    markers.forEach(m=>m.remove());
+  }
+  let benchDragging=false;
+  function benchBindDrag(el){
+    if(el.dataset.drag) return;
+    el.dataset.drag="1";
+    el.addEventListener("pointerdown", function(e){
+      if(e.button || benchDragging) return;
+      if(e.target.closest("input,select,textarea,[contenteditable]")) return;
+      const unitId=benchUnitId(el); if(!unitId) return;
+      const box=document.getElementById(unitId); if(!box) return;
+      const det=benchDetEl(); if(!det) return;
+      let sy=e.clientY; const sx=e.clientX, pid=e.pointerId;
+      let lifted=false, moved=false, curY=sy;
+      const unitEls=()=>[box].concat(benchBoxTwins(unitId));
+      const hold=setTimeout(lift, 430);
+      function lift(){
+        lifted=true; benchDragging=true;
+        unitEls().forEach(u=>u.classList.add("carddrag"));
+        try{ el.setPointerCapture(pid); }catch(err){}
+        document.addEventListener("touchmove", block, {passive:false});
+      }
+      function block(ev){ ev.preventDefault(); }
+      function setShift(){ unitEls().forEach(u=>{ u.style.transform="translateY("+(curY-sy)+"px)"; }); }
+      function unitRect(){
+        const vis=unitEls().filter(u=>u.style.display!=="none");
+        const r=(vis[0]||box).getBoundingClientRect();
+        let top=r.top, bottom=r.bottom;
+        vis.forEach(u=>{ const q=u.getBoundingClientRect(); if(q.top<top) top=q.top; if(q.bottom>bottom) bottom=q.bottom; });
+        return {top, bottom, mid:(top+bottom)/2};
+      }
+      function reorder(){
+        const mine=unitRect();
+        const others=benchOrderablesInDom().filter(b=>b.id!==unitId);
+        for(const other of others){
+          const twins=benchBoxTwins(other.id);
+          const vis=[other].concat(twins).filter(u=>u.style.display!=="none");
+          if(!vis.length) continue;
+          let top=vis[0].getBoundingClientRect().top, bottom=vis[0].getBoundingClientRect().bottom;
+          vis.forEach(u=>{ const q=u.getBoundingClientRect(); if(q.top<top) top=q.top; if(q.bottom>bottom) bottom=q.bottom; });
+          const mid=(top+bottom)/2;
+          const above=benchOrderablesInDom().indexOf(other) < benchOrderablesInDom().indexOf(box);
+          if(above && mine.mid<mid){ return swapTo(other, false); }
+          if(!above && mine.mid>mid){ return swapTo(other, true); }
+        }
+      }
+      function swapTo(other, after){
+        const pre=unitRect().top;
+        const chain=[other].concat(benchBoxTwins(other.id).filter(t=>t.parentNode===other.parentNode));
+        const ref=after ? chain[chain.length-1].nextSibling : other;
+        unitEls().forEach(u=>det.insertBefore(u, ref));
+        const post=unitRect().top;
+        sy += (post-pre);
+        setShift();
+      }
+      function move(ev){
+        curY=ev.clientY;
+        if(!lifted){
+          if(Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy)>12) done();
+          return;
+        }
+        if(ev.cancelable) ev.preventDefault();
+        moved=true;
+        setShift();
+        reorder();
+      }
+      function done(){
+        clearTimeout(hold);
+        el.removeEventListener("pointermove", move);
+        el.removeEventListener("pointerup", done);
+        el.removeEventListener("pointercancel", done);
+        document.removeEventListener("touchmove", block);
+        if(lifted){
+          unitEls().forEach(u=>{ u.classList.remove("carddrag"); u.style.transform=""; });
+          benchDragging=false;
+          if(moved){
+            benchPersistOrder();
+            el.addEventListener("click", cE=>{ cE.stopPropagation(); cE.preventDefault(); }, {capture:true, once:true});
+          }
+        }
+      }
+      el.addEventListener("pointermove", move);
+      el.addEventListener("pointerup", done);
+      el.addEventListener("pointercancel", done);
+    });
+  }
+
+  const benchPrevRenderDetail_v12 = renderDetail;
+  renderDetail = function(){
+    benchPrevRenderDetail_v12();
+    const f=byId(activeId); if(!f) return;
+    /* the two v12 static boxes have no other display owner: benchApplyCards
+       only ever SETS display:none for a hidden card, so a restored one would
+       stay invisible without this reset. The v9 boxes don't need it — the base
+       render re-decides their display every pass (hasMags, Pro swaps). */
+    ["roundsBox","logBox"].forEach(id=>{
+      if(benchHiddenList(f).indexOf(id)<0){ const el=document.getElementById(id); if(el) el.style.display=""; }
+    });
+    benchApplyTwinX();
+    benchApplyOrder(f);
+    benchOrderablesInDom().forEach(box=>{
+      benchBindDrag(box);
+      benchBoxTwins(box.id).forEach(t=>benchBindDrag(t));
+    });
+  };
   /* ============ V8 PRESENTATION ROUND — ends ============ */
 
   /* boot */
