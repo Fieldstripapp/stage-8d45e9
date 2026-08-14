@@ -481,6 +481,10 @@
   .pickref{flex:none;width:52px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--edge);border-radius:8px;background:#0e1013;overflow:hidden}
   .pickref svg{width:88%;height:auto}
   .gun-card .tag.textg{color:var(--text);border-color:var(--muted)}
+  /* v8: locked-Bench preview + customize sheet */
+  .lockdim{opacity:.45;pointer-events:none}
+  .benchlocked{cursor:pointer}
+  .benchlocked .benchrow{cursor:pointer}
 </style>
 </head>
 <body>
@@ -679,7 +683,7 @@
         <div class="nfagrid" style="margin-top:11px">
           <div class="nf"><label for="svcType">Type</label><select id="svcType"><option>Service</option><option>Repair</option><option>Modification</option><option>Part installed</option></select></div>
           <div class="nf"><label for="svcDate">Date</label><input type="date" id="svcDate"></div>
-          <div class="nf"><label for="svcVendor">Shop / vendor (optional)</label><input type="text" id="svcVendor" maxlength="40" placeholder="Self, or shop name"></div>
+          <div class="nf"><label for="svcVendor">Performed by</label><select id="svcVendor"></select></div>
           <div class="nf"><label for="svcCost">Cost (optional)</label><input type="number" id="svcCost" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
           <div class="nf wide"><label for="svcDesc">Work performed</label><input type="text" id="svcDesc" maxlength="80" placeholder="e.g. Trigger spring kit installed"></div>
         </div>
@@ -752,8 +756,21 @@
   <!-- ============ CLEAN LOG FORM ============ -->
   <section class="screen" id="scr-logclean">
     <div class="logform">
-      <h2>Log This Cleaning</h2>
-      <p class="sub">Optional details — future-you will thank present-you when a part starts acting up and the history is right here.</p>
+      <h2>Log Bench Work</h2>
+      <p class="sub">Your bench time is the record that matters — what was done, by whom, with what. Future-you will thank present-you when a part starts acting up.</p>
+      <div class="field">
+        <label for="logWork">What was done</label>
+        <select id="logWork"><option>Field clean</option><option>Deep clean</option><option>Lube only</option><option>Bore only</option><option>Inspection</option><option>Parts replaced</option><option>Mod installed</option></select>
+        <div class="hint">Only a Field or Deep clean resets the round counter — everything else logs without touching it.</div>
+      </div>
+      <div class="field">
+        <label for="logBy">Performed by</label>
+        <select id="logBy"></select>
+      </div>
+      <div class="field">
+        <label for="logCost">Cost (optional)</label>
+        <input type="number" id="logCost" min="0" step="0.01" inputmode="decimal" placeholder="0.00">
+      </div>
       <div class="field">
         <label for="chemInput">Chemicals / solvents used</label>
         <input type="text" id="chemInput" placeholder="e.g. Hoppe's No. 9, Rem Oil">
@@ -762,6 +779,10 @@
       <div class="field">
         <label for="condInput">Condition notes</label>
         <textarea id="condInput" placeholder="e.g. Extractor showing wear. Heavy carbon on bolt tail — going 400 rds between cleans is too long. Bore bright, no pitting."></textarea>
+      </div>
+      <div class="field">
+        <button type="button" class="btn sm" id="logPhotoBtn">Attach Work Photo</button>
+        <div class="hint" id="logPhotoMsg"></div>
       </div>
       <div class="spacer"></div>
       <div class="row">
@@ -5263,6 +5284,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(prob){ msg.textContent=`${prob} mag${prob===1?"":"s"} flagged as a problem — tap the status chip to update.`; msg.style.color="var(--amber)"; }
     else if(overdue.length){ msg.textContent=`${overdue.length} carry mag${overdue.length===1?"":"s"} due for rotation — unload, rest the spring, load a fresh one.`; msg.style.color="var(--amber)"; }
     else if(!f.mags.length){ msg.textContent="Your mag fleet, individually numbered — mark the real mags to match, and a problem mag stays identified for good."; msg.style.color=""; }
+    else if(!isPro() && f.mags.length>=3){ msg.textContent=`${f.mags.length} of 3 free mags on this firearm — the unlimited numbered fleet is part of Fieldstrip Pro.`; msg.style.color=""; }
     else { msg.textContent=""; msg.style.color=""; }
     list.innerHTML="";
     f.mags.forEach((m,i)=>{
@@ -5331,6 +5353,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const brand=document.getElementById("magBrand").value.trim();
       const role=document.getElementById("magRole").value;
       if(qty>1 && !isPro()){ openProSheet("Batch mag creation — one spec, the whole fleet numbered at once — is part of the Bench."); return; }
+      /* v8 free cap (Darren ruling reversal 2026-08-13): 3 mags per firearm free.
+         Add-time gate only — anything already stored keeps rendering forever. */
+      if(!isPro() && (f.mags.length + qty) > 3){ openProSheet(`Free tracks 3 mags per firearm — this one has ${f.mags.length}. The whole numbered fleet is part of Fieldstrip Pro.`); return; }
       try{
         const made=BenchData.batchCreateMags(f, {model, brand, cap, role}, qty, Date.now());
         addLog(f,"mag", qty>1
@@ -5409,6 +5434,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     });
     nu.addEventListener("click",()=>{
       const f=byId(activeId); if(!f) return;
+      /* v8 free cap (Darren ruling reversal 2026-08-13): care reminders on ONE
+         firearm free. Add-time gate; stored reminders elsewhere keep working. */
+      if(!isPro() && !(f.reminders||[]).length &&
+         safe.some(x=>x.id!==f.id && Array.isArray(x.reminders) && x.reminders.length)){
+        openProSheet("Free keeps care reminders on one firearm. Clocks across the whole safe are part of Fieldstrip Pro.");
+        return;
+      }
       const type=document.getElementById("careType").value;
       const label = type==="Custom" ? document.getElementById("careLabel").value.trim() : type;
       if(!label) return;
@@ -5542,7 +5574,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("proSpringLock").onclick = ()=> openProSheet();
     safeList.innerHTML="";
     document.getElementById("safeSub").textContent = safe.length
-      ? "Your firearms, their round counts, and what's due."
+      ? "Your collection and what it's owed — all of it on this phone."
       : "Round tracking, spring life, and guided cleanings — starting with your first firearm.";
     if(!safe.length){
       safeList.innerHTML = `<div class="empty"><div class="big">YOUR SAFE IS EMPTY</div><p>Add a firearm to start tracking rounds and maintenance.</p></div>`;
@@ -5686,24 +5718,53 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const c=benchCollect();
     const totMags=c.fleets.reduce((a,g)=>a+g.mags.length,0);
     if(!isPro()){
+      /* LOCKED = VISIBLY LOCKED (v8 finding #1): every section renders as a dimmed
+         preview carrying a lock mark + PRO tag — real stored counts where data
+         exists, empty-state copy where it doesn't. ANY tap opens the Pro sheet.
+         Nothing may look functional and do nothing. */
       const stored=[];
       if(totMags) stored.push(`${totMags} mag${totMags===1?"":"s"}`);
       const zn=safe.reduce((a,f)=>a+(f.zeros||[]).length,0);
       if(zn) stored.push(`${zn} zero${zn===1?"":"s"}`);
       const rn=safe.reduce((a,f)=>a+(f.reminders||[]).length,0);
       if(rn) stored.push(`${rn} reminder${rn===1?"":"s"}`);
-      body.innerHTML=`
-        <div class="d-head"><div class="dname">The Bench<span class="protag">PRO</span></div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>
+      const lockRow=(title, val, bodyHtml)=>`
+        <div class="lifebox benchlocked"><div class="lrow"><span class="lt">🔒 ${title}</span><span><span class="lv" style="margin-right:8px">${val}</span><span class="protag">PRO</span></span></div>
+        <div class="lockdim">${bodyHtml}</div></div>`;
+      let lh=`
+        <div class="d-head"><div class="dname">The Bench<span class="protag">PRO</span></div><div class="dsub">Locked — everything below is a preview. One unlock opens all of it, for good.</div></div>
         <div class="lifebox prolock" id="benchLockBox">
-          <div class="lrow"><span class="lt">The Bench</span><span class="protag">PRO</span></div>
-          <div class="lmsg">Cross-cutting inventory for people who run more than a safe queen: the mag fleet with batch add, receipts and work photos, zero records with target photos, structured care reminders on round and time clocks, one-tap cleaning logs, and local backup. Everything stays on this phone.</div>
+          <div class="lrow"><span class="lt">The Bench is locked</span><span class="protag">PRO</span></div>
+          <div class="lmsg">The mag fleet with batch add, NFA filings, zero records with target photos, care clocks, work photos, and local backup — your whole collection in one view, on this phone only.</div>
           ${stored.length?`<div class="lmsg" style="color:var(--text)">${stored.join(", ")} already recorded and still stored — nothing is deleted while locked.</div>`:""}
           <button class="btn sm primary" id="benchUnlock">Unlock Pro</button>
         </div>`;
+      lh+=lockRow("NFA Items", c.nfa.length||"—",
+        c.nfa.length
+          ? c.nfa.slice(0,3).map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.name)}</div><div class="bs">${esc(x.f.nfaItemType||"filings on record")}</div></div></div>`).join("")
+          : `<div class="lmsg">Item types and every filing — Form 1/4/5 or your own — would gather here.</div>`);
+      lh+=lockRow("Magazines", totMags?`${totMags} mags`:"—",
+        c.fleets.length
+          ? c.fleets.slice(0,3).map(g=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · ${esc(g.name)}</div></div></div>`).join("")
+          : `<div class="lmsg">Your fleet, individually numbered per firearm, would live here.</div>`);
+      lh+=lockRow("Zero Records", c.zeros.length||"—",
+        c.zeros.length
+          ? c.zeros.slice(0,2).map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.name)} · ${x.z.dist} ${esc(x.z.unit)}</div><div class="bs">${fmtDate(x.z.ts)}</div></div></div>`).join("")
+          : `<div class="lmsg">Distance, load AND lot, before/after targets — per firearm.</div>`);
+      lh+=lockRow("Care Reminders", c.care.length?`${c.care.length} clock${c.care.length===1?"":"s"}`:"—",
+        c.care.length
+          ? c.care.slice(0,3).map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.r.label)} — ${esc(x.name)}</div><div class="bs">${esc(benchDueLabel(x.f,x.r))}</div></div></div>`).join("")
+          : `<div class="lmsg">Round clocks and time clocks, across the whole safe.</div>`);
+      lh+=lockRow("Attachments", c.attCount||"—",
+        `<div class="lmsg">Receipts, work photos, stamp photos and targets — stored on this phone only.</div>`);
+      lh+=lockRow("Backup", "—",
+        `<div class="lmsg">One local file with everything the Bench knows, photos optional — saved wherever you choose.</div>`);
+      body.innerHTML=lh;
       document.getElementById("benchUnlock").onclick=()=>openProSheet();
-      document.getElementById("benchLockBox").onclick=e=>{ if(e.target.id!=="benchUnlock") openProSheet(); };
+      body.onclick=e=>{ if(e.target.id!=="benchUnlock") openProSheet(); };
       return;
     }
+    body.onclick=null;
     let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>`;
     if(c.overdue.length){
       h+=`<div class="lifebox warn"><div class="lrow"><span class="lt">Needs attention</span><span class="lv" style="color:var(--safe-red)">${c.overdue.length} item${c.overdue.length===1?"":"s"}</span></div>`;
@@ -5736,7 +5797,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       h+=`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.name)} · ${x.z.dist} ${esc(x.z.unit)}</div><div class="bs">${fmtDate(x.z.ts)} · ${esc(x.z.ammo||"—")}${x.z.lot?` · lot ${esc(x.z.lot)}`:""}${(x.z.photoBefore||x.z.photoAfter)?" · target photos":""}</div></div></div>`;
     });
     h+=`</div>`;
-    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Care Reminders</span><span class="lv">${c.care.length?`${c.care.length} clocks`:"none"}</span></div>`;
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Care Reminders</span><span class="lv">${c.care.length?`${c.care.length} clock${c.care.length===1?"":"s"}`:"none"}</span></div>`;
     if(!c.care.length) h+=`<div class="lmsg">Round clocks and time clocks, across the safe.</div>`;
     c.care.slice(0,8).forEach(x=>{
       h+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.r.label)} — ${esc(x.name)}</div><div class="bs">${esc(benchDueLabel(x.f,x.r))}</div></div><span class="statuschip ${x.s.due?"due":"active"}">${x.s.due?"OVERDUE":"OK"}</span></div>`;
@@ -6315,25 +6376,23 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       });
     }
     list.sort((a,b)=> (a.mk+" "+a.md).localeCompare(b.mk+" "+b.md));
+    /* v8: default view is ALL (capped + keep-typing note); the most-owned subset
+       filter is retired by ruling */
     let shown=list, capped=false;
-    if(!q && pickGroup==="All"){
-      shown=list.filter(c=>c.tr===1);
-      resultNote.textContent=`Showing the ${shown.length} most-owned models of ${CATALOG.length} — search or pick a category for the rest`;
-    } else {
-      if(list.length>100){ shown=list.slice(0,100); capped=true; }
-      resultNote.textContent = list.length
-        ? (capped?`Showing 100 of ${list.length} — keep typing to narrow`:`${list.length} match${list.length===1?"":"es"}`)
-        : "No matches — try just the model number, or check the spelling";
-    }
+    if(list.length>100){ shown=list.slice(0,100); capped=true; }
+    resultNote.textContent = list.length
+      ? (capped?`Showing 100 of ${list.length} — keep typing or pick a category to narrow`:`${list.length} match${list.length===1?"":"es"}`)
+      : "No matches — try just the model number, or check the spelling";
     pickList.innerHTML="";
     shown.forEach(c=>{
       const art=!!guideKey(c.i);
       const text=!art && !!textGuideKey(c.i);
       const b=document.createElement("button");
       b.className="gun-card";
-      const thumb = text ? `<span class="pickref">${TEXT_ART.pistol}</span>` : "";
-      b.innerHTML=`${thumb}<span class="meta"><div class="name">${c.mk} ${c.md}</div><div class="sub">${c.ch} · ${c.ct}</div></span>
-        <span class="tag ${art?"ready":(text?"textg":"")}">${art?"Guide Ready":(text?"Text Guide":"Log Only")}</span>`;
+      /* v8: no card silhouettes anywhere; illustrated = NO badge (normal isn't
+         labeled), text guides = one quiet TEXT chip, Log Only stays honest */
+      b.innerHTML=`<span class="meta"><div class="name">${c.mk} ${c.md}</div><div class="sub">${c.ch} · ${c.ct}</div></span>
+        ${art?"":(text?`<span class="tag textg">TEXT</span>`:`<span class="tag">Log Only</span>`)}`;
       b.addEventListener("click",()=>{
         if(!isPro() && safe.length>=FREE_MAX_GUNS){ openProSheet(); return; }
         const f={id:Date.now().toString(36), model:c.i, totalRounds:0, roundsSinceClean:0, roundsSinceSpring:0, lastClean:null, lastChems:"",
@@ -6458,6 +6517,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       anchor.parentNode.insertBefore(box, anchor);
     }
     box.style.display="block";
+    /* v8: the suppressor suite sits behind the Pro wall (locked-visible) */
+    if(!isPro()){
+      const has=[];
+      if(f.supp&&f.supp.type) has.push("a saved spec");
+      if(f.hostId) has.push("a host link");
+      box.className="lifebox prolock";
+      box.innerHTML=`<div class="lrow"><span class="lt">🔒 Suppressor Spec</span><span class="protag">PRO</span></div>
+        <div class="lmsg">${has.length?`${has.join(" and ")} already stored — unlock to view and edit. `:""}Type, bore, mount, host-linked care clocks, and the written type guides. Part of Fieldstrip Pro.</div>
+        <button class="btn sm primary" id="suppLockBtn">Unlock Pro</button>`;
+      box.onclick=()=>openProSheet();
+      return;
+    }
+    box.className="lifebox"; box.onclick=null;
     const O=BenchData.OPTIONS;
     const sp=f.supp||{};
     const hosts=safe.filter(x=>x.id!==f.id && !benchIsSuppressor(x));
@@ -6528,8 +6600,235 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       saveSafe(); renderDetail();
     };
   }
-  renderPicker();   /* re-render with the text-guide badges live */
+  renderPicker();   /* re-render with the v8 badges live */
   /* ============ TEXT GUIDES + SUPPRESSOR SECTION — ends ============ */
+
+  /* ============ V8 PRESENTATION ROUND — begins ============ */
+  /* ================================================================
+     V8 — PRESENTATION ROUND (ruling-v8-presentation-20260813.md)
+     Banner copy · expanded logging (what-was-done, performed-by with
+     Self pinned, cost, work photos) · vendor memory shared with
+     Service & Mods · firearm-page customization (hide/reorder/reset/
+     apply-to-all, data never touched). Loads after every other block.
+     ================================================================ */
+
+  /* ---------- item 2: Pro banner ---------- */
+  updateProRow = function(){
+    const r=document.getElementById("proRow"); if(!r) return;
+    r.hidden=false;
+    if(isPro()){ r.className="prorow on"; r.innerHTML="<b>PRO</b> unlocked — the full safe is yours"; }
+    else { r.className="prorow"; r.innerHTML="<b>Fieldstrip Pro</b> — the Bench: mag fleets, NFA filings, zero records · "+PRO_PRICE_LABEL.split(" ·")[0]; }
+  };
+
+  /* ---------- vendor memory (fs_vendors, shared by log + service) ---------- */
+  function benchVendors(){
+    try{ return JSON.parse(BenchEnv.store.getRaw("fs_vendors")||"[]"); }catch(e){ return []; }
+  }
+  function benchAddVendor(name){
+    name=String(name||"").trim();
+    if(!name || name==="Self") return;
+    const v=benchVendors();
+    if(v.indexOf(name)<0){ v.push(name); BenchEnv.store.setRaw("fs_vendors", JSON.stringify(v)); }
+  }
+  /* Self pinned first — self-service and home gunsmithing are the norm for the
+     people this app is for; the log treats bench work as first-class. */
+  function benchFillVendorSelect(sel, current){
+    if(!sel) return;
+    const v=benchVendors();
+    sel.innerHTML=`<option value="Self">Self</option>`
+      + v.map(x=>`<option${x===current?" selected":""}>${esc(x)}</option>`).join("")
+      + `<option value="__add">+ Add shop…</option>`;
+    if(current==="Self"||!current) sel.value="Self";
+    sel.onchange=()=>{
+      if(sel.value==="__add"){
+        const n=prompt("Shop / gunsmith name:");
+        if(n && n.trim()){ benchAddVendor(n); benchFillVendorSelect(sel, n.trim()); }
+        else sel.value="Self";
+      }
+    };
+  }
+
+  /* ---------- item 8: expanded log form ---------- */
+  /* only a real cleaning resets the cleaning heartbeat; bench work that isn't a
+     clean is LOGGED without lying to the round counter */
+  const BENCH_RESET_WORKS=["Field clean","Deep clean"];
+  const benchOrigOpenCleanForm = openCleanForm;
+  openCleanForm = function(guided){
+    benchOrigOpenCleanForm(guided);
+    const w=document.getElementById("logWork");
+    if(w) w.value = guided ? "Field clean" : "Field clean";
+    const c=document.getElementById("logCost"); if(c) c.value="";
+    benchFillVendorSelect(document.getElementById("logBy"), "Self");
+    const pb=document.getElementById("logPhotoBtn"), pm=document.getElementById("logPhotoMsg");
+    if(pb){ pb.style.display=BenchEnv.hasFS()?"":"none"; if(pm) pm.textContent=""; }
+  };
+  commitClean = function(chems, note){
+    const f=byId(activeId);
+    const work=(document.getElementById("logWork")||{}).value || "Field clean";
+    let by=(document.getElementById("logBy")||{}).value || "Self";
+    if(by==="__add") by="Self";
+    benchAddVendor(by);
+    const cost=+((document.getElementById("logCost")||{}).value||0)||0;
+    const resets=BENCH_RESET_WORKS.indexOf(work)>=0;
+    const had=f.roundsSinceClean;
+    if(resets){ f.lastClean=Date.now(); f.roundsSinceClean=0; }
+    if(chems) f.lastChems=chems;
+    const kind=(work==="Parts replaced"||work==="Mod installed")?"svc":"clean";
+    addLog(f, kind,
+      (pendingGuided?"Guided cleaning completed":work)
+        + (by!=="Self"?` — by ${by}`:" — bench work, self")
+        + (cost?` · $${cost.toFixed(2)}`:"")
+        + (resets&&had?` — ${fmtN(had)} rounds since last`:""),
+      {chems: chems||"", note: note||"", work, by, cost: cost||""});
+    saveSafe();
+    show("scr-detail");
+  };
+  (function(){
+    const pb=document.getElementById("logPhotoBtn");
+    if(pb) pb.addEventListener("click",()=>{
+      const f=byId(activeId); if(!f) return;
+      benchPickPhoto(async (b64,dims)=>{
+        try{
+          await benchImport({kind:"firearm", id:f.id}, b64, dims, "work");
+          document.getElementById("logPhotoMsg").textContent="Photo attached ✓";
+        }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+      });
+    });
+    /* Service & Mods: same vendor memory; original svcAdd handler reads
+       #svcVendor.value, which a <select> satisfies. After each add, remember a
+       new shop and reset the select to Self (the original clears .value). */
+    benchFillVendorSelect(document.getElementById("svcVendor"), "Self");
+    const sa=document.getElementById("svcAdd");
+    if(sa) sa.addEventListener("click",()=>{
+      setTimeout(()=>{
+        const f=byId(activeId);
+        if(f && f.service && f.service.length){
+          const last=f.service[f.service.length-1];
+          if(last.vendor) benchAddVendor(last.vendor);
+        }
+        benchFillVendorSelect(document.getElementById("svcVendor"), "Self");
+      },50);
+    });
+  })();
+
+  /* ---------- item 9: firearm page customization ---------- */
+  const BENCH_BOXES=[
+    {id:"cleanBox",  label:"Cleaning interval", twins:[]},
+    {id:"nfaBox",    label:"NFA record",        twins:["proNfaLock"],   count:f=>(f.nfaFilings||[]).length},
+    {id:"wtBox",     label:"Fouling by weight", twins:["proWtLock"],    count:f=>((f.log||[]).filter(e=>e.type==="weight").length)},
+    {id:"suppBox",   label:"Suppressor spec",   twins:[],               count:f=>(f.supp&&f.supp.type?1:0)},
+    {id:"magBox",    label:"Magazines",         twins:[],               count:f=>(f.mags||[]).length},
+    {id:"careBox",   label:"Care reminders",    twins:[],               count:f=>(f.reminders||[]).length},
+    {id:"attBox",    label:"Attachments",       twins:[],               count:f=>BenchAttach.listFor(BenchEnv.store,{kind:"firearm",id:f.id}).length},
+    {id:"svcBox",    label:"Service & mods",    twins:[],               count:f=>(f.service||[]).length},
+    {id:"zeroBox",   label:"Zero record",       twins:["proZeroLock"],  count:f=>(f.zeros||[]).length},
+    {id:"springBox", label:"Spring life",       twins:["proSpringLock"]},
+    {id:"intelBox",  label:"Ammo intel",        twins:[]}
+  ];
+  function benchBoxEls(def){
+    return [def.id].concat(def.twins).map(id=>document.getElementById(id)).filter(Boolean);
+  }
+  function benchDomOrder(){
+    return BENCH_BOXES
+      .filter(d=>document.getElementById(d.id))
+      .sort((a,b)=>{
+        const ea=document.getElementById(a.id), eb=document.getElementById(b.id);
+        return (ea.compareDocumentPosition(eb) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+      })
+      .map(d=>d.id);
+  }
+  function benchApplyLayout(f){
+    const lay=f.layout;
+    if(!lay) return;                       /* uncustomized = untouched */
+    (lay.hidden||[]).forEach(id=>{
+      const def=BENCH_BOXES.find(d=>d.id===id); if(!def) return;
+      benchBoxEls(def).forEach(el=>{ el.style.display="none"; });
+    });
+    if(Array.isArray(lay.order) && lay.order.length){
+      const marker=document.querySelector(".roundsbox");
+      if(marker){
+        lay.order.forEach(id=>{
+          const def=BENCH_BOXES.find(d=>d.id===id); if(!def) return;
+          benchBoxEls(def).forEach(el=>marker.parentNode.insertBefore(el, marker));
+        });
+      }
+    }
+  }
+  function benchCustomizeSheet(){
+    const f=byId(activeId); if(!f) return;
+    let sh=document.getElementById("custSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="custSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="custSheet") sh.classList.remove("open"); });
+    }
+    const lay=f.layout || {hidden:[], order:benchDomOrder()};
+    const order=(lay.order&&lay.order.length)?lay.order:benchDomOrder();
+    let rows="";
+    order.forEach((id,i)=>{
+      const def=BENCH_BOXES.find(d=>d.id===id); if(!def||!document.getElementById(id)) return;
+      const hid=(lay.hidden||[]).indexOf(id)>=0;
+      const n=def.count?def.count(f):0;
+      rows+=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn" style="${hid?'color:var(--muted)':''}">${def.label}</div>
+        ${hid&&n?`<div class="bs">${n} record${n===1?"":"s"} stored — hidden, not deleted</div>`:(n?`<div class="bs">${n} record${n===1?"":"s"}</div>`:"")}</div>
+        <button class="magbtn" data-mv="-1" data-id="${id}" ${i===0?"disabled":""}>▲</button>
+        <button class="magbtn" data-mv="1" data-id="${id}" ${i===order.length-1?"disabled":""}>▼</button>
+        <button class="magbtn ${hid?"":"del"}" data-tg="${id}">${hid?"Show":"Hide"}</button></div>`;
+    });
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="custX">×</button>
+      <h3>CUSTOMIZE THIS PAGE</h3>
+      <p class="pp">Hide what you don't use, order the rest your way. Nothing is deleted — a hidden box keeps its records and comes back the moment you show it.</p>
+      ${rows}
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn sm" id="custReset">Reset to default</button>
+        <button class="btn sm" id="custAll">Apply to all firearms</button>
+        <button class="btn sm primary" id="custDone" style="margin-left:auto">Done</button>
+      </div></div>`;
+    sh.classList.add("open");
+    const save=(l)=>{ f.layout=l; saveSafe(); renderDetail(); benchCustomizeSheet(); };
+    sh.querySelectorAll("[data-tg]").forEach(b=>b.onclick=()=>{
+      const id=b.dataset.tg;
+      const l=f.layout||{hidden:[],order:benchDomOrder()};
+      const i=l.hidden.indexOf(id);
+      if(i>=0) l.hidden.splice(i,1); else l.hidden.push(id);
+      save(l);
+    });
+    sh.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{
+      const id=b.dataset.id, mv=+b.dataset.mv;
+      const l=f.layout||{hidden:[],order:benchDomOrder()};
+      if(!l.order||!l.order.length) l.order=benchDomOrder();
+      const i=l.order.indexOf(id);
+      const j=i+mv;
+      if(i<0||j<0||j>=l.order.length) return;
+      l.order.splice(i,1); l.order.splice(j,0,id);
+      save(l);
+    });
+    document.getElementById("custReset").onclick=()=>{ delete f.layout; saveSafe(); renderDetail(); benchCustomizeSheet(); };
+    document.getElementById("custAll").onclick=()=>{
+      const l=f.layout; if(!l){ alert("This page is at the default — nothing to apply."); return; }
+      safe.forEach(x=>{ x.layout=JSON.parse(JSON.stringify(l)); });
+      saveSafe(); alert("Applied to every firearm. Each page can still be reset individually.");
+    };
+    document.getElementById("custDone").onclick=()=>sh.classList.remove("open");
+    document.getElementById("custX").onclick=()=>sh.classList.remove("open");
+  }
+  (function(){
+    const rb=document.getElementById("removeBtn");
+    if(rb && !document.getElementById("customizeBtn")){
+      const b=document.createElement("button");
+      b.className="btn sm"; b.id="customizeBtn"; b.style.cssText="margin:2px auto 0;display:block";
+      b.textContent="Customize This Page";
+      rb.parentNode.insertBefore(b, rb);
+      b.addEventListener("click",benchCustomizeSheet);
+    }
+  })();
+  const benchPrevRenderDetail_v8 = renderDetail;
+  renderDetail = function(){
+    benchPrevRenderDetail_v8();
+    const f=byId(activeId); if(f) benchApplyLayout(f);
+  };
+  /* ============ V8 PRESENTATION ROUND — ends ============ */
 
   /* boot */
   renderSafe();
