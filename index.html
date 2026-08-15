@@ -20,6 +20,13 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+  /* V16 item 10: white native selects are struck. color-scheme:dark makes the WebView
+     draw its native pickers (the popup list, date dials) dark; the base rule themes every
+     closed select box, wrapper or no wrapper. Specific wrappers may still override sizes. */
+  html{color-scheme:dark}
+  select{appearance:none;-webkit-appearance:none;background-color:var(--panel2);border:1px solid var(--edge);border-radius:8px;color:var(--text);font-family:var(--body);font-size:13px;padding:8px 30px 8px 10px;color-scheme:dark;cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%2378828F' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 10px center}
+  select:focus{outline:none;border-color:var(--amber)}
+  .nfagrid .nf select{padding-right:30px}
   html,body{height:100%;overflow:hidden}
   body{background:#0C0E11;font-family:var(--body);color:var(--text);display:flex;justify-content:center;height:100vh;height:100dvh;padding:18px 0}
   .phone{width:100%;max-width:430px;background:var(--bg);border:1px solid var(--edge);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;height:100%;min-height:0;position:relative}
@@ -620,7 +627,9 @@
     box-shadow:0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
   .sd-pad[hidden]{display:none!important}
   /* ---------- V12: hero card + drag reorder ---------- */
-  .herocard{padding:10px 10px 12px}
+  /* V16 item 14: the hero card is the firearm's face — it stands OFF the page instead of
+     dissolving into it: elevated two-stop face, brighter edge, real shadow. */
+  .herocard{padding:10px 10px 12px;background:linear-gradient(180deg,#272d36,#1d2127);border-color:#3d4754;box-shadow:0 6px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06)}
   .heroart{position:relative;border-radius:10px;overflow:hidden;background:var(--panel2)}
   .heroart>img{display:block;width:100%;max-height:260px;object-fit:cover}
   .heroart.empty{border:1px dashed var(--edge);background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 12px;cursor:pointer;min-height:120px}
@@ -632,6 +641,33 @@
   .heroacts[hidden]{display:none!important}
   .heroacts-row{margin-top:12px}
   .carddrag{position:relative;z-index:30;box-shadow:0 12px 30px rgba(0,0,0,.55);opacity:.94}
+  /* ---------- V16 item 6: bench cards — tap-to-open, default-expanded ---------- */
+  .benchcard .lrow{cursor:pointer;user-select:none;padding-right:30px}
+  .benchcard .bcchev{display:inline-block;color:var(--muted);font-size:11px;margin-right:8px;transition:transform .2s}
+  .benchcard.closed .bcchev{transform:rotate(-90deg)}
+  .benchcard.closed .bcbody{display:none}
+  .bcbody{margin-top:2px}
+  /* ---------- V16 items 1+3: first-open page + security page ---------- */
+  #firstOpen{position:fixed;inset:0;z-index:230;background:radial-gradient(ellipse 120% 90% at 50% 0%,#1b2027 0%,#101318 55%,#0a0c10 100%);display:none;overflow-y:auto}
+  #firstOpen.on{display:block}
+  .fo-wrap{max-width:520px;margin:0 auto;padding:calc(30px + var(--sat)) 22px calc(30px + var(--sab))}
+  .fo-brand{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.34em;text-indent:.34em;text-align:center;color:#DFE6F0;text-shadow:0 -1px 1px rgba(0,0,0,.85),0 0 22px rgba(213,220,230,.14)}
+  .fo-brand span{color:#F0AC3F;text-shadow:0 0 26px rgba(232,163,61,.4)}
+  .fo-tag{font-family:var(--display);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:center;margin:10px 0 18px}
+  .fo-body{color:var(--text);font-size:14px;line-height:1.6;margin-bottom:8px}
+  .fo-quiet{color:var(--muted);font-size:12.5px;line-height:1.55;margin-bottom:18px}
+  .fo-sect{font-family:var(--display);font-size:11px;letter-spacing:1.8px;color:var(--muted);text-transform:uppercase;margin:20px 0 10px}
+  .fo-pin{border:1px solid var(--amber-dim);border-radius:12px;padding:14px;background:rgba(232,163,61,.05);margin-top:18px}
+  .fo-pin .dc-h{font-family:var(--display);font-weight:600;font-size:15px;color:var(--text)}
+  .fo-pin .dc-p{color:var(--muted);font-size:12.5px;line-height:1.5;margin:6px 0 11px}
+  .secrow{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;width:100%;text-align:left;color:var(--text);font-family:var(--body)}
+  .secrow:active{border-color:var(--muted)}
+  .secrow .si{font-size:19px;flex:none;width:26px;text-align:center}
+  .secrow .st1{font-weight:600;font-size:14px}
+  .secrow .st2{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.45}
+  .secrow .schip{margin-left:auto;flex:none}
+  .secrow.danger{border-color:rgba(212,85,63,.45)}
+  .secrow.danger .st1{color:var(--safe-red)}
   /* one-time invitation card inside My Safe */
   .doorcard{border:1px solid var(--amber-dim);border-radius:14px;padding:15px 16px;margin-bottom:10px;background:rgba(232,163,61,.05)}
   .doorcard .dc-h{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.5px;color:var(--text)}
@@ -1633,7 +1669,7 @@
       <div class="feat"><span class="fx">▸</span><span><b>Barcode check-in</b> — scan an ammo box and it lands in the locker, no typing.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Zero Record</b> — distance, ammo, and optic notes, so a re-zero starts from facts.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Spring life</b> — round-count tracking against the service interval, with a replacement log.</span></div>
-      <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, where a guide has one. Standard guides stay free.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, on every guide. Standard guides stay free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Custom firearms</b> — add and <i>guide</i> firearms the catalog doesn't cover yet; assign any family's strip + parts diagram. One custom entry is free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Request a Firearm</b> — ask us to add a model that's missing. Opens your email app; nothing leaves your phone on its own.</span></div>
       <div class="price" id="proPrice">$19.99 · one time</div>
@@ -2883,9 +2919,19 @@
           {phase:"Strip",title:"Swing the buttpad open",body:"With the pin out, the buttpad hinges at the bottom. Swing the top of the pad down and away — it opens like a door, exposing the rear of the receiver and the back of the bolt carrier group.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100]},hl:["butt"],labels:["x95-lbl-butt"],arrow:{x:52,y:190,rot:135,nx:"-5px",ny:"5px"}},
           {phase:"Strip",title:"Withdraw the bolt carrier group",body:"Tilt the muzzle up slightly and pull the bolt carrier group straight out the back of the receiver — recoil assembly and the long-stroke gas piston come with it as one unit. It's heavy for its size; keep a grip on it.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100],bcg:BCGOUT},hl:["bcg"],labels:["x95-lbl-bcg"],arrow:{x:66,y:80,rot:90,nx:"-8px",ny:"0px"}},
           {phase:"Strip",title:"Separate the bolt from the carrier",body:"Push the firing pin retaining pin out, withdraw the firing pin, rotate the cam pin a quarter turn and lift it out, then slide the bolt forward out of the carrier — same family as an AR bolt, and this is where the carbon lives.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100],bcg:BCGOUT,bolt:[182,36]},hl:["bolt"],labels:["x95-lbl-bcg","x95-lbl-bolt"],arrow:{x:392,y:96,rot:90,nx:"8px",ny:"0px"}},
-          {phase:"Strip",title:"Field strip complete",body:"Chassis with fixed barrel, bolt carrier with piston, bolt, buttpad open, magazine out. That's the full X95 field strip — no tools, one captive pin, nothing to lose in the carpet.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100],bcg:BCGOUT,bolt:[182,36]},hl:[],labels:["x95-lbl-bcg","x95-lbl-bolt","x95-lbl-butt","x95-lbl-mag","x95-lbl-chassis"],arrow:null}
+          {phase:"Strip",title:"Field strip complete",body:"Chassis with fixed barrel, bolt carrier with piston, bolt, buttpad open, magazine out. That's the full X95 field strip — no tools, one captive pin, nothing to lose in the carpet. Want to go deeper? The optional DEEP CLEAN path covers the gas piston and cylinder, the bolt's wear points, and the chamber and lug recesses where a bullpup actually fouls.",t:{...A,mag:[-12,122],pin:[0,-44],butt:[-6,4,-100],bcg:BCGOUT,bolt:[182,36]},hl:[],labels:["x95-lbl-bcg","x95-lbl-bolt","x95-lbl-butt","x95-lbl-mag","x95-lbl-chassis"],arrow:null,branch:true}
         ];
       })(),
+      /* V16 deep coverage: authored at platform scope from this guide's own shipped
+         mechanics (long-stroke piston, AR-family bolt already broken down in step 6).
+         Anything the manual owns — trigger-pack removal and beyond — is deferred to it
+         by name, never invented. */
+      deepSteps:[
+        {phase:"Deep Clean",title:"Piston face and gas cylinder",body:"The long-stroke piston rides at the front of the carrier you're holding — its face is where the X95's carbon actually sets. Scrape the piston head clean with a nylon or brass scraper until metal shows, then swab the gas cylinder above the barrel with a solvent patch on a rod. The cylinder runs hot and cakes; what you loosen falls forward and out.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Bolt wear points",body:"With the bolt already out of the carrier, inspect it in good light: the extractor claw's lip for chips, the extractor spring for a lazy return when pressed, each locking lug for cracks at its root, and the cam pin's bearing surfaces for galling. Press the firing pin through and watch it return free. A worn part found here is a range failure you don't have.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Chamber and lug recesses",body:"A bullpup's chamber sits at your cheek and collects everything the action throws. With the carrier out, run a chamber brush into the chamber and the locking-lug recesses behind it, then dry-patch until clean. Brass shavings in the lug recesses are what make a clean rifle feel gritty on lockup.",t:{},hl:[],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Rebuild and prove the group",body:"Bolt into the carrier, cam pin in and quarter-turned, firing pin from the rear, retaining pin through — the reverse of exactly how it came apart. The bolt should extend and retract by hand with no catch, and the group should rattle its firing pin when shaken. Lube map: a light film on the carrier rails and piston body, a drop at the cam pin, the firing pin and its channel bone dry. Going further — trigger pack out, chassis internals — is the manual's territory, not this guide's.",t:{},hl:[],labels:[],arrow:null}
+      ],
       cleaning:[
         {name:"BARREL & CHAMBER",tasks:["Clean from the chamber end, through the open rear of the receiver","Solvent patch, then a 5.56 bronze bore brush — 8 to 10 passes","Scrub the chamber and locking-lug recesses with a chamber brush","Dry patches until clean; do not oil the bore for storage unless it's long-term"]},
         {name:"BOLT CARRIER + PISTON",tasks:["Scrape and wipe carbon off the bolt tail and inside the carrier","Wipe the gas piston head — long-stroke piston runs cleaner than DI, a rag pass is enough","Clean the bolt face and under the extractor claw","Light oil on the carrier body and bolt; reassemble bolt, cam pin, firing pin, retaining pin"]},
@@ -2912,9 +2958,17 @@
           {phase:"Strip",title:"Push out the trigger group pins",body:"Two pins hold the trigger plate assembly in the receiver. Push both out with a punch or the tip of a screwdriver — they push through in either direction on most guns. Routine cleaning stops at the barrel; this level is for a deeper clean.",t:{...A,forend:[-34,0],magcap:[64,0],barrel:[46,-76],pins:[0,44]},hl:["pins"],labels:[],arrow:{x:233,y:262,rot:0,nx:"0px",ny:"7px"}},
           {phase:"Strip",title:"Drop the trigger group",body:"With both pins out, pull the trigger plate assembly straight down out of the receiver. It comes out as one unit — do not disassemble the trigger group itself; that's gunsmith territory. One heads-up while it's out: the two thin shell latches sit in channels inside the receiver and can drop free with the group gone. If one falls, no panic — just note which side it came from, because left and right are different parts.",t:{...A,forend:[-34,0],magcap:[64,0],barrel:[46,-76],pins:[0,44],tg:[-14,86]},hl:["tg"],labels:["r870-lbl-tg"],arrow:{x:233,y:334,rot:0,nx:"0px",ny:"7px"}},
           {phase:"Strip",title:"Slide out the fore-end and bolt",body:"Reach into the bottom of the receiver and press the left shell latch inward, then slide the fore-end assembly forward off the magazine tube — the action bars carry the bolt and slide assembly out the front of the receiver with them.",t:{...A,magcap:[64,0],barrel:[46,-76],pins:[0,44],tg:[-14,86],forend:[150,-44]},hl:["forend"],labels:["r870-lbl-forend"],arrow:{x:600,y:150,rot:-90,nx:"8px",ny:"0px"}},
-          {phase:"Strip",title:"Field strip complete",body:"Barrel, magazine cap, fore-end with bolt and action bars, trigger group, receiver with stock. That's the full 870 strip — a design so serviceable it's been in production since 1950.",t:{...A,magcap:[64,0],barrel:[46,-76],pins:[0,44],tg:[-14,86],forend:[150,-44]},hl:[],labels:["r870-lbl-barrel","r870-lbl-magcap","r870-lbl-forend","r870-lbl-tg","r870-lbl-body"],arrow:null}
+          {phase:"Strip",title:"Field strip complete",body:"Barrel, magazine cap, fore-end with bolt and action bars, trigger group, receiver with stock. That's the full 870 strip — a design so serviceable it's been in production since 1950. Want to go deeper? The optional DEEP CLEAN path covers the bolt and slide detail, the shell latches and receiver channels, and the magazine tube's spring and follower.",t:{...A,magcap:[64,0],barrel:[46,-76],pins:[0,44],tg:[-14,86],forend:[150,-44]},hl:[],labels:["r870-lbl-barrel","r870-lbl-magcap","r870-lbl-forend","r870-lbl-tg","r870-lbl-body"],arrow:null,branch:true}
         ];
       })(),
+      /* V16 deep coverage: platform-scope detail past the (already full) 870 strip.
+         Firing-pin and trigger-group internals stay with the gunsmith, said out loud. */
+      deepSteps:[
+        {phase:"Deep Clean",title:"Bolt and slide detail",body:"Lift the bolt off the slide assembly — it sits on it, nothing retains it once they're out of the receiver. Scrub the bolt face and under the extractor claw, then press the extractor and watch it snap back; a lazy return or a chipped lip is why fired hulls stay in the chamber. Check the locking block moves freely in its recess. The firing pin stays in the bolt — it's retained by a pin that has no business coming out on a cleaning bench.",t:{},hl:["forend"],labels:[],arrow:null},
+        {phase:"Deep Clean",title:"Shell latches and receiver channels",body:"The two thin shell latches sit in their channels inside the receiver — left and right are different parts, and they're staked in place on most guns. Brush their channels clean without prying the latches out, and scrub the action-bar raceways front to back. Grit in these channels is what makes a pump gun bind mid-stroke.",t:{},hl:["body"],labels:["r870-lbl-body"],arrow:null},
+        {phase:"Deep Clean",title:"Magazine tube, spring, and follower",body:"With the cap already off, ease the magazine spring retainer out of the tube mouth — palm over it, it's under compression — and draw out the spring and follower. Wipe the tube interior DRY, check the follower for gouges and free travel, and look at the spring for kinks or a collapsed section. Everything goes back dry: oil in a magazine tube gums the follower exactly when it's cold.",warn:"The magazine spring is under compression behind its retainer. Keep a palm over the tube mouth as the retainer comes out.",t:{},hl:["magcap"],labels:["r870-lbl-magcap"],arrow:null},
+        {phase:"Deep Clean",title:"Inspect, lube, rebuild",body:"Before reassembly: action bars straight and un-cracked at their welds, ejector spring (riveted inside the left receiver wall) intact by eye, trigger-group pins unworn. Lube map: a film on the action bars and bolt rails, a drop on visible trigger-group pivots, magazine tube and chamber dry. Then rebuild per the standard guide's closing steps and run the function check. The trigger plate assembly itself never comes apart here — that's a gunsmith's bench, not this one.",t:{},hl:[],labels:[],arrow:null}
+      ],
       cleaning:[
         {name:"BARREL & BORE",tasks:["Run a solvent-wet 12 GA mop or patch through the bore, chamber to muzzle","Bronze brush the bore — plastic wad fouling needs real scrubbing, 10+ passes","Scrub the chamber; a sticky chamber ejects poorly","Dry patches until clean, then one lightly oiled patch; wipe the exterior and guide ring"]},
         {name:"RECEIVER & BOLT",tasks:["Wipe the bolt and slide assembly; brush carbon off the bolt face and extractor","Brush out the receiver interior, ejection port, and shell latches","Wipe the action bars clean and check them for bends","Light oil on the bolt rails and action bars — a film, not a coat"]},
@@ -3005,9 +3059,16 @@
           {phase:"Strip",title:"Slide the tube off",body:"Once the threads let go, slide the outer tube forward off the internals. Fouling makes everything a press fit — a few light taps with a nylon mallet are fine; steel hammers are not.",t:{...A,base:[18,0],core:[18,0],slv1:[18,0],slv2:[18,0],tube:[164,-108]},hl:["tube"],labels:["sp-lbl-tube"],arrow:{x:600,y:120,rot:-90,nx:"8px",ny:"0px"}},
           {phase:"Strip",title:"Remove the two half-sleeves",body:"The Multi-Part Containment sleeves are two half-shells wrapped around the core. Lift the top half off, then the bottom. They take the fouling squeeze so the tube doesn't — that's why this can survives rimfire.",t:{...A,base:[18,0],core:[18,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:["slv1","slv2"],labels:["sp-lbl-sleeves"],arrow:{x:310,y:126,rot:180,nx:"0px",ny:"-7px"}},
           {phase:"Strip",title:"Pull the monocore off the base",body:"The baffle core comes forward off the base as one machined piece — no baffle stack to keep in order, no alignment to lose. If it's cemented on with lead, soak the whole assembly first and come back to it.",t:{...A,base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:["core"],labels:["sp-lbl-core"],arrow:{x:560,y:200,rot:-90,nx:"8px",ny:"0px"}},
-          {phase:"Strip",title:"Field strip complete",body:"Base, monocore, two half-sleeves, tube. Five parts, no springs, nothing directional. Everything you're about to scrub is why serviceable rimfire cans exist.",t:{...A,base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:[],labels:["sp-lbl-base","sp-lbl-core","sp-lbl-sleeves","sp-lbl-tube"],arrow:null}
+          {phase:"Strip",title:"Field strip complete",body:"Base, monocore, two half-sleeves, tube. Five parts, no springs, nothing directional. Everything you're about to scrub is why serviceable rimfire cans exist. Want to go deeper? The optional DEEP CLEAN path is the lead decontamination protocol — the long soak, the strike inspection, and the thread dressing that keeps this can opening.",t:{...A,base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:[],labels:["sp-lbl-base","sp-lbl-core","sp-lbl-sleeves","sp-lbl-tube"],arrow:null,branch:true}
         ];
       })(),
+      /* V16 deep coverage: the Sparrow's field strip is already total, so its deep branch
+         is the decontamination and inspection protocol — the work between strips. */
+      deepSteps:[
+        {phase:"Deep Clean",title:"The long soak",body:"Stand the monocore and both half-sleeves in mineral spirits or a purpose-made suppressor cleaner and leave them — hours, overnight for a can that's overdue. Lead and wax let go on the solvent's schedule, not yours. Scrub WET when you come back: nylon brush on the flats, brass pick in the baffle clip points. Never dry-scrape lead into the air, and never the peroxide-vinegar dip — it turns lead into lead acetate, which is worse than what you started with.",warn:"Lead is the hazard here. Gloves on, work wet, wash up after.",t:{base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:["core"],labels:["sp-lbl-core"],arrow:null},
+        {phase:"Deep Clean",title:"Strike and wear inspection",body:"Clean metal tells the truth: sight down the core's bore path against the light and look at each aperture's edge — a bright gouge or an asymmetric wear crescent is a strike, and a struck can stops shooting until the maker has seen it. Check the half-sleeve seams for splits and the tube's finish for bubbling, which is heat's signature.",t:{base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:["tube"],labels:["sp-lbl-tube"],arrow:null},
+        {phase:"Deep Clean",title:"Thread dressing and close-up",body:"Brush both thread sets bright — tube and base — and inspect for flattened or crossed threads while they're clean enough to see. A thin coat of anti-seize on the tube threads is what makes the next opening a job instead of a fight. Rebuild per the standard steps, sight the bore path one more time, and log the session: a rimfire can wants opening every 300–500 rounds, and the log is how you know.",t:{base:[18,0],core:[122,0],slv1:[12,-40],slv2:[12,52],tube:[164,-108]},hl:["base"],labels:["sp-lbl-base"],arrow:null}
+      ],
       cleaning:[
         {name:"MONOCORE & BAFFLES",tasks:["Soak the core in mineral spirits or a dedicated suppressor cleaner — hours, not minutes","Scrub with a nylon brush; a brass pick for the baffle clip points","Stubborn lead: extend the soak or wet-tumble — never dry-scrape lead dust into the air","Do NOT use the peroxide-and-vinegar 'dip' — it dissolves lead into lead acetate, which is genuinely toxic to handle and a hazardous waste to dispose of"]},
         {name:"SLEEVES & TUBE",tasks:["Scrub both half-sleeves inside and out","Wipe and brush the tube interior; check the knurling and finish for damage","Inspect the front cap bore for strikes — any nick in the bore path gets looked at before this can shoots again"]},
@@ -3026,7 +3087,14 @@
         {phase:"Strip",title:"Unscrew the front cap",body:"The front cap threads off the muzzle end of the tube, counterclockwise. If it's carbon-locked, use the cap tool that shipped with the can — never pliers on the flats. Still stuck: a solvent soak overnight, then try again."},
         {phase:"Strip",title:"Slide the baffle stack out the front",body:"With the cap off, the stack slides forward out of the tube. Fouling makes it a press fit — tap the tube muzzle-down on a padded surface and let the stack walk itself out. Never pry on a baffle edge; a bent cone is a ruined can."},
         {phase:"Strip",title:"Check stack order and orientation",body:"Before anything gets scrubbed: the cones point toward the muzzle, blast baffle at the rear. If your baffles are indexed, note the witness marks now. Thirty seconds with your phone camera here saves a backwards stack later — and a backwards stack is a baffle strike waiting to happen."},
-        {phase:"Strip",title:"Field strip complete",body:"Tube with the mount, baffle stack, front cap. Three groups, one direction that matters. Everything you're about to scrub is why you bought a serviceable can."}
+        {phase:"Strip",title:"Field strip complete",body:"Tube with the mount, baffle stack, front cap. Three groups, one direction that matters. Everything you're about to scrub is why you bought a serviceable can. Want to go deeper? The optional DEEP CLEAN path is the extended decon — the long soak or wet tumble, baffle-by-baffle inspection, and thread dressing.",branch:true}
+      ],
+      /* V16 deep coverage: the stack can's deep branch is the between-strips protocol —
+         extended decon and inspection, authored from the shipped cleaning doctrine. */
+      deepSteps:[
+        {phase:"Deep Clean",title:"Extended soak or wet tumble",body:"For a stack that's gone too many rounds: stand the baffles in mineral spirits or a dedicated suppressor cleaner for hours, or wet-tumble a STAINLESS stack in pin media until the fouling lets go. Aluminum baffles get neither aggressive alkaline chemistry nor a hot ultrasonic bath — mineral spirits and patience, or the cleaner eats the baffle. Scrub wet, always; dry lead dust is the hazard.",warn:"Lead is the hazard here. Gloves on, work wet, wash up after.",hz:["lead"]},
+        {phase:"Deep Clean",title:"Baffle-by-baffle inspection",body:"With each baffle clean, look at it alone: the cone aperture's edge should be a true circle — a bright nick or an oval worn to one side is strike evidence, and the blast baffle (rear of the stack) erodes first and hardest. Check clip points for cracks. A damaged baffle is a call to the manufacturer, not a part you shoot again to confirm.",hz:[]},
+        {phase:"Deep Clean",title:"Threads, order, and close-up",body:"Brush the cap threads and mount threads bright, inspect them while they're clean, and dress the cap threads with a thin coat of anti-seize. Then rebuild in the recorded order — blast baffle first, cones toward the muzzle, witness marks aligned — and sight the bore path against the light before it goes back on a host. Log the cleaning so the can's counter resets.",hz:[]}
       ],
       cleaning:[
         {name:"BAFFLE STACK",tasks:["Soak the stack in mineral spirits or a dedicated suppressor cleaner — hours, not minutes","Scrub each baffle with a nylon brush; a brass pick for the cone apertures and clip points","Stubborn lead: extend the soak or wet-tumble — never dry-scrape lead dust into the air","Aluminum baffles: no aggressive alkaline cleaners and no guessing with ultrasonic chemistry — check the manufacturer's list first","Do NOT use the peroxide-and-vinegar 'dip' — it dissolves lead into lead acetate, which is genuinely toxic to handle and a hazardous waste to dispose of"]},
@@ -3045,7 +3113,14 @@
         {phase:"Maintain",title:"Unthread the suppressor from the host",body:"Muzzle in a safe direction, grip the can at the tube and unthread it counterclockwise — direct-thread cans off the muzzle threads, QD cans per their mount's release. Seized after a long session? A strap wrench beats pliers — never crush the tube."},
         {phase:"Maintain",title:"Wipe down and inspect",body:"Wipe the tube exterior with a lightly oiled cloth. Then look hard at the end cap bore: erosion, nicks, or any asymmetric wear is evidence of a strike or a misaligned mount — that gets diagnosed before this can shoots again. Do NOT put solvent inside a sealed can; it goes in and never comes out."},
         {phase:"Maintain",title:"Clean the mount and threads",body:"Brush the can's mount threads and the host's muzzle threads clean — carbon here is what seizes cans and cocks them off-axis. Inspect thread condition, then a trace of anti-seize before it goes back on."},
-        {phase:"Maintain",title:"Drain, log, remount",body:"Stand the can muzzle-down for a few minutes to drain any moisture, especially after a wet range day. Internal fouling in a sealed centerfire can is normal — rifle pressures burn most of it off, and the weight log below is how you track what stays. Remount and log the maintenance so the counter resets."}
+        {phase:"Maintain",title:"Drain, log, remount",body:"Stand the can muzzle-down for a few minutes to drain any moisture, especially after a wet range day. Internal fouling in a sealed centerfire can is normal — rifle pressures burn most of it off, and the weight log below is how you track what stays. Remount and log the maintenance so the counter resets. Want to go deeper? The optional DEEP CLEAN path is the mount system service — the muzzle device itself, the alignment audit, and the weight baseline that monitors a can nobody can open.",branch:true}
+      ],
+      /* V16 deep coverage: a sealed can's deep clean IS its mount system — the can never
+         opens, so the deep work happens on the rifle under it and on the scale. */
+      deepSteps:[
+        {phase:"Deep Clean",title:"Muzzle device service",body:"The can rides on the muzzle device, so the device is the foundation: remove it per ITS manufacturer's instructions, clean its threads and the barrel's muzzle threads bright, and re-torque it to its spec — with the same shims or a fresh crush washer if the design uses one, indexed exactly as before. A device that moved is a zero that moved and an alignment that might have.",warn:"If it doesn’t move as described, stop. Don’t force it."},
+        {phase:"Deep Clean",title:"Alignment audit",body:"With the device torqued and the can seated, sight down the bore path against the light: daylight straight and centered, or the can doesn't get shot. Then watch the first group after remounting — a point-of-impact shift beyond the can's usual is the mount telling you something the eye can't see. Any end-cap strike evidence means stop and call the maker.",warn:"Never open a sealed suppressor. No wrenches, no vises, no heat."},
+        {phase:"Deep Clean",title:"Weight baseline and log",body:"A sealed can is monitored, not opened: weigh it clean-cool and log the number in the Fouling-by-Weight tracker on this can's page, then weigh on the same scale at intervals. Steady gain over baseline is the honest measure of what's staying inside. Log this service so the mount-check clock resets."}
       ],
       cleaning:[
         {name:"EXTERIOR & END CAP",tasks:["Wipe the tube exterior with a lightly oiled cloth","Inspect the end cap bore for strikes, erosion, or asymmetric wear","Check the tube for bulges or finish damage — heat leaves marks before it leaves dents"]},
@@ -3756,8 +3831,10 @@
       g.textContent = "Clean — Guided";
       g.disabled = !gk;
     } else {
+      /* V16: fkey's universal fallback means gk is always truthy for catalog rows —
+         the old "Coming Soon" branch is dead and its wording is barred anyway. */
       g.style.display = "";
-      g.textContent = gk ? "Clean — Guided" : "Guide Coming Soon";
+      g.textContent = "Clean — Guided";
       g.disabled = !gk;
     }
 
@@ -4785,7 +4862,10 @@
   });
 const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/mag.png"},{n:"rsa",asm:[-12.76,6.45],exp:[0,-7.5],src:"assets/guns/glock/rsa.png"},{n:"barrel",asm:[-6.68,5.06],exp:[0,-2],src:"assets/guns/glock/barrel.png"},{n:"slide",asm:[0.0,16.58],exp:[0,-3],src:"assets/guns/glock/slide.png"},{n:"frame",asm:[0.0,0.0],src:"assets/guns/glock/frame.png"},{n:"det_backplate",asm:[0,0],eh:true,src:"assets/guns/glock/det_backplate.png"},{n:"det_striker",asm:[0,0],eh:true,src:"assets/guns/glock/det_striker.png"},{n:"det_extractor",asm:[0,0],eh:true,src:"assets/guns/glock/det_extractor.png"},{n:"det_breech",asm:[0,0],eh:true,src:"assets/guns/glock/det_breech.png"}];
   GUNS.m500sw = Object.assign({}, GUNS.m500);
-  delete GUNS.m500sw.deepSteps; /* suppress the Deep Clean branch: m500sw's layer slice has no internals art (branchBtn is hidden when gun.deepSteps is absent) */
+  /* V16 item 13: the Deep Clean branch is UNIVERSAL — m500sw keeps m500's deep steps
+     (same internals; the Shockwave IS a 500 under the Raptor grip). Its layer slice has
+     no internals art, so LAYER_SETS.m500sw.lsteps is cut to the walkable rows and the
+     engine's clamp shows the clean field-strip-complete scene under every deep step. */
   /* ---- Shockwave variant: Raptor grip receiver layer, shares m500 pump/barrel ---- */
   const M500SW_RECV = {n:"receiver",asm:[0,0],src:"assets/guns/m500sw/receiver.png"};
   /* slide 2.3->8.81 and frame 40.3->39.5: both were bbox centres sitting off the ink
@@ -5056,7 +5136,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:25,y:50,ch:"\u27f2"},z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:38,y:50,ch:"\u25bc"},z:1.9,zc:27},
     {pos:{stack:"a",tube:"a",cap:"a"},hl:"tube",m:{x:6.5,y:49.12,r:3},z:1.9,zc:27},
-    {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:{x:16,y:65.33,ch:"\u25bc"},z:1.9,zc:27}
+    {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:{x:16,y:65.33,ch:"\u25bc"},z:1.9,zc:27},
+    /* V16: clean clamp row for the deep branch \u2014 deep steps (no rows of their own) clamp
+       to the LAST row, and the walkable last row above carries a marker they must not show */
+    {pos:{stack:"a",tube:"a",cap:"a"},hl:null,m:null,z:1.9,zc:27}
   ];
   /* ---- bolt-action rifle layer set (Fieldstrip 3D pipeline, muzzle-right standard) ----
      Art canvas 1400x393 (3.56:1), framed to content for max pixel density.
@@ -5215,7 +5298,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        receiver.png is 1055x330 while the barrel/pump it borrows from m500 are 1100x503.
        `art` matches its declared aspect so the projection stays the identity; the mixed
        art is a pre-existing defect to fix if it is ever activated. */
-    m500sw:{layers:[M500SW_RECV,M500_LAYERS[6],M500_LAYERS[7]],lsteps:M500_LSTEPS,centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",art:[1055,330],hRatio:330/1055},
+    m500sw:{layers:[M500SW_RECV,M500_LAYERS[6],M500_LAYERS[7]],lsteps:M500_LSTEPS.slice(0,5),centers:M500_CENTERS,names:{barrel:"Barrel",pump:"Forend / Pump",receiver:"Receiver, Mag Tube & Raptor Grip"},nums:[["barrel",1],["pump",2],["receiver",3]],tags:["barrel","pump","receiver"],aspect:"1055 / 330",art:[1055,330],hRatio:330/1055},
     revda:{layers:REVDA_LAYERS,lsteps:REVDA_LSTEPS,centers:REVDA_CENTERS,names:REVDA_NAMES,nums:[["cylinder",1],["frame",2]],tags:["cylinder","frame"],aspect:"1400 / 769",art:[1400,769],hRatio:769/1400},
     revsa:{layers:REVSA_LAYERS,lsteps:REVSA_LSTEPS,centers:REVSA_CENTERS,names:REVSA_NAMES,nums:[["frame",1],["cylinder",2],["pin",3]],tags:["frame","cylinder","pin"],aspect:"1500 / 682",art:[1500,682],hRatio:682/1500},
     ar15:{layers:AR15_LAYERS,lsteps:AR15_LSTEPS,centers:AR15_CENTERS,names:AR15_NAMES,nums:[["upper",1],["bcg",2],["ch",3],["lower",4],["mag",5]],tags:["upper","bcg","ch","lower","mag"],aspect:"1400 / 726",art:[1400,726],hRatio:726/1400},
@@ -6575,7 +6658,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
   /* v9: reference illustrations are GONE (ruled) — the Fieldstrip logomark at
      watermark weight stands in wherever a guide has no plate and no user photo */
-  const FS_LOGO_WM = '<svg viewBox="0 0 184 122" aria-hidden="true" style="opacity:.22"><rect x="52" y="0" width="132" height="30" rx="9" fill="#3E4652"/><rect x="62" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="73" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="84" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="26" y="46" width="132" height="30" rx="9" fill="#E8A33D"/><circle cx="49" cy="61" r="7.5" fill="#14161A"/><rect x="0" y="92" width="132" height="30" rx="9" fill="#3E4652"/><circle cx="112" cy="107" r="4" fill="#14161A"/><circle cx="96" cy="107" r="4" fill="#14161A"/></svg>';
+  /* V16 item 11: the clean-screen logo POPS instead of dissolving — same class of
+     fix as the door branding. Opacity .22 -> .82, and the smoke test asserts the
+     computed value so it can't regress. */
+  const FS_LOGO_WM = '<svg viewBox="0 0 184 122" aria-hidden="true" style="opacity:.82"><rect x="52" y="0" width="132" height="30" rx="9" fill="#3E4652"/><rect x="62" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="73" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="84" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="26" y="46" width="132" height="30" rx="9" fill="#E8A33D"/><circle cx="49" cy="61" r="7.5" fill="#14161A"/><rect x="0" y="92" width="132" height="30" rx="9" fill="#3E4652"/><circle cx="112" cy="107" r="4" fill="#14161A"/><circle cx="96" cy="107" r="4" fill="#14161A"/></svg>';
   /* v15: TEXT_QUIET_LINE STRUCK — it promised future plates, and the order's
      doctrine bars any copy promising future art. The empty slot is intentional
      waiting space, unlabeled. */
@@ -6647,6 +6733,28 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +stAs("If it hangs up, the barrel is still partly in battery — push it slightly forward first, then lift.")),
       TG_DONE("slide, barrel, recoil assembly, and the grip module")
     ],
+    /* V16 deep coverage (item 13): platform-scope detail; FCU removal and slide
+       internals defer to SIG's manual by name — never invented here. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": release the "+stP("floorplate")+" per its own catch — on most doublestacks it slides forward against a button or tab — and ease the "+stP("spring")+" and "+stP("follower")+" out under control.")
+        +"Wipe everything DRY — no oil in a magazine, ever. Look at the spring for a collapsed section (spring set) and the follower for gouges."
+        +stC(CAUTION_SPRING)
+        +stAs("Your manual shows this magazine's own catch; if the plate won't slide, you haven't found it yet — don't pry."),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" until the crud ring around the striker port is gone, then work a nylon pick under the "+stP("extractor")+" claw and clear the brass shavings.")
+        +"Press the claw and watch it snap back — a lazy return is a tired spring telling you early."
+        +stAs("The extractor stays in the slide; carbon under the claw is the fix, not removal.")),
+      tgStep("Deep Clean","Striker channel — dry, always",
+        stA("Hold the "+stP("slide")+" muzzle-up and wipe the "+stP("striker channel")+" opening with a clean, DRY patch corner.")
+        +"Oil in a striker channel gums exactly when it's coldest — the channel runs dry for life. Going further into the slide, or lifting the "+stP("FCU")+" out of the grip module, is documented in SIG's own manual — if you go there, the manual leads, not this guide."
+        +stAs("A P320 slide that rattles slightly at the striker is normal; a striker that drags on a shake is a dirty channel.")),
+      tgStep("Deep Clean","Rails, FCU wipe, and the lube map",
+        stA("Wipe the four metal "+stP("FCU rails")+" bright and inspect them for peening, then look at the "+stP("recoil assembly")+" for kinked coils and the "+stP("locking block")+" area for cracks.")
+        +"Lube map: one drop on each FCU rail, a drop where the barrel's cam surfaces show polished wear, nothing in the striker channel, nothing in the magazine."
+        +stAs("Five minutes of looking here is what catches a part before the range does.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent patch, bronze brush 5–8 passes, dry patches until they come out clean","Scrub the breech face and under the extractor claw — this is where failures to extract are born","Wipe the slide's inner rails and the striker channel opening DRY — oil in the striker channel gums the works","Barrel exterior: wipe the locking surfaces and the hood clean"]},
       {name:"FRAME / GRIP MODULE",tasks:["Wipe the four metal FCU rails the slide rides on — then one drop of oil on each","Brush the magwell and the takedown lever recess clean","Leave the FCU seated — routine cleaning never requires removing it"]},
@@ -6682,6 +6790,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         stA("Flip the slide. Lift the captive "+stP("recoil assembly")+" out first — nose it slightly forward, then up. Then tip the "+stP("barrel")+" up at the rear and draw it back out of the slide.")
         +stAs("Two parts, ten seconds.")),
       TG_DONE("slide, barrel, recoil assembly, and the grip module")
+    ],
+    /* V16 deep coverage: micro-nine scale of the P320 deep set — carry-gun emphasis. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip each carry "+stP("magazine")+": floorplate off per its catch, "+stP("spring")+" and "+stP("follower")+" out under control, everything wiped DRY.")
+        +"A pocket gun's magazines eat lint all day — this is where carry stoppages are born. Check the spring for set and the follower for wear at its corners."
+        +stC(CAUTION_SPRING)
+        +stAs("Micro-mag springs are short and stout; keep a thumb on the plate as it clears."),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" clean around the striker port and pick the brass dust from under the "+stP("extractor")+" claw.")
+        +"Press it, watch it snap back. On a gun this size the extractor does its work in a shorter slide stroke — grit costs it more here than on a duty gun."
+        +stAs("Claw chipped or lazy? That's a parts conversation, found at the bench instead of mid-string.")),
+      tgStep("Deep Clean","Striker channel — dry, always",
+        stA("Muzzle-up, wipe the "+stP("striker channel")+" opening with a DRY patch corner — no solvent chased in, no oil after.")
+        +"Sweat and holster dust migrate into a carry gun's channel; dry wiping each deep clean is what keeps ignition crisp. Slide plate removal is the manual's territory."
+        +stAs("If dry-fire has felt mushy lately, this channel is the usual suspect.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+" bright, then run the "+stP("recoil assembly")+" through your fingers — the flat wire spring should be even, no kinks, no crushed coils.")
+        +"Lube map for carry: one drop per rail, a drop on the barrel's cam shelf, then wipe the exterior with a barely-oiled cloth — sweat is the enemy. Channels and magazines stay dry."
+        +stAs("Replace the recoil assembly on the maker's interval; carry guns age springs faster than round counts suggest.")),
     ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent patch, brush, dry patches — short barrel, don't skip passes","Breech face and extractor claw scrubbed — carbon here is the classic micro-nine stoppage","Striker channel opening wiped DRY","Feed ramp polished clean with a patch — no tools, just solvent and cloth"]},
@@ -6732,6 +6861,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +stAs("The guide rod is captive — nothing separates.")),
       TG_DONE("slide, barrel, guide rod assembly, and frame")
     ],
+    /* V16 deep coverage: M&P full-size — sear housing respected, not opened. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": slide the "+stP("floorplate")+" off against its catch, control the "+stP("spring")+", lift the "+stP("follower")+" clear, wipe every part DRY.")
+        +"Check the spring for set and the feed lips for spread — M&P mags are tough, but lips take the drops."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" and clear under the "+stP("extractor")+" claw with a nylon pick — angle the brush so grit falls out of the slide, not deeper in.")
+        +"Press the claw; it should snap back without hesitation."
+        +stAs("The extractor stays put — tension on these is set by the spring behind it, and it's happiest undisturbed.")),
+      tgStep("Deep Clean","Striker channel and sear housing",
+        stA("Wipe the "+stP("striker channel")+" opening DRY — nothing wet goes in. Then look down at the "+stP("sear housing")+" from above and brush it gently without flooding it.")
+        +"The "+stP("sear deactivation lever")+" you used in the strip lives here — confirm it's ready to ride back UP during reassembly."
+        +stAs("Solvent pooled in a sear housing turns to varnish. Brush, wipe, done.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+" bright and inspect the "+stP("guide rod assembly")+" — even coils, no kinks, the captive head tight.")
+        +"Lube map: a drop per rail, a drop on the barrel's cam and hood wear marks, striker channel and magazines dry."
+        +stAs("Cracks hunt at corners — glance at the slide's camming cut and the frame's locking block area while everything's bright.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor claw scrubbed — brush at an angle so grit falls out, not in","Wipe the striker channel opening dry, no oil","Barrel hood and locking surfaces wiped; feed ramp cleaned to a shine with a patch"]},
       {name:"FRAME",tasks:["Wipe the frame rails clean, then a drop of oil on each","Brush the sear housing area gently from above — don't flood it","Magwell brushed out; check the sear deactivation lever flipped back up during reassembly"]},
@@ -6775,6 +6924,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +stAs("If something came apart in your hand, stop and look before going further.")),
       TG_DONE("slide, barrel, guide rod assembly, and frame")
     ],
+    /* V16 deep coverage: Shield — the M&P set at carry scale, EZ variants included. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip every "+stP("magazine")+" you carry: "+stP("floorplate")+" off against its catch, "+stP("spring")+" controlled, "+stP("follower")+" out, all of it wiped DRY.")
+        +"Single-stack Shield mags hide lint at the floorplate seam; EZ mags have a load-assist button — work around it, it doesn't come off."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" bright and clear the "+stP("extractor")+" claw with a nylon pick. Press it; the snap-back should be instant.")
+        +"A carry gun's extractor works in sweat and dust — this check is the cheapest reliability you'll ever buy."
+        +stAs("Grip-safety EZ models: glance at the grip safety's pivot while you're here; it should swing free.")),
+      tgStep("Deep Clean","Striker channel — dry, always",
+        stA("Muzzle-up, DRY patch corner into the "+stP("striker channel")+" opening. No solvent, no oil, ever.")
+        +"On the models with a "+stP("sear deactivation lever")+", confirm it's ready to return UP for reassembly — the manual requires it protruding into the magwell."
+        +stAs("Slide internals past this point are S&W's manual, not this guide.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+", then inspect the stiff dual "+stP("guide rod assembly")+" — kinks, crushed coils, a loose head all mean replacement.")
+        +"Lube map for carry: a drop per rail, a drop at the barrel's cam wear, a barely-oiled cloth over the exterior. Channels and magazines dry."
+        +stAs("Then, and only then, reload for carry — bench work ends with the gun in the state you'd stake on it.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Short bore, full effort: solvent patch, brush, dry to clean","Breech face and extractor claw scrubbed","Feed ramp wiped bright — a carry gun's feed ramp earns weekly attention","Striker channel opening dry"]},
       {name:"FRAME",tasks:["Rails wiped then oiled, one drop each","Magwell brushed — pocket lint and holster dust collect here","Wipe the exterior with a barely-oiled cloth; carry guns rust from sweat, not rain"]},
@@ -6814,6 +6983,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         {hz:["spring"]}),
       TG_DONE("slide, barrel, recoil spring and rod, slide stop, and frame")
     ],
+    /* V16 deep coverage: CZ — the inside-rail fit is the whole platform; deep work
+       serves it. Lockwork stays shut. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" and "+stP("follower")+" out under control, wiped DRY.")
+        +"CZ mags run tight tolerances — a dented tube or spread lips shows up as a nosedive feed, and you find it here first."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Internal rail channels",
+        stA("The "+stP("frame")+" rails run INSIDE the "+stP("slide")+" — wrap a patch over a thin tool and clean the slide's internal channels their full length, then wipe the frame rails bright.")
+        +"This engagement is the accuracy; grit inside it is wear you can't polish back."
+        +stAs("The witness-mark area deserves a look too — peening there means takedowns have been sloppy.")),
+      tgStep("Deep Clean","Lugs, breech, and extractor",
+        stA("Scrub the "+stP("locking lugs")+" on the barrel and their recesses in the slide until solvent runs clean, then the "+stP("breech face")+" and under the "+stP("extractor")+" claw.")
+        +"Lugs carry the CZ's lockup — clean, then a light grease film, not oil."
+        +stAs("Hammer-gun bonus: glance at the hammer face and the frame bridge while the slide's off.")),
+      tgStep("Deep Clean","Slide stop, springs, and the lube map",
+        stA("Wipe the "+stP("slide stop")+" pin and oil its cam surface lightly; run the "+stP("recoil spring")+" through your fingers for kinks.")
+        +"Lube map: thin film everywhere the internal rails show polish, grease on the lugs, a drop on the slide-stop cam, magazines and firing-pin area dry. The lockwork behind the grips stays shut — that's an armorer's bench."
+        +stAs("A CZ runs best just-wet on its rails; bone dry is the only wrong answer.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, bronze brush, dry patches to clean","Breech face and extractor claw scrubbed","Barrel locking lugs — top of the barrel — cleaned and then lightly greased; they carry the lockup","Slide's internal rail channels wiped clean with a patch over a thin tool"]},
       {name:"FRAME",tasks:["Frame rails wiped, then oiled — these run inside the slide, so a thin film everywhere the finish is shiny","Slide stop pin wiped and its cam surface lightly oiled","Hammer face and the frame's bridge wiped clean"]},
@@ -6852,6 +7042,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +stAs("That plunger and pin come apart at an armorer's bench, not this one.")),
       TG_DONE("slide, barrel with locking block, recoil spring and rod, and frame")
     ],
+    /* V16 deep coverage: 92 — the locking block is the working heart; deep work
+       centers on it. Block-from-barrel separation stays with the armorer. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" and "+stP("follower")+" controlled out, everything wiped DRY.")
+        +"Check the follower's front edge — 92 followers wear there first — and the spring for set."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Locking block detail",
+        stA("With the "+stP("barrel")+" out, scrub the "+stP("locking block")+" around both wings and the plunger's face until solvent runs clean, then work the block through its tilt by hand.")
+        +"It should articulate smoothly with no grate. The block stays ON the barrel — separating it is an armorer's job with a service life chart in hand."
+        +stAs("Wing cracks announce themselves as hairlines at the root; look in raking light.")),
+      tgStep("Deep Clean","Breech, extractor, and the open slide",
+        stA("Scrub the "+stP("breech face")+", clear under the "+stP("extractor")+" claw, and wipe the open slide's rail grooves their full length.")
+        +"The 92's open top sheds brass dust in use but stacks it at the breech corners — get the corners."
+        +stAs("Press the extractor and watch the snap-back; a 92 that won't eject is nearly always dirt, not parts.")),
+      tgStep("Deep Clean","Decocker, springs, and the lube map",
+        stA("Cycle the "+stP("decock lever")+" a few times and put one worked-in drop at its pivots; inspect the "+stP("recoil spring")+" and "+stP("rod")+" for kinks and a mushroomed head.")
+        +"Lube map: a drop on each frame rail, a drop on each locking-block wing, the guide rod lightly filmed, magazines dry."
+        +stAs("Function-check the decocker at the end, every time — that lever is the safety system.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor scrubbed","Locking block cleaned around its wings, then a drop of oil on each wing — this is the 92's hardest-working part","Slide rails' grooves wiped with a patch"]},
       {name:"FRAME",tasks:["Frame rails wiped and oiled","Brush around the disassembly latch and its button","Wipe the decocker/safety pivots; one drop of oil worked in"]},
@@ -6886,6 +7097,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       tgStep("Strip","Recoil assembly and barrel out",
         stA("Turn the slide over. Lift the captive "+stP("recoil assembly")+" out — press toward the muzzle first, then up and out. Tip the "+stP("barrel")+" up at the rear and draw it out of the slide.")),
       TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    /* V16 deep coverage: PDP — tab platform; trigger-press takedown makes the deep
+       clean's discipline notes earn their place. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" controlled, "+stP("follower")+" out, wiped DRY.")
+        +"Walther followers are proud of their anti-tilt rails — check them for wear flats."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" and pick the brass dust from under the "+stP("extractor")+" claw; press it and watch the return.")
+        +stAs("The PDP's slide serrations shed grip grime into the breech corners — brush those corners deliberately.")),
+      tgStep("Deep Clean","Striker channel — dry, always",
+        stA("Muzzle-up, wipe the "+stP("striker channel")+" opening with a DRY patch corner — nothing gums a Walther faster than oil migrating back there.")
+        +"Slide plate and striker removal live in Walther's manual, not here."
+        +stAs("If the trigger has felt gritty since the last clean, solvent residue in the trigger-bar path is the usual culprit — wipe and re-oil that path instead of blaming the striker.")),
+      tgStep("Deep Clean","Tabs, rails, and the lube map",
+        stA("Brush around both "+stP("takedown tabs")+" and their recesses — grit here turns the next takedown into a fight — then wipe the "+stP("rails")+" bright and inspect the "+stP("recoil assembly")+" for kinks.")
+        +"Lube map: a drop per rail, a drop at the barrel's cam shelf, trigger-bar contact points barely filmed, channel and magazines dry."
+        +stAs("Tabs snap back up on their own during reassembly; if one stays down, run the slide once more — never pick at it.")),
     ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor claw scrubbed","Striker channel opening wiped DRY — nothing gums a Walther faster than oil migrating back there","Feed ramp patched to a shine"]},
@@ -6927,6 +7158,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         {hz:["spring"]}),
       TG_DONE("slide, barrel, recoil assembly, and frame")
     ],
+    /* V16 deep coverage: Hellcat — carry micro; the trigger-press takedown makes
+       the dry-channel discipline the headline. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip every carry "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" controlled, "+stP("follower")+" out, all wiped DRY.")
+        +"High-capacity micro mags stack their springs hard — set shows early. Feed lips take pocket knocks; eyeball them for spread."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" bright and clear the "+stP("extractor")+" claw with a nylon pick; press it and watch the snap-back.")
+        +stAs("Carry lint plus solvent makes paste — dry-brush the breech corners first, then solvent.")),
+      tgStep("Deep Clean","Striker channel — dry, always",
+        stA("Muzzle-up, DRY patch corner into the "+stP("striker channel")+" opening. Nothing wet, ever.")
+        +"Springfield's manual owns anything deeper into the slide."
+        +stAs("The Hellcat's loaded-chamber indicator slot collects the same dust — wipe it dry while you're there.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+" bright, then inspect the stout dual "+stP("recoil assembly")+" — kinks or a loose cap end its service life.")
+        +"Lube map for carry: a drop per rail, a drop at the barrel cam, exterior wiped with a barely-oiled cloth against sweat. Channel and magazines dry."
+        +stAs("Reload for carry only when the bench is closed — last act, deliberate.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean — three inches deserves the same passes as five","Breech face and extractor scrubbed","Feed ramp wiped bright","Striker channel opening dry"]},
       {name:"FRAME",tasks:["Rails wiped and oiled","Magwell and takedown lever recess brushed — carry lint collects in both","Exterior wiped with a barely-oiled cloth against sweat"]},
@@ -6960,6 +7211,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       tgStep("Strip","Recoil assembly and barrel out",
         stA("Turn the slide over. Lift out the "+stP("recoil assembly")+" — a two-spring captive unit on most XD-M and Mod.2 guns — then tip the "+stP("barrel")+" and draw it out the rear of the slide.")),
       TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    /* V16 deep coverage: XD family — grip safety is the platform's own character;
+       it gets its own deep attention. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" controlled, "+stP("follower")+" out, wiped DRY.")
+        +"XD mags are steel-bodied — look for rust freckles at the seams and wipe them away before they root."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" and clear the "+stP("extractor")+" claw; press it and watch it snap home.")
+        +stAs("The XD's big external extractor shows its claw plainly — a chip is visible here long before it's a failure to extract.")),
+      tgStep("Deep Clean","Grip safety and striker channel",
+        stA("Work the "+stP("grip safety")+" through its arc a few times, then one drop at its pivot, worked in with compressions. Wipe the "+stP("striker channel")+" opening DRY.")
+        +"The grip safety must move free or the gun goes dead in the hand — its pivot is the XD's one extra maintenance point."
+        +stAs("Slide internals beyond the channel opening are Springfield's manual, not this bench.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+" bright and inspect the two-spring captive "+stP("recoil assembly")+" for kinks and a tight head.")
+        +"Lube map: a drop per rail, a drop at the barrel cam, one worked-in drop at the grip-safety pivot, channel and magazines dry."
+        +stAs("Finish with the grip-safety proof: held loose, the trigger stays dead — prove it every deep clean.")),
     ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry patches to clean","Breech face and extractor claw scrubbed","Feed ramp patched to a shine","Striker channel opening wiped dry"]},
@@ -7008,6 +7279,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +stAs("The 509's barrel has a substantial hood — it likes to be pushed slightly forward before it tips.")),
       TG_DONE("slide, barrel, recoil assembly, and frame")
     ],
+    /* V16 deep coverage: FN 509 — the notch takedown rewards clean recesses; deep
+       work keeps the trick working. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" controlled, "+stP("follower")+" out, wiped DRY.")
+        +"FN followers ride long skirts — check them for drag marks that say the tube took a dent."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" bright and clear the "+stP("extractor")+" claw; press it and watch the return.")
+        +stAs("The 509's substantial barrel hood mates close — brush the hood's corners and the breech's matching edges together.")),
+      tgStep("Deep Clean","Striker channel and the takedown recess",
+        stA("Wipe the "+stP("striker channel")+" opening DRY, then brush the "+stP("takedown lever")+"'s recess and the slide's "+stP("takedown notch")+" clean.")
+        +"The notch trick only works clean — grit in the recess is why a 509 takedown ever feels like a fight."
+        +stAs("Deeper slide work is FN's manual. The channel stays dry for life.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+" bright and inspect the captive "+stP("recoil assembly")+" — even coils, tight head.")
+        +"Lube map: a drop per rail, a drop at the barrel cam and hood wear marks, channel and magazines dry."
+        +stAs("Remember the reassembly order that matters here: the recoil assembly seats flat BEFORE the slide goes on, or the lever can't return.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean","Breech face and extractor scrubbed","Feed ramp and chamber mouth wiped bright","Striker channel opening dry"]},
       {name:"FRAME",tasks:["Rails wiped then oiled","Brush the takedown lever recess — the notch trick only works clean","Magwell brushed"]},
@@ -7041,6 +7332,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         stA("Run the "+stP("slide")+" forward off the "+stP("rails")+" under control. Lift out the "+stP("recoil assembly")+" — captive on these — then tip the "+stP("barrel")+" and draw it out the rear.")),
       TG_DONE("slide, barrel, recoil assembly, and frame")
     ],
+    /* V16 deep coverage: Taurus G-series — honest budget-gun emphasis: inspection
+       catches what tolerances don't. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" controlled, "+stP("follower")+" out, everything wiped DRY.")
+        +"Budget mags earn deep cleans more than premium ones — check the spring for set and the follower for molding flash that's started to wear proud."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" bright and pick under the "+stP("extractor")+" claw; press it and watch it snap back.")
+        +stAs("A G-series that starts tossing brass at your head instead of over your shoulder is telling you this claw is dirty — this step is the fix.")),
+      tgStep("Deep Clean","Striker channel and manual safety",
+        stA("Wipe the "+stP("striker channel")+" opening DRY. If yours carries the "+stP("manual safety")+", cycle it a few times, one drop at the detent, and confirm it clicks positively both ways.")
+        +"A mushy safety detent is a parts conversation, found here instead of at the range."
+        +stAs("Slide internals stay with the manual; the channel stays dry.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+" bright and inspect the captive "+stP("recoil assembly")+" for kinks and a secure head.")
+        +"Lube map: a drop per rail, a drop at the barrel cam, one at the safety detent if present, channel and magazines dry."
+        +stAs("Finish with the tab check: both "+stP("takedown tabs")+" fully up and even — a low tab drags the slide.")),
+    ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean","Breech face and extractor scrubbed","Feed ramp patched bright — budget guns feed like customs when the ramp is clean","Striker channel opening dry"]},
       {name:"FRAME",tasks:["Rails wiped and oiled","Magwell and tab recesses brushed","Manual safety (if present): wipe, one drop at the detent, work it a few times"]},
@@ -7071,6 +7382,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         stA("Turn the slide over, lift the "+stP("recoil assembly")+" out, then tip the "+stP("barrel")+" up at the rear and draw it out.")
         +stAs("Note the barrel's O-ring if yours has one — it stays put; don't pick at it.")),
       TG_DONE("slide, barrel, recoil assembly, and frame")
+    ],
+    /* V16 deep coverage: VP9 — HK fit and the no-trigger-press takedown; deep work
+       leans on inspection of the flat spring and paddle gear. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": "+stP("floorplate")+" off against its catch, "+stP("spring")+" controlled, "+stP("follower")+" out, wiped DRY.")
+        +"HK mags run proud baseplates — check the plate's catch hole for elongation."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Extractor and breech detail",
+        stA("Scrub the "+stP("breech face")+" bright and clear under the "+stP("extractor")+" claw; press it and watch the snap-back.")
+        +stAs("The charging supports shed grip grime into the slide's rear corners — brush those while the slide's in your hand.")),
+      tgStep("Deep Clean","Striker channel — dry, always",
+        stA("Muzzle-up, wipe the "+stP("striker channel")+" opening with a DRY patch corner.")
+        +"HK's manual owns anything deeper into the slide; this channel runs dry for life."
+        +stAs("The VP9's O-ring barrel (where fitted) gets looked at, never picked at — a nicked ring is a replacement, not a repair.")),
+      tgStep("Deep Clean","Paddles, springs, and the lube map",
+        stA("Work both sides of the "+stP("paddle release")+", one drop at each pivot, then wipe the "+stP("rails")+" bright and run the captive flat "+stP("recoil spring")+" through your fingers — even, no bows.")
+        +"Lube map: a drop per rail, a drop at the barrel's cam shelf, paddle pivots worked in, channel and magazines dry."
+        +stAs("The flat spring seats with a positive click on reassembly — no click, no seat, and the lever won't come home.")),
     ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean","Breech face and extractor claw scrubbed","Charging supports (the rear wings) wiped — grip surfaces collect carbon-oil paste","Striker channel opening dry"]},
@@ -7111,6 +7442,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +stAs("No bushing to turn on these — the barrel and slide fit directly."),
         {hz:["spring"]}),
       TG_DONE("slide, barrel, recoil spring and guide, slide stop, and frame")
+    ],
+    /* V16 deep coverage: micro 1911s — the direct barrel-to-slide fit and the tuned
+       extractor get the attention; both are where micros live and die. */
+    deepSteps:[
+      tgStep("Deep Clean","Magazine teardown",
+        stA("Strip the "+stP("magazine")+": most micro-1911 floorplates are welded or pinned — if yours has a removable "+stP("floorplate")+", slide it off against its catch and control the "+stP("spring")+"; if not, wipe the tube from both ends and leave it assembled.")
+        +"Either way the magazine stays DRY inside. Single-stack lips bend easy — sight down them for symmetry."
+        +stC(CAUTION_SPRING),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Barrel fit surfaces",
+        stA("The bushingless fit means the "+stP("barrel")+"'s exterior and the slide's barrel channel ARE the accuracy — wipe both bright and scrub the "+stP("locking lugs")+" and their slide recesses until solvent runs clean.")
+        +"A light film of grease on the lugs going back; the fit surfaces get oil, thin."
+        +stAs("Bright, even wear rings are health; a galled streak is a gunsmith conversation.")),
+      tgStep("Deep Clean","Extractor tunnel — clean, don't pull",
+        stA("Scrub the "+stP("breech face")+" and hook the crud from under the "+stP("extractor")+" claw with a nylon pick. The extractor does NOT come out for cleaning.")
+        +"A 1911-pattern extractor is tensioned by its own bend — pulling it means re-tuning it, and a micro's short slide is even less forgiving of a wrong bend."
+        +stAs("Brass at your feet instead of over your shoulder? That's a tension conversation for a pistolsmith, not a deeper strip.")),
+      tgStep("Deep Clean","Rails, springs, and the lube map",
+        stA("Wipe the "+stP("rails")+" and the "+stP("slide stop")+" pin bright; run the stiff little "+stP("recoil spring")+" through your fingers — micros eat recoil springs, so kinks or set mean replacement on the spot.")
+        +"Lube map: micro 1911s run wetter than striker guns — a drop per rail spread thin, grease film on the lugs, a drop on the slide-stop pin, hammer and sear left alone."
+        +stAs("Check the "+stP("thumb safety")+"'s click both ways before the gun leaves the bench.")),
     ],
     cleaning:[
       {name:"SLIDE & BARREL",tasks:["Bore: solvent, brush, dry to clean — short and quick","Breech face and extractor scrubbed","Barrel exterior and the slide's barrel channel wiped — direct fit means these surfaces ARE the accuracy","Feed ramp (barrel and frame halves both) patched bright"]},
@@ -7202,6 +7554,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         {hz:["baffle"]}),
       TG_DONE("tube, end cap or base, and the baffle stack or monocore")
     ],
+    /* V16 deep coverage: rimfire can — the strip is already total, so deep is the
+       decon protocol: long soak, strike inspection, thread dressing. */
+    deepSteps:[
+      tgStep("Deep Clean","The long soak",
+        stA("Stand the "+stP("baffles")+" or "+stP("monocore")+" in mineral spirits or a purpose-made suppressor cleaner and walk away — hours; overnight for an overdue can. Scrub WET when you return.")
+        +"Lead lets go on the solvent's schedule. Wet tumbling in pin media is the deep-clean of choice for STAINLESS stacks — never aluminum, and never the peroxide-vinegar dip."
+        +stC(CAUTION_LEAD),
+        {hz:["lead"]}),
+      tgStep("Deep Clean","Strike and wear inspection",
+        stA("Clean metal tells the truth: examine every "+stP("baffle")+" aperture edge against the light — a true circle is health, a bright gouge or one-sided oval is a strike, and a struck can stops shooting until its maker has seen it.")
+        +"Check clip points for cracks and the "+stP("tube")+" for finish bubbling, which is heat's signature."
+        +stC(CAUTION_BAFFLE),
+        {hz:["baffle"]}),
+      tgStep("Deep Clean","Thread dressing and close-up",
+        stA("Brush both thread sets bright, inspect them while you can see them, and dress the "+stP("tube threads")+" with a thin coat of anti-seize.")
+        +"Rebuild in the recorded order, sight the "+stP("bore path")+" against the light, and log the session — a rimfire can's clock runs 300–500 rounds between openings, and the log is the only counter it has."
+        +stAs("Gloves off last, wash up, wipe the bench.")),
+    ],
     cleaning:[
       {name:"BAFFLES / CORE",tasks:["Soak in mineral spirits or a purpose-made suppressor cleaner — hours, not minutes","Scrub WET with a nylon brush; brass picks for the baffle clip points","ALUMINUM baffles: NO aggressive alkaline solvents and NO ultrasonic with hot caustic solutions — they eat aluminum; mineral spirits and patience instead","Do NOT use the peroxide-vinegar 'dip' — it converts lead to lead acetate, genuinely toxic to handle and hazardous to dispose of","Wet-tumbling is the deep-clean of choice for stainless stacks — never for aluminum"]},
       {name:"TUBE & CAPS",tasks:["Scrub the tube bore wet; patch it dry","Clean both thread sets — tube and mount — and inspect for crossed or flattened threads","Check the bore path of each cap for strikes; any nick gets looked at hard before the next shot"]},
@@ -7239,6 +7609,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         stA("Slide the "+stP("piston")+" and "+stP("spring")+" out of the "+stP("housing")+" and off the can. Three parts: piston, spring, housing.")
         +stAs("Note which way the piston faces — flange to the rear on nearly all designs — and lay them out in order.")),
       TG_DONE("can body, booster housing, piston, and spring")
+    ],
+    /* V16 deep coverage: pistol can — booster deep service plus the stack where the
+       body is serviceable; sealed bodies stay sealed, said out loud. */
+    deepSteps:[
+      tgStep("Deep Clean","Booster deep service",
+        stA("Soak the "+stP("piston")+" until the flange carbon softens, then scrape it to bare metal — the flange's seal face is what makes the booster boost.")
+        +"Chase the "+stP("housing")+"'s piston bore with a wet patch until it comes out clean, and roll the "+stP("spring")+" along the bench: it should lie straight, no kinks, no crushed coils."
+        +stAs("Reassemble the booster DRY or with the barest film per your maker — oil in a booster cooks to varnish, and varnish is the number-one pistol-can stoppage."),
+        {hz:[]}),
+      tgStep("Deep Clean","The stack, if yours opens",
+        stA("A serviceable "+stP("can body")+" gets the rimfire protocol: long soak, wet scrub, baffle-by-baffle strike inspection, order and orientation preserved.")
+        +"A sealed body gets its bore path sighted and its exterior wiped — and never, ever opened."
+        +stC(CAUTION_LEAD),
+        {hz:["lead"]}),
+      tgStep("Deep Clean","Threads, host, and close-up",
+        stA("Clean the "+stP("piston threads")+" AND the host barrel's threads — carbon lock lives on both sides of that joint — then dress the housing threads thin with anti-seize.")
+        +"Rebuild, stroke the booster once by hand and feel it return free, sight the "+stP("bore path")+", and log the rounds. Boosters want a strip every few hundred rounds of dirty pistol ammo."
+        +stAs("Gloves off last, wash up.")),
     ],
     cleaning:[
       {name:"BOOSTER GROUP",tasks:["Scrape and scrub the piston's flange and body — hard carbon here is what makes a pistol can stop suppressing the cycle","Wipe the spring; check it for kinks or crushed coils","Clean the housing's interior where the piston strokes","Reassemble the booster DRY or with the barest film per your manufacturer — oil in a booster cooks into varnish"]},
@@ -7279,6 +7667,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +stAs("Grit here is a baffle strike waiting for a place to happen.")),
       TG_DONE("the can (sealed, as a unit) and its mount hardware")
     ],
+    /* V16 deep coverage: sealed rifle can — deep clean IS the mount system; the can
+       itself is monitored, never opened. */
+    deepSteps:[
+      tgStep("Deep Clean","Muzzle device service",
+        stA("Remove the "+stP("muzzle device")+" per ITS manufacturer's instructions, clean its threads and the barrel's muzzle threads bright, and re-torque to ITS spec — same shims or a fresh crush washer, indexed exactly as before.")
+        +"The can rides on this device; a device that moved is a zero that moved and an alignment that might have."
+        +stC(CAUTION_FORCE),
+        {hz:["force"]}),
+      tgStep("Deep Clean","Alignment audit",
+        stA("With the device torqued and the "+stP("can")+" seated, sight the "+stP("bore path")+" against the light — daylight straight and centered, or it doesn't get shot.")
+        +"Then watch the first group after remounting: a point-of-impact shift beyond this can's usual is the mount talking."
+        +stC(CAUTION_SEALED),
+        {hz:["sealed"]}),
+      tgStep("Deep Clean","Weight baseline and log",
+        stA("Weigh the can clean-and-cool and log it in the "+stP("Fouling by Weight")+" tracker on this can's page; weigh again at intervals on the same scale.")
+        +"Steady gain over baseline is the only honest measure of what's staying inside a sealed unit. Log this service so the mount-check clock resets."
+        +stAs("A sealed can isn't cleaned — it's monitored. The scale is the bore brush.")),
+    ],
     cleaning:[
       {name:"MOUNT INTERFACE",tasks:["Brush the muzzle device / thread shoulder clean of carbon — nylon first, brass if it's caked","Wipe the can's mount recess or threads; solvent on a patch, then dry","QD mounts: clean the locking lugs/cam surfaces and check for peening or rounded corners"]},
       {name:"MUZZLE DEVICE TORQUE",tasks:["Confirm the muzzle device itself is still torqued to ITS spec — the can rides on it, and a loose device is a wandering zero and worse","If the device uses shims or a crush washer, confirm the index hasn't moved"]},
@@ -7316,6 +7722,31 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +"Look at each part as you set it down: cracks, peening, mushroomed metal, rust blooms."
         +stAs("Cleaning time is inspection time; most broken parts announce themselves here first, not at the range."),
         {branch:true})
+    ],
+    /* V16: the GENERIC DEEP CLEAN checklist (ordered by name) — honest about being
+       universal; detail-strip specifics defer to the owner's manual, exactly as the
+       standard generic does. */
+    deepSteps:[
+      tgStep("Deep Clean","Go only as far as your manual documents",
+        stA("Deep cleaning means detail past the field strip — and how far that goes is your "+stP("manual")+"'s call, model by model. Open it to its disassembly section and let it set the limit.")
+        +"What every platform shares is below; what only your model knows stays with its book."
+        +stC(CAUTION_FORCE)
+        +stAs("The rule that never changes: a part that fights you is a step out of order, not a part that needs more force."),
+        {hz:["force"]}),
+      tgStep("Deep Clean","Breech, bolt face, and extractor",
+        stA("Scrub the "+stP("breech face")+" or "+stP("bolt face")+" until the crud ring around the firing-pin port is gone, and clear under the "+stP("extractor")+" claw with a nylon pick — never a scraper against the claw.")
+        +"Press the extractor and watch it snap back; check its lip for chips in good light."
+        +stAs("This one surface causes more extraction and ignition trouble than everything else combined.")),
+      tgStep("Deep Clean","Magazine or feed-source teardown",
+        stA("If your feeding source comes apart — "+stP("floorplate")+"-off magazines, removable "+stP("tube followers")+" — strip it per the manual, control the "+stP("spring")+", and wipe every part DRY.")
+        +"Inspect the spring for a collapsed section (spring set), the follower for gouges, feed lips for spread."
+        +stC(CAUTION_SPRING)
+        +stAs("Fixed magazines get brushed in place and left dry — no oil where ammunition lives, ever."),
+        {hz:["spring"]}),
+      tgStep("Deep Clean","Channels dry, pivots wet — the lubrication map",
+        stA("Wipe the "+stP("firing-pin")+" or "+stP("striker channel")+" DRY — oil in an ignition channel thickens exactly when it's coldest. Then the map: one drop where parts SLIDE (rails, bolt bodies, action bars), a worked-in drop where parts PIVOT, grease only where your manual names it (locking lugs, cams), and nothing at all where ammunition sits.")
+        +"Finish by inspecting what you can see: springs for set, corners for cracks, pins for walking proud."
+        +stAs("Reassemble per the manual, run the action hard, and function-check pointed safe — a fault found here is one the range never sees.")),
     ],
     cleaning:[
       {name:"BORE & CHAMBER",tasks:[
@@ -7357,6 +7788,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +"A can's bore is supposed to be filthy; you're checking alignment, not shine."
         +stAs("A bright gouge on a baffle edge means stop shooting and call the maker."),
         {branch:true})
+    ],
+    /* V16: generic deep for cans — honest universal; the type-specific guide takes
+       over the moment the can's type is set on its Suppressor Spec card. */
+    deepSteps:[
+      tgStep("Deep Clean","Deep work is decided by TYPE",
+        stA("What a can's deep clean looks like depends entirely on what it is: a serviceable rimfire can opens for a soak and scrub, a pistol can strips its "+stP("booster")+", a sealed rifle can gets its "+stP("mount")+" serviced and its weight logged — and must never be opened.")
+        +"Set this can's type in its "+stP("Suppressor Spec")+" card and the matching guide replaces this one."
+        +stC(CAUTION_SEALED),
+        {hz:["sealed"]}),
+      tgStep("Deep Clean","What every can gets regardless",
+        stA("Both thread sets brushed bright and inspected; the "+stP("shoulder faces")+" wiped; a thin dressing of anti-seize where the maker allows it; the "+stP("bore path")+" sighted against the light — daylight straight and centered.")
+        +"Exterior checked for dents, bulges, and finish bubbling — heat's signature."
+        +stC(CAUTION_HOT),
+        {hz:["hot"]}),
+      tgStep("Deep Clean","The honest round count",
+        stA("Log the rounds this can has taken against the host that fired them — a can's service clock runs on rounds it can't count for itself.")
+        +"Then set the type on the spec card so next time this branch is the real one."
+        +stAs("Gloves off last, wash up — fouling carries lead whether or not the can opens.")),
     ],
     cleaning:[
       {name:"MOUNT & THREADS",tasks:[
@@ -8805,6 +9254,862 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     sh.classList.add("open");
   }
   /* ============ V8 PRESENTATION ROUND — ends ============ */
+
+  /* ============ V16 ROUND — begins ============ */
+  /* ================================================================
+     V16 — ONBOARDING + SECURITY + BENCH + POLISH
+     (ruling-build-order-v16-20260815 + ruling-v16-answers + ruling-v16-execute)
+     Loads after the V8 block. Copy for the first-open acknowledgements and
+     the burn-pin warnings is the drafted set (COPY-ACK-V16 / COPY-BURNPIN-V16),
+     flagged for Darren's read AFTER ship — his read amends, it doesn't gate.
+     ================================================================ */
+
+  /* ---------- biometric plumbing (item 3) ----------
+     Plugin-detected like the barcode scanner: absent plugin = absent rows, no
+     promises made. @capgo/capacitor-native-biometric@7 registers NativeBiometric. */
+  function benchBioPlugin(){
+    const P=window.Capacitor&&window.Capacitor.Plugins; if(!P) return null;
+    return P.NativeBiometric||P.BiometricAuth||P.BiometricAuthNative||null;
+  }
+  let benchBioReady=false;
+  (async function(){ benchBioReady=await benchBioAvail(); })();
+  async function benchBioAvail(){
+    const b=benchBioPlugin(); if(!b) return false;
+    try{
+      if(b.isAvailable){ const r=await b.isAvailable(); return !!(r&&(r.isAvailable||r.available)); }
+      if(b.checkBiometry){ const r=await b.checkBiometry(); return !!(r&&r.isAvailable); }
+    }catch(e){}
+    return false;
+  }
+  async function benchBioVerify(reason){
+    const b=benchBioPlugin(); if(!b) return false;
+    try{
+      if(b.verifyIdentity){ await b.verifyIdentity({reason:reason||"Unlock your safe", title:"Fieldstrip", useFallback:false, maxAttempts:3}); return true; }
+      if(b.internalAuthenticate){ await b.internalAuthenticate({reason:reason||"Unlock your safe"}); return true; }
+      if(b.authenticate){ await b.authenticate({reason:reason||"Unlock your safe"}); return true; }
+    }catch(e){}
+    return false;
+  }
+
+  /* ---------- item 4: THE BURN WIPE — total, silent, irreversible ----------
+     Everything goes in one act: localStorage, the Preferences mirror, and the
+     on-device files (attachments, thumbnails, stamps, snapshots) — a wipe that
+     boot recovery can resurrect is a broken promise (Darren, binding). fs_ack
+     is re-set so the door opens into a clean empty safe with no welcome page
+     appearing mid-entry; every store of USER data is gone. */
+  async function benchBurnFiles(){
+    try{
+      const FSp=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
+      if(!FSp) return;
+      for(const d of ["bench","stamps"]){
+        try{ await FSp.rmdir({path:d, directory:"DATA", recursive:true}); }catch(e){}
+      }
+    }catch(e){}
+  }
+  function benchBurnWipe(){
+    try{
+      const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Preferences;
+      const keys=[]; for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
+      keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+      try{ if(P&&P.clear) P.clear(); else if(P) keys.forEach(k=>P.remove({key:k})); }catch(e){}
+    }catch(e){}
+    benchBurnFiles();               /* async, fire-and-forget — storage is already gone */
+    safe=[]; ammoInv=[]; ammoCfg={}; upcMap={}; pendingUpc=null;
+    proState={on:false,src:null,ts:null};
+    Object.keys(benchThumbCache).forEach(k=>delete benchThumbCache[k]);
+    activeId=null; benchJustCleaned=null;
+    try{ BenchEnv.store.setRaw("fs_ack","1"); }catch(e){}
+  }
+
+  /* ---------- item 4: door verdict — real PIN, then burn PIN, then wrong ----------
+     The burn PIN is same-length-as-real BY CONSTRUCTION (the door fires its verdict
+     at the stored length; any other length would change door behavior and leak the
+     burn PIN's existence). A burn entry is SILENT: wipe, then the ordinary open
+     sequence into an empty safe. 2FA (PIN + biometric) rides the real-PIN path only —
+     a duress code must never stop to ask for a fingerprint. */
+  sdDigit = function(d){
+    if(sdState.open) return;
+    const lock=benchLockGet();
+    if(sdState.buf.length>=(lock.len||8)) return;
+    sdState.buf+=String(d);
+    sdTurnTo(d, sdState.buf.length-1);
+    sdDots();
+    if(sdState.buf.length===(lock.len||4)){
+      setTimeout(()=>{
+        const buf=sdState.buf;
+        if(benchPinHash(lock.salt, buf)===lock.hash){
+          sdState.buf="";
+          if(lock.twofa && benchBioPlugin()){
+            benchBioVerify("Second factor — unlock your safe").then(ok=>{ if(ok) sdOpenSequence(false); else sdWrong(); });
+          } else sdOpenSequence(false);
+        } else if(lock.burn && lock.burn.len===lock.len && benchPinHash(lock.burn.salt, buf)===lock.burn.hash){
+          sdState.buf="";
+          benchBurnWipe();
+          sdOpenSequence(false);
+          setTimeout(()=>{ if(typeof renderSafe==="function") renderSafe(); updateProRow(); }, 60);
+        } else sdWrong();
+      }, 420);
+    }
+  };
+
+  /* biometric at the door: auto-prompt once at launch when enrolled (no 2FA —
+     2FA prompts after the PIN instead), and the dial itself re-prompts on tap. */
+  (function(){
+    const lock=benchLockGet();
+    if(!(lock.on && lock.bio && !lock.twofa)) return;
+    const overlay=document.getElementById("safeDoor"); if(!overlay || overlay.style.display==="none") return;
+    const tryBio=async ()=>{ if(sdState.open) return; if(await benchBioVerify()) sdOpenSequence(false); };
+    setTimeout(tryBio, 900);
+    const dial=document.getElementById("sdDial");
+    if(dial) dial.addEventListener("click",()=>tryBio());
+  })();
+
+  /* ---------- item 3: THE SECURITY PAGE ----------
+     One stylized page for every lock decision: combination, biometrics, 2FA,
+     burn PIN. Reached from first-open "Create combination", the door's SET YOUR
+     COMBINATION button, the My Safe security row, and the invitation card —
+     every legacy route lands here (benchLockSheet is re-pointed below). */
+  const benchComboSheet = benchLockSheet;   /* the original two-state combination sheet */
+  function benchSecuritySheet(){
+    let sh=document.getElementById("secSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="secSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="secSheet") sh.classList.remove("open"); });
+    }
+    const lock=benchLockGet();
+    const burnState = !lock.burn ? null : (lock.burn.len===lock.len ? "set" : "stale");
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="secX">×</button>
+      <h3>SECURITY</h3>
+      <p class="pp">Everything here is local — combinations are stored as salted hashes, biometrics never leave the device, and none of it ever travels in a backup.</p>
+      <button class="secrow" id="secCombo"><span class="si">◉</span><span><div class="st1">Combination</div><div class="st2">${lock.on?"Set — the door waits for your code. Tap to change or remove.":"Not set — the door swings open on its own. Tap to create one."}</div></span><span class="statuschip schip ${lock.on?"active":""}">${lock.on?"ON":"OFF"}</span></button>
+      <button class="secrow" id="secBio" hidden><span class="si">◈</span><span><div class="st1">Biometric unlock</div><div class="st2">${lock.bio?"Enrolled — fingerprint or face opens the door. Tap to turn off.":"Use the device's own fingerprint or face unlock at the door."}${lock.on?"":" Requires a combination first — biometrics need a fallback."}</div></span><span class="statuschip schip ${lock.bio?"active":""}">${lock.bio?"ON":"OFF"}</span></button>
+      <button class="secrow" id="secTwofa" hidden><span class="si">▣</span><span><div class="st1">Two-factor — combination + biometric</div><div class="st2">For those who want both factors: the door takes your code, then asks the sensor. Both, every open.</div></span><span class="statuschip schip ${lock.twofa?"active":""}">${lock.twofa?"ON":"OFF"}</span></button>
+      <button class="secrow danger" id="secBurn"><span class="si">☠</span><span><div class="st1">Burn PIN</div><div class="st2">${burnState==="set"?"Set. A second combination that silently and permanently erases everything in this app when entered.":burnState==="stale"?"Your combination changed — the burn PIN no longer matches its length and is inactive. Tap to re-create it.":"A second combination that silently and permanently erases everything in this app when entered. Read the warnings before creating one."}${lock.on?"":" Requires a combination first."}</div></span>${burnState?`<span class="statuschip schip ${burnState==="set"?"problem":"due"}">${burnState==="set"?"ARMED":"INACTIVE"}</span>`:""}</button>`;
+    sh.querySelector("#secX").onclick=()=>sh.classList.remove("open");
+    sh.querySelector("#secCombo").onclick=()=>{ sh.classList.remove("open"); benchComboSheet(); };
+    const bioRow=sh.querySelector("#secBio"), tfRow=sh.querySelector("#secTwofa");
+    benchBioAvail().then(av=>{
+      if(!av) return;              /* no sensor / no plugin: the rows simply don't exist */
+      bioRow.hidden=false;
+      if(lock.on && lock.bio) tfRow.hidden=false;
+      bioRow.onclick=async ()=>{
+        const l=benchLockGet();
+        if(!l.on){ benchComboSheet(); sh.classList.remove("open"); return; }
+        if(l.bio){ l.bio=false; l.twofa=false; benchLockSave(l); benchSecuritySheet(); return; }
+        if(await benchBioVerify("Confirm enrollment")){ l.bio=true; benchLockSave(l); benchSecuritySheet(); }
+      };
+      tfRow.onclick=async ()=>{
+        const l=benchLockGet();
+        if(!(l.on&&l.bio)) return;
+        if(l.twofa){ l.twofa=false; benchLockSave(l); benchSecuritySheet(); return; }
+        if(await benchBioVerify("Confirm two-factor")){ l.twofa=true; benchLockSave(l); benchSecuritySheet(); }
+      };
+    });
+    sh.querySelector("#secBurn").onclick=()=>{
+      const l=benchLockGet();
+      if(!l.on){ sh.classList.remove("open"); benchComboSheet(); return; }
+      sh.classList.remove("open"); benchBurnSheet();
+    };
+    sh.classList.add("open");
+  }
+  benchLockSheet = function(){ benchSecuritySheet(); };   /* every legacy route lands on the security page */
+  /* the My Safe row was bound by DIRECT reference to the old sheet — rebind dynamic */
+  (function(){
+    const row=document.getElementById("lockRow");
+    if(!row) return;
+    const nu=row.cloneNode(true); row.parentNode.replaceChild(nu,row);
+    nu.addEventListener("click",()=>benchSecuritySheet());
+  })();
+
+  /* the My Safe row reads as the security surface it now is */
+  const benchPrevLockRow_v16 = benchLockRow;
+  benchLockRow = function(){
+    benchPrevLockRow_v16();
+    const row=document.getElementById("lockRow");
+    if(row){
+      const l=benchLockGet();
+      row.innerHTML = l.on
+        ? "<b>Security</b> — combination set · dial at launch" + (l.bio?" · biometrics":"") + (l.twofa?" · 2FA":"")
+        : "<b>Security</b> — door open · set your combination";
+    }
+  };
+  benchLockRow();
+
+  /* ---------- item 4: the burn-pin warnings page (drafted copy, wired) ---------- */
+  function benchBurnSheet(){
+    let sh=document.getElementById("burnSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="burnSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="burnSheet") sh.classList.remove("open"); });
+    }
+    const lock=benchLockGet();
+    const acks=[
+      "I understand entering the burn PIN erases everything in this app — instantly, silently, and permanently.",
+      "I understand erased data cannot be recovered by anyone. There is no copy anywhere else.",
+      "I understand there is no test mode. The burn PIN always erases, every time it is entered."
+    ];
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="bpX">×</button>
+      <h3 style="color:var(--safe-red)">BURN PIN</h3>
+      <p class="pp" style="color:var(--text)">A burn PIN is a second combination for the safe door. Entering it doesn't open your safe — it destroys it.</p>
+      <p class="pp">The moment the burn PIN is entered, everything in this app is erased. Firearms, records, photos, receipts, filings, reminders, settings — all of it. The door then opens into a clean, empty safe, as if the app were freshly installed.</p>
+      <p class="pp" style="color:var(--text);font-weight:600">No warning. No confirmation. No undo.</p>
+      <div class="proreason" style="border-color:rgba(212,85,63,.5);background:rgba(212,85,63,.08)">
+        <b>It is silent by design.</b> Whoever enters it — including you — sees only an empty safe.<br><br>
+        <b>It is permanent.</b> Your records live only on this phone; once erased, no copy exists anywhere.<br><br>
+        <b>There is no practice run.</b> Entering it to test it erases everything, the same as any other time.<br><br>
+        <b>It can never match your real combination</b>, and it uses the same number of digits — the door can't tell them apart, which is the point.<br><br>
+        <b>Choose it carefully.</b> Pick something you'd never type by mistake — a wrong guess at the door that happens to be your burn PIN erases your safe.</div>
+      <div id="bpAcks">${acks.map((a,i)=>`<button class="gate-item" data-ack="${i}"><span class="box">✓</span><span><div class="gt" style="font-size:13px">${a}</div></span></button>`).join("")}</div>
+      <div class="fo-sect">Back up first — if you want anything to survive</div>
+      <p class="pp">If the burn PIN is ever used, a backup file you've saved somewhere else is the only thing that survives. No backup means burned is gone forever — and that may be exactly what you want. Your choice.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" id="bpExport">Export a backup</button>
+        <button class="btn sm" id="bpSkip">Skip — nothing survives</button>
+      </div>
+      <div class="hint" id="bpExpMsg" style="margin:8px 0 4px"></div>
+      <div id="bpCreate" hidden style="margin-top:12px;border-top:1px solid var(--edge);padding-top:12px">
+        <div class="field"><label for="bpPin1">Burn PIN (${lock.len||4} digits — same length as your combination)</label><input type="password" id="bpPin1" inputmode="numeric" maxlength="8" autocomplete="off"></div>
+        <div class="field"><label for="bpPin2">Confirm burn PIN</label><input type="password" id="bpPin2" inputmode="numeric" maxlength="8" autocomplete="off"></div>
+        <button class="btn primary full" id="bpSet" style="background:var(--safe-red);border-color:var(--safe-red)">Create burn PIN</button>
+      </div>
+      ${lock.burn?`<button class="btn full" id="bpRemove" style="margin-top:10px">Remove burn PIN</button>`:""}
+      <button class="btn full" id="bpCancel" style="margin-top:8px">Cancel</button></div>`;
+    const acked=new Set();
+    const createWrap=sh.querySelector("#bpCreate");
+    let exportOffered=false;
+    const maybeReveal=()=>{ createWrap.hidden = !(acked.size===acks.length && exportOffered); };
+    sh.querySelectorAll("[data-ack]").forEach(b=>b.addEventListener("click",()=>{
+      b.classList.toggle("checked");
+      if(b.classList.contains("checked")) acked.add(b.dataset.ack); else acked.delete(b.dataset.ack);
+      maybeReveal();
+    }));
+    sh.querySelector("#bpExport").onclick=()=>{ exportOffered=true; benchQuickExport(sh.querySelector("#bpExpMsg")); maybeReveal(); };
+    sh.querySelector("#bpSkip").onclick=()=>{ exportOffered=true; sh.querySelector("#bpExpMsg").textContent="No backup — burned means gone. Noted."; maybeReveal(); };
+    sh.querySelector("#bpSet").onclick=()=>{
+      const l=benchLockGet(); if(!l.on) return;
+      const p1=sh.querySelector("#bpPin1").value.trim(), p2=sh.querySelector("#bpPin2").value.trim();
+      if(p1.length!==(l.len||4) || !/^\d+$/.test(p1)){ alert("The burn PIN must be exactly "+(l.len||4)+" digits — the same length as your combination."); return; }
+      if(p1!==p2){ alert("Burn PINs don't match."); return; }
+      if(benchPinHash(l.salt,p1)===l.hash){ alert("The burn PIN can never equal your real combination."); return; }
+      const salt=benchNewSalt();
+      l.burn={salt, hash:benchPinHash(salt,p1), len:p1.length, ts:Date.now()};
+      benchLockSave(l);
+      sh.classList.remove("open");
+      benchSecuritySheet();
+    };
+    const rm=sh.querySelector("#bpRemove");
+    if(rm){ let armed=false; rm.onclick=()=>{
+      if(!armed){ armed=true; rm.textContent="Remove burn PIN — sure?"; setTimeout(()=>{armed=false; rm.textContent="Remove burn PIN";},3000); return; }
+      const l=benchLockGet(); delete l.burn; benchLockSave(l);
+      sh.classList.remove("open"); benchSecuritySheet();
+    }; }
+    sh.querySelector("#bpX").onclick=()=>sh.classList.remove("open");
+    sh.querySelector("#bpCancel").onclick=()=>sh.classList.remove("open");
+    sh.classList.add("open");
+  }
+
+  /* ---------- item 1: FIRST-OPEN PAGE — once ever, then pure door ----------
+     Amends the no-blocking-first-screen ruling for FIRST LAUNCH ONLY (Darren's
+     order says so in as many words). Existing installs are not first launches:
+     any stored safe or an armed lock sets the flag silently and never shows it. */
+  (function(){
+    const seen=BenchEnv.store.getRaw("fs_ack");
+    if(seen) return;
+    if((safe&&safe.length) || benchLockGet().on){ BenchEnv.store.setRaw("fs_ack","1"); return; }
+    const acks=[
+      "This app is a reference, not an authority. It doesn't replace my firearm's owner's manual or a qualified gunsmith.",
+      "Safe handling is mine. I'll confirm every firearm is unloaded before I work on it — every time.",
+      "Firearms differ. If my gun doesn't match a step, or a part won't move as described, I'll stop and check the manual instead of forcing it.",
+      "Knowing and following the laws that apply to me and my firearms is my responsibility."
+    ];
+    const page=document.createElement("div");
+    page.id="firstOpen"; page.className="on";
+    page.innerHTML=`<div class="fo-wrap">
+      <div class="fo-brand">FIELD<span>STRIP</span></div>
+      <div class="fo-tag">Your safe, your bench, your records</div>
+      <div class="fo-body">Guided field-stripping and cleaning for your firearms. A running record of everything you do — rounds, cleanings, service, ammo, filings.</div>
+      <div class="fo-quiet">Everything stays on this phone. No account. No cloud. No tracking.</div>
+      <div class="fo-sect">Before you start</div>
+      <div id="foAcks" style="display:flex;flex-direction:column;gap:10px">${acks.map((a,i)=>`<button class="gate-item" data-fa="${i}"><span class="box">✓</span><span><div class="gt" style="font-size:13.5px">${a}</div></span></button>`).join("")}</div>
+      <button class="btn primary full" id="foGo" disabled style="margin-top:16px">I understand — continue</button>
+      <div class="fo-pin" id="foPin" hidden>
+        <div class="dc-h">Lock the door.</div>
+        <div class="dc-p">Add a combination and the safe opens only for you.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn sm primary" id="foPinYes">Create combination</button>
+          <button class="btn sm" id="foPinNo">Leave door open</button>
+        </div>
+        <div class="dc-p" style="margin:8px 0 0">You can add one any time from My Safe.</div>
+      </div>
+    </div>`;
+    document.body.appendChild(page);
+    const done=(openSecurity)=>{
+      BenchEnv.store.setRaw("fs_ack","1");
+      page.remove();
+      if(openSecurity) benchSecuritySheet();
+    };
+    const checked=new Set();
+    page.querySelectorAll("[data-fa]").forEach(b=>b.addEventListener("click",()=>{
+      b.classList.toggle("checked");
+      if(b.classList.contains("checked")) checked.add(b.dataset.fa); else checked.delete(b.dataset.fa);
+      page.querySelector("#foGo").disabled=checked.size!==acks.length;
+    }));
+    page.querySelector("#foGo").addEventListener("click",()=>{
+      page.querySelector("#foGo").hidden=true;
+      page.querySelector("#foPin").hidden=false;
+      page.querySelector("#foPin").scrollIntoView({block:"nearest"});
+    });
+    page.querySelector("#foPinYes").addEventListener("click",()=>done(true));
+    page.querySelector("#foPinNo").addEventListener("click",()=>done(false));
+  })();
+
+  /* ================================================================
+     THE BENCH — items 5 + 6: every card opens on tap (default-expanded),
+     corner-x removable with a show-hidden restore (bench-level list at
+     fs_bench_layout), and Care Reminders + Service & Mods LIVE HERE now,
+     looking exactly as they did — the same physical cards, relocated.
+     ================================================================ */
+  function benchLayoutGet(){ try{ return JSON.parse(BenchEnv.store.getRaw("fs_bench_layout")||"{}"); }catch(e){ return {}; } }
+  function benchLayoutSave(o){ BenchEnv.store.setRaw("fs_bench_layout", JSON.stringify(o)); }
+  function benchBHidden(){ const o=benchLayoutGet(); return Array.isArray(o.hidden)?o.hidden:[]; }
+  function benchBHide(id){ const o=benchLayoutGet(); if(!Array.isArray(o.hidden)) o.hidden=[]; if(o.hidden.indexOf(id)<0) o.hidden.push(id); benchLayoutSave(o); renderBench(); }
+  function benchBShow(id){ const o=benchLayoutGet(); const h=Array.isArray(o.hidden)?o.hidden:[]; const i=h.indexOf(id); if(i>=0){ h.splice(i,1); o.hidden=h; benchLayoutSave(o); } renderBench(); }
+  let benchBOpen={};                     /* per-session collapse state; default-expanded */
+  let benchCareTargetId=null, benchSvcTargetId=null;
+
+  /* the two cards leave the firearm page ENTIRELY: parked in a hidden pen until
+     the Bench claims them. They are the same DOM nodes — same look, same wiring. */
+  const benchHoldPen=(function(){
+    const d=document.createElement("div");
+    d.id="benchHoldPen"; d.style.display="none";
+    document.body.appendChild(d);
+    ["careBox","svcBox"].forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.display=""; d.appendChild(el); } });
+    return d;
+  })();
+  /* the detail card system forgets them (no corner-x slots on a moved card) */
+  (function(){
+    ["careBox","svcBox"].forEach(id=>{
+      const i=BENCH_BOXES.findIndex(b=>b.id===id);
+      if(i>=0) BENCH_BOXES.splice(i,1);
+    });
+  })();
+
+  /* target-aware renderers: the SAME cards now edit whichever firearm the Bench
+     has selected. Passed-in f already drives the display; the handlers resolved
+     byId(activeId) — they now resolve the bench target first. */
+  function benchCareF(){ return byId(benchCareTargetId)||byId(activeId); }
+  function benchSvcF(){ return byId(benchSvcTargetId)||byId(activeId); }
+  const benchPrevRenderCare_v16=renderCare;
+  renderCare=function(f){
+    benchPrevRenderCare_v16(f);
+    /* re-point the row handlers at the rendered firearm, not activeId */
+    const list=document.getElementById("careList");
+    list.querySelectorAll(".magbtn").forEach(b=>{
+      const nb=b.cloneNode(true); b.parentNode.replaceChild(nb,b);
+      nb.addEventListener("click",()=>{
+        const f2=byId(f.id); if(!f2) return;
+        const i=+nb.dataset.i;
+        if(nb.dataset.done){
+          BenchData.markReminderDone(f2, f2.reminders[i], Date.now()); careDelArm=null;
+          addLog(f2,"care",`${f2.reminders[i].label} — done`);
+        } else if(nb.dataset.del){
+          if(careDelArm===i){ addLog(f2,"care",`Reminder removed — ${f2.reminders[i].label}`); f2.reminders.splice(i,1); careDelArm=null; }
+          else { careDelArm=i; renderCare(f2); setTimeout(()=>{ if(careDelArm===i){ careDelArm=null; const f3=byId(f.id); if(f3) renderCare(f3); } },4000); return; }
+        }
+        saveSafe(); benchAfterCardEdit();
+      });
+    });
+  };
+  const benchPrevRenderSvc_v16=renderSvc;
+  renderSvc=function(f){
+    benchPrevRenderSvc_v16(f);
+    const list=document.getElementById("svcList");
+    /* the shipped attach grids refresh via renderDetail — wrong (and a stray
+       navigation) when the card lives on the Bench; re-seat them screen-aware */
+    if(typeof benchAttGrid==="function"){
+      list.querySelectorAll(".attwrap[data-svcid]").forEach(w=>{
+        benchAttGrid(w, {kind:"svc", id:w.dataset.svcid}, {kind:"work", addLabel:"PHOTO / FILE", onchange:()=>benchAfterCardEdit()});
+      });
+    }
+    list.querySelectorAll(".magbtn").forEach(b=>{
+      const nb=b.cloneNode(true); b.parentNode.replaceChild(nb,b);
+      nb.addEventListener("click",()=>{
+        const f2=byId(f.id); if(!f2) return;
+        const i=+nb.dataset.i;
+        if(svcDelArm===i){ f2.service.splice(i,1); svcDelArm=null; saveSafe(); benchAfterCardEdit(); }
+        else { svcDelArm=i; renderSvc(f2); setTimeout(()=>{ if(svcDelArm===i){ svcDelArm=null; const f3=byId(f.id); if(f3) renderSvc(f3); } },4000); }
+      });
+    });
+  };
+  function benchAfterCardEdit(){
+    if(document.getElementById("scr-bench").classList.contains("active")) renderBench();
+    else if(document.getElementById("scr-detail").classList.contains("active")) renderDetail();
+  }
+  /* add-buttons re-cloned with bench-target resolution (drops every prior listener) */
+  (function(){
+    const oldCare=document.getElementById("careAdd");
+    const care=oldCare.cloneNode(true); oldCare.parentNode.replaceChild(care,oldCare);
+    care.addEventListener("click",()=>{
+      const f=benchCareF(); if(!f) return;
+      if(!isPro() && !(f.reminders||[]).length &&
+         safe.some(x=>x.id!==f.id && Array.isArray(x.reminders) && x.reminders.length)){
+        openProSheet("Free keeps care reminders on one firearm. Clocks across the whole safe are part of Fieldstrip Pro.");
+        return;
+      }
+      const type=document.getElementById("careType").value;
+      const label = type==="Custom" ? document.getElementById("careLabel").value.trim() : type;
+      if(!label) return;
+      const fields={label,
+        component:document.getElementById("careComp").value.trim(),
+        battery:document.getElementById("careBatt").value.trim(),
+        torque:document.getElementById("careTorque").value.trim(),
+        lube:document.getElementById("careLube").value.trim(),
+        note:document.getElementById("careNote").value.trim()};
+      let clock;
+      if(benchCareClock==="rounds"){
+        const every=Math.floor(+document.getElementById("careRounds").value||0);
+        if(!(every>0)) return;
+        clock={type:"rounds", every};
+      } else {
+        const every=Math.floor(+document.getElementById("careEvery").value||0);
+        if(!(every>0)) return;
+        clock={type:"time", every, unit:document.getElementById("careUnit").value};
+      }
+      try{
+        const r=BenchData.createReminder(f, fields, clock, Date.now());
+        if(r.clock.type==="time"){
+          const unitDays={days:1,weeks:7,months:30.4375}[r.clock.unit]||1;
+          r.everyDays=Math.max(1,Math.round(r.clock.every*unitDays));
+          r.last=r.lastDone;
+        }
+        addLog(f,"care",`Reminder added — ${label}, ${clock.type==="rounds"?`every ${fmtN(clock.every)} rounds`:`every ${clock.every} ${clock.unit}`}`);
+      }catch(e){ alert(e.message||String(e)); return; }
+      ["careComp","careBatt","careTorque","careLube","careNote","careLabel"].forEach(id=>{ document.getElementById(id).value=""; });
+      careDelArm=null;
+      saveSafe(); benchAfterCardEdit();
+    });
+    const oldSvc=document.getElementById("svcAdd");
+    const svc=oldSvc.cloneNode(true); oldSvc.parentNode.replaceChild(svc,oldSvc);
+    svc.addEventListener("click",()=>{
+      const f=benchSvcF(); if(!f) return;
+      if(!Array.isArray(f.service)) f.service=[];
+      const work=document.getElementById("svcDesc").value.trim(); if(!work) return;
+      const type=document.getElementById("svcType").value;
+      let vendor=document.getElementById("svcVendor").value.trim();
+      if(vendor==="__add") vendor="Self";
+      const cost=+document.getElementById("svcCost").value||0;
+      const dv=document.getElementById("svcDate").value;
+      const ts=dv? new Date(dv+"T12:00:00").getTime() : Date.now();
+      f.service.push({id:"svc_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6), ts, type, work, vendor, cost});
+      addLog(f,"svc",`${type} — ${work}${vendor&&vendor!=="Self"?` · ${vendor}`:""}${cost?` · $${cost.toFixed(2)}`:""}`);
+      benchAddVendor(vendor);
+      benchFillVendorSelect(document.getElementById("svcVendor"), "Self");
+      document.getElementById("svcDesc").value=""; document.getElementById("svcCost").value="";
+      svcDelArm=null;
+      saveSafe(); benchAfterCardEdit();
+    });
+  })();
+  /* detail no longer renders the moved cards' contents for its own firearm */
+  const benchPrevRenderDetail_v16=renderDetail;
+  renderDetail=function(){
+    benchPrevRenderDetail_v16();
+    /* nothing extra: careBox/svcBox live in the Bench now; core renderCare/renderSvc
+       calls repaint them harmlessly wherever they sit */
+  };
+
+  function benchCard(id, title, val, bodyHtml){
+    const hidden=benchBHidden();
+    if(hidden.indexOf(id)>=0) return "";
+    const open=benchBOpen[id]!==false;   /* default-expanded (item 6) */
+    return `<div class="lifebox benchcard${open?"":" closed"}" id="${id}" data-bc="1">
+      <div class="lrow bc-h" data-bch="${id}"><span class="lt"><span class="bcchev">▾</span>${title}</span><span class="lv">${val}</span></div>
+      <div class="bcbody">${bodyHtml}</div></div>`;
+  }
+  const BENCH_CARD_LABELS={bcNfa:"NFA Items",bcMags:"Magazines",bcZeros:"Zero Records",bcCare:"Care Reminders",bcSvc:"Service & Mods",bcAtt:"Attachments",bcBackup:"Backup"};
+  renderBench=function(){
+    const body=document.getElementById("benchBody");
+    if(!isPro()){
+      /* the locked Bench keeps its shipped preview (bench_ui) + ammo chips (v8) */
+      benchPrevRenderBench_v16locked();
+      return;
+    }
+    benchHoldPen.appendChild(document.getElementById("careBox"));   /* reclaim before innerHTML wipe */
+    benchHoldPen.appendChild(document.getElementById("svcBox"));
+    const c=benchCollect();
+    const totMags=c.fleets.reduce((a,g)=>a+g.mags.length,0);
+    let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>`;
+    if(c.overdue.length){
+      h+=`<div class="lifebox warn"><div class="lrow"><span class="lt">Needs attention</span><span class="lv" style="color:var(--safe-red)">${c.overdue.length} item${c.overdue.length===1?"":"s"}</span></div>`;
+      c.overdue.slice(0,6).forEach(o=>{
+        h+=`<div class="benchrow"><div class="bi"><div class="bn">${esc(o.label)} — ${esc(o.name)}</div><div class="bs">${esc(o.detail)}</div></div><span class="statuschip ${o.kind==="mag"?"problem":"due"}">${o.kind==="mag"?"PROBLEM":"OVERDUE"}</span></div>`;
+      });
+      h+=`</div>`;
+    }
+    /* NFA */
+    let nb="";
+    if(!c.nfa.length) nb=`<div class="lmsg">Set an item type on any firearm or can and its filings gather here.</div>`;
+    c.nfa.forEach(x=>{
+      const s=benchNfaSummary(x.f); const first=s.fls[0];
+      nb+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.name)}</div><div class="bs">${esc(x.f.nfaItemType||"type unset")}${first?` · ${esc(benchFilingLabel(first))} · ${esc(first.entity)}`:""}${x.f.stamp?" · stamp photo attached":""}</div></div>${first?`<span class="statuschip ${first.status==="Approved"?"active":(first.status==="Denied"?"problem":"due")}">${esc(first.status.toUpperCase())}</span>`:""}</div>`;
+    });
+    h+=benchCard("bcNfa","NFA Items", c.nfa.length||"none", nb);
+    /* Magazines */
+    let mb="";
+    if(!c.fleets.length) mb=`<div class="lmsg">Add mags on a firearm — one spec, the whole fleet numbered at once.</div>`;
+    c.fleets.forEach(g=>{
+      const act=g.mags.filter(m=>(m.status||"active")==="active").length;
+      const prob=g.mags.filter(m=>m.status==="problem").length;
+      const ret=g.mags.filter(m=>m.status==="retired").length;
+      const nums=g.mags.map(m=>m.num).sort((a,b)=>a-b);
+      mb+=`<div class="benchrow" data-nav="${g.f.id}"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}${g.brand?` · ${esc(g.brand)}`:""}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · #${nums[0]}–#${nums[nums.length-1]} · ${esc(g.name)} · ${act} active${prob?`, ${prob} problem`:""}${ret?`, ${ret} retired`:""}</div></div><span class="statuschip ${prob?"problem":"active"}">${prob?"CHECK":"FLEET"}</span></div>`;
+    });
+    h+=benchCard("bcMags","Magazines", totMags?`${totMags} mags`:"none", mb);
+    /* Zeros */
+    let zb="";
+    if(!c.zeros.length) zb=`<div class="lmsg">Log a zero on a firearm and it shows here.</div>`;
+    c.zeros.slice(0,5).forEach(x=>{
+      zb+=`<div class="benchrow" data-nav="${(x.z&&x.z.fid)||""}"><div class="bi"><div class="bn">${esc(x.name)} · ${x.z.dist} ${esc(x.z.unit)}</div><div class="bs">${fmtDate(x.z.ts)} · ${esc(x.z.ammo||"—")}${x.z.lot?` · lot ${esc(x.z.lot)}`:""}${(x.z.photoBefore||x.z.photoAfter)?" · target photos":""}</div></div></div>`;
+    });
+    h+=benchCard("bcZeros","Zero Records", c.zeros.length||"none", zb);
+    /* Care Reminders — the moved card lives here (item 5) */
+    const careDue=c.care.filter(x=>x.s.due).length;
+    let cb=`<div class="lmsg">Pick a firearm — its care card opens below, exactly as it lived on the firearm page.</div>`;
+    safe.forEach(f=>{
+      const n=(f.reminders||[]).length;
+      const due=(f.reminders||[]).filter(r=>benchDue(f,r).due).length;
+      cb+=`<div class="benchrow${benchCareTargetId===f.id?" on":""}" data-caresel="${f.id}" style="${benchCareTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${n?`${n} clock${n===1?"":"s"}${due?` · ${due} due`:""}`:"no clocks yet"}</div></div><span class="statuschip ${due?"due":(n?"active":"")}">${due?"DUE":(n?"OK":"—")}</span></div>`;
+    });
+    cb+=`<div id="benchCareHost"></div>`;
+    h+=benchCard("bcCare","Care Reminders", c.care.length?`${c.care.length} clock${c.care.length===1?"":"s"}${careDue?` · ${careDue} due`:""}`:"none", cb);
+    /* Service & Mods — the moved card lives here (item 5) */
+    let sb=`<div class="lmsg">Pick a firearm — its Service &amp; Mods card opens below, exactly as it lived on the firearm page.</div>`;
+    safe.forEach(f=>{
+      const n=(f.service||[]).length;
+      sb+=`<div class="benchrow${benchSvcTargetId===f.id?" on":""}" data-svcsel="${f.id}" style="${benchSvcTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${n?`${n} record${n===1?"":"s"}`:"no records yet"}</div></div></div>`;
+    });
+    sb+=`<div id="benchSvcHost"></div>`;
+    const svcTotal=safe.reduce((a,f)=>a+((f.service||[]).length),0);
+    h+=benchCard("bcSvc","Service & Mods", svcTotal||"none", sb);
+    /* Attachments */
+    h+=benchCard("bcAtt","Attachments", c.attCount?`${c.attCount} files`:"none",
+      `<div class="lmsg">Receipts, work photos, stamp photos and targets across the safe — attached on each record's own card, stored on this phone only.</div>`);
+    /* Backup */
+    h+=benchCard("bcBackup","Backup","",
+      `<div class="lmsg">One local file with everything the Bench knows. You choose where it goes — nothing leaves this phone on its own.</div>
+       ${BenchEnv.hasFS()?`<div class="ivrow" style="margin-top:8px"><label for="benchExpPhotos">Include photos</label><input type="checkbox" id="benchExpPhotos" style="width:auto"></div>`:""}
+       <div style="display:flex;gap:8px;flex-wrap:wrap">
+         <button class="btn sm primary" id="benchExport">Export Backup</button>
+         <button class="btn sm" id="benchRestore">Restore from Backup</button>
+       </div>
+       <div class="lmsg" id="benchExpMsg"></div>`);
+    /* restore row for hidden cards */
+    const hidden=benchBHidden();
+    if(hidden.length){
+      h+=`<div class="hiddenrow"><button class="hiddenrow-head" type="button" id="benchBHiddenHead">Show hidden cards (${hidden.length}) ${benchBOpen.__hid?"▴":"▾"}</button>`
+        +(benchBOpen.__hid?`<div>${hidden.map(id=>`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">${esc(BENCH_CARD_LABELS[id]||id)}</div><div class="bs">hidden, not deleted</div></div><button class="magbtn" data-bshow="${id}">Show</button></div>`).join("")}</div>`:"")
+        +`</div>`;
+    }
+    body.innerHTML=h;
+    body.onclick=null;
+    /* wire: open/close, corner-x, restore, nav, selectors, backup */
+    body.querySelectorAll("[data-bch]").forEach(el=>el.addEventListener("click",e=>{
+      if(e.target.closest(".boxhide")) return;
+      const id=el.dataset.bch;
+      benchBOpen[id]=!(benchBOpen[id]!==false);
+      document.getElementById(id).classList.toggle("closed", benchBOpen[id]===false);
+    }));
+    body.querySelectorAll("[data-bc]").forEach(card=>{
+      const x=document.createElement("button");
+      x.className="boxhide"; x.type="button"; x.setAttribute("aria-label","Hide this card");
+      x.textContent="×";
+      x.addEventListener("click",e=>{ e.stopPropagation(); benchBHide(card.id); });
+      card.appendChild(x);
+    });
+    const hh=document.getElementById("benchBHiddenHead");
+    if(hh) hh.onclick=()=>{ benchBOpen.__hid=!benchBOpen.__hid; renderBench(); };
+    body.querySelectorAll("[data-bshow]").forEach(b=>b.onclick=()=>benchBShow(b.dataset.bshow));
+    body.querySelectorAll("[data-nav]").forEach(row=>{
+      if(!row.dataset.nav) return;
+      row.addEventListener("click",()=>{ activeId=row.dataset.nav; show("scr-detail"); });
+    });
+    body.querySelectorAll("[data-caresel]").forEach(row=>row.addEventListener("click",()=>{
+      benchCareTargetId=row.dataset.caresel;
+      renderBench();
+    }));
+    body.querySelectorAll("[data-svcsel]").forEach(row=>row.addEventListener("click",()=>{
+      benchSvcTargetId=row.dataset.svcsel;
+      renderBench();
+    }));
+    /* seat the moved cards for the selected firearms */
+    if(!byId(benchCareTargetId)) benchCareTargetId=safe.length?safe[0].id:null;
+    if(!byId(benchSvcTargetId)) benchSvcTargetId=safe.length?safe[0].id:null;
+    const ch=document.getElementById("benchCareHost"), svh=document.getElementById("benchSvcHost");
+    const cbx=document.getElementById("careBox"), sbx=document.getElementById("svcBox");
+    if(ch && cbx && benchCareTargetId){ ch.appendChild(cbx); cbx.style.display="block"; renderCare(byId(benchCareTargetId)); benchFillVendorSelect(document.getElementById("svcVendor"),"Self"); }
+    if(svh && sbx && benchSvcTargetId){ svh.appendChild(sbx); sbx.style.display="block"; renderSvc(byId(benchSvcTargetId)); }
+    const be=document.getElementById("benchExport"), br=document.getElementById("benchRestore");
+    if(be) be.onclick=benchDoExport;
+    if(br) br.onclick=()=>benchRestoreFlow();
+    benchAmmoChips();
+  };
+  /* the locked preview: the pre-V16 chain (bench_ui locked branch + v8 chips) */
+  const benchPrevRenderBench_v16locked=(function(){ const prev=benchPrevRenderBench_v14; return function(){ prev(); benchAmmoChips(); }; })();
+
+  /* ================================================================
+     Item 7: AMMO LOCKER — one-time explainer + the scanner learns PRICE too.
+     ================================================================ */
+  (function(){
+    const wrap=document.getElementById("lkScanBtn")?document.getElementById("lkScanBtn").parentNode:null;
+    if(!wrap) return;
+    /* teach-time price capture: a capture-phase listener on the form's parent runs
+       BEFORE the shipped lkAdd handler and stashes the pending code + price; the
+       bubble listener after it writes the price into the learned barcode. */
+    const lkAddBtn=document.getElementById("lkAdd");
+    let stash=null;
+    lkAddBtn.parentNode.addEventListener("click",e=>{
+      if(e.target && e.target.id==="lkAdd") stash={code:pendingUpc, paid:Math.max(0,+document.getElementById("lkPaid").value||0), qty:Math.floor(+document.getElementById("lkQty").value||0)};
+    }, true);
+    lkAddBtn.addEventListener("click",()=>{
+      if(stash && stash.code && upcMap[stash.code] && stash.paid>0){
+        upcMap[stash.code].paid=stash.paid;
+        saveUpc();
+      }
+      stash=null;
+    });
+  })();
+  const benchPrevScanCheckIn_v16=scanCheckIn;
+  scanCheckIn=async function(){
+    const bs=scannerPlugin(); if(!bs) return;
+    const msg=document.getElementById("lkScanMsg");
+    try{
+      const res = bs.scanBarcode ? await bs.scanBarcode({hint:17}) : await bs.scan();
+      const code = res && (res.ScanResult||res.scanResult||res.content||(res.barcodes&&res.barcodes[0]&&res.barcodes[0].rawValue)||"");
+      if(!code){ return; }
+      const known = upcMap[code];
+      if(known){
+        let st = findStock(known.mk, known.cal, known.gr, known.bt);
+        if(st) st.qty += known.qty;
+        else { st={key:lkKey(known.mk,known.cal,known.gr,known.bt), mk:known.mk, cal:known.cal, gr:known.gr, bt:known.bt, qty:known.qty}; ammoInv.push(st); }
+        if(known.paid>0){ st.paid=(st.paid||0)+known.paid; st.bought=(st.bought||0)+known.qty; }   /* the price you taught rides every restock */
+        saveAmmo(); renderLocker();
+        pendingUpc=null; document.getElementById("lkTeach").hidden=true;
+        msg.textContent=`✓ +${fmtN(known.qty)} — ${known.mk} ${known.gr} ${known.bt} (${known.cal})${known.paid>0?` · $${known.paid.toFixed(2)}`:""} · ${fmtN(st.qty)} on hand`;
+      } else {
+        pendingUpc = code;
+        document.getElementById("lkTeach").hidden=false;
+        msg.textContent=`Barcode …${code.slice(-6)} isn't known yet — teach it once below.`;
+      }
+    }catch(e){ /* user cancelled or camera unavailable */ }
+  };
+  /* the shipped button holds a direct reference to the ORIGINAL openLocker —
+     rebind it dynamically so the wrapper below actually runs */
+  (function(){
+    const old=document.getElementById("lockerBtn");
+    if(!old) return;
+    const nu=old.cloneNode(true); old.parentNode.replaceChild(nu,old);
+    nu.addEventListener("click",()=>openLocker());
+  })();
+  const benchPrevOpenLocker_v16=openLocker;
+  openLocker=function(){
+    benchPrevOpenLocker_v16();
+    if(BenchEnv.store.getRaw("fs_lk_seen")) return;
+    let sh=document.getElementById("lkIntroSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="lkIntroSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+    }
+    sh.innerHTML=`<div class="sheet">
+      <h3>▥ SCAN ONCE, TEACH ONCE</h3>
+      <p class="pp" style="color:var(--text)">The locker's scanner reads the barcode on the box — and learns only from you.</p>
+      <div class="feat"><span class="fx">▸</span><span><b>First scan of a new box:</b> tell it the load once — caliber, maker, round count, what you paid.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Every scan after:</b> one beep and it's checked in — count, load, and price, automatically.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>No cloud lookup, ever.</b> There is no product database — the only barcodes it knows are the ones you taught it, stored on this phone.</span></div>
+      <div class="fo-sect">Ideal use</div>
+      <div class="feat"><span class="fx">▸</span><span>Scan the case when you buy it — the whole case lands in stock in one motion.</span></div>
+      <div class="feat"><span class="fx">▸</span><span>Buy the same load again? Same barcode — it checks itself in.</span></div>
+      <div class="feat"><span class="fx">▸</span><span>Range sessions draw the stock back down automatically when the load matches.</span></div>
+      <button class="btn primary full" id="lkIntroGo" style="margin-top:12px">Got it</button></div>`;
+    sh.querySelector("#lkIntroGo").onclick=()=>{ BenchEnv.store.setRaw("fs_lk_seen","1"); sh.classList.remove("open"); };
+    sh.classList.add("open");
+  };
+
+  /* ================================================================
+     Item 8: + ADD SUPPRESSOR shows ONLY suppressor options.
+     ================================================================ */
+  let benchSuppPickMode=false;
+  (function(){
+    const old=document.getElementById("addSupBtn");
+    const nu=old.cloneNode(true); old.parentNode.replaceChild(nu,old);
+    nu.addEventListener("click",()=>{
+      benchSuppPickMode=true;
+      show("scr-pick");
+      pickGroup="Suppressors";
+      [...chipsWrap.children].forEach(x=>{
+        x.classList.toggle("on", x.textContent==="Suppressors");
+        x.style.display = x.textContent==="Suppressors" ? "" : "none";   /* context-filtered: nothing else exists here */
+      });
+      ctxLabel.textContent="Add Suppressor";
+      renderPicker();
+    });
+  })();
+  const benchPrevResetPicker_v16=resetPicker;
+  resetPicker=function(){
+    benchSuppPickMode=false;
+    [...chipsWrap.children].forEach(x=>{ x.style.display=""; });
+    benchPrevResetPicker_v16();
+  };
+  /* custom sheet in suppressor mode: no firearm fields bleeding in */
+  const benchPrevOpenCustomSheet_v16=openCustomSheet;
+  openCustomSheet=function(pref){
+    benchPrevOpenCustomSheet_v16(pref);
+    const sheet=document.getElementById("customSheet");
+    if(!sheet.classList.contains("open")) return;   /* gated to the pro sheet */
+    const h3=sheet.querySelector("h3"), pp=sheet.querySelector(".pp");
+    const ctWrap=document.getElementById("cufCt").closest(".nf");
+    const capWrap=document.getElementById("cufCap").closest(".nf");
+    const chLabel=sheet.querySelector('label[for="cufCh"]');
+    if(benchSuppPickMode){
+      h3.textContent="Custom Suppressor";
+      pp.textContent="Add a can the catalog doesn't cover. Spec, filings, host link, and care clocks all work.";
+      ctWrap.style.display="none"; capWrap.style.display="none";
+      document.getElementById("cufFamWrap").style.display="none";   /* firearm strip guides don't apply to a can */
+      if(chLabel) chLabel.textContent="Bore / caliber rating (optional)";
+    } else {
+      h3.textContent="Custom Firearm";
+      pp.textContent="Add a firearm the catalog doesn't cover yet. It's a full entry — logs, round counts, reminders, and magazines all work.";
+      ctWrap.style.display=""; capWrap.style.display="";
+      if(chLabel) chLabel.textContent="Caliber (optional)";
+    }
+  };
+  (function(){
+    const add=document.getElementById("cufAdd");
+    let lenBefore=0;
+    add.parentNode.addEventListener("click",e=>{ if(e.target&&e.target.id==="cufAdd") lenBefore=safe.length; }, true);
+    add.addEventListener("click",()=>{
+      if(!benchSuppPickMode) return;
+      if(safe.length>lenBefore && safe[0] && safe[0].custom){
+        safe[0].ctype="Suppressor";
+        safe[0].nfaItemType="Suppressor";
+        saveSafe();
+        if(document.getElementById("scr-detail").classList.contains("active")) renderDetail();
+      }
+    });
+  })();
+
+  /* ================================================================
+     Item 12: STEP-1 PHOTO PROMPT + the stylized how-to-shoot example screen.
+     Step 1 ONLY — later steps keep the ruled quiet slot (no nags elsewhere).
+     ================================================================ */
+  function benchPhotoHowSheet(onPick){
+    let sh=document.getElementById("photoHowSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="photoHowSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="photoHowSheet") sh.classList.remove("open"); });
+    }
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="phX">×</button>
+      <h3 style="text-transform:none;letter-spacing:0">Shooting your own reference photos</h3>
+      <p class="pp">Five seconds of staging makes a photo you'll actually use at the bench.</p>
+      <div class="feat"><span class="fx">▸</span><span><b>Plain surface.</b> A bench mat, a towel, one solid color — the gun reads, the background doesn't.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Overhead light, no flash.</b> Daylight or a work lamp from above; flash flattens the detail you're trying to keep.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Side-on, muzzle right.</b> Match the angle the guides use and your photo drops straight into the same picture language.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Serial number out of frame.</b> Angle it away or cover it — the photo stays on this phone, but the habit is a good one.</span></div>
+      <div class="feat"><span class="fx">▸</span><span><b>Fill the frame.</b> The firearm or the part, edge to edge — next time you walk the guide, this IS the picture.</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn sm primary" id="phCam">Take photo</button>
+        <button class="btn sm" id="phPick">Choose from phone</button>
+        <button class="btn sm" id="phNo">Not now</button>
+      </div></div>`;
+    const done=(mode)=>{ sh.classList.remove("open"); if(mode!==undefined) onPick(mode); };
+    sh.querySelector("#phX").onclick=()=>done();
+    sh.querySelector("#phNo").onclick=()=>done();
+    sh.querySelector("#phCam").onclick=()=>done("camera");
+    sh.querySelector("#phPick").onclick=()=>done(null);
+    sh.classList.add("open");
+  }
+  function benchStepArtViaExample(f, i){
+    benchPhotoHowSheet(mode=>{
+      BenchEnv.store.setRaw("fs_slot_seen","1");   /* the example screen covers the info card's job for this entry */
+      benchPickPhoto(async (b64,dims)=>{
+        try{
+          const key=benchStepArtKey(f,i);
+          const old=benchStepArtRec(f,i);
+          const rec=await benchImport({kind:"firearm", id:f.id}, b64, dims, "steppic");
+          if(old) await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), old.id);
+          if(!f.stepArt) f.stepArt={};
+          f.stepArt[key]=rec.id;
+          saveSafe(); renderStep(false);
+        }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+      }, mode);
+    });
+  }
+  const benchPrevRenderStep_v16=renderStep;
+  renderStep=function(animateText=true){
+    benchPrevRenderStep_v16(animateText);
+    const f=byId(activeId); if(!f) return;
+    const canFS=BenchEnv.hasFS();
+    const line=document.getElementById("textArtLine");
+    const pane=document.getElementById("textArtPane");
+    if(stepIndex===0 && canFS && !benchStepArtRec(f,0)){
+      if(pane && !pane.hidden && line){
+        /* text-guide step 1: the visible prompt rides the slot's caption line */
+        line.innerHTML=`<button class="artadd-line" id="stepPromptBtn">＋ Add a photo of your own gun — see how</button>`;
+        const b=document.getElementById("stepPromptBtn");
+        if(b) b.onclick=()=>benchStepArtViaExample(byId(activeId), 0);
+      } else {
+        /* illustrated step 1: the prompt sits under the stage, same wording */
+        let pr=document.getElementById("stagePrompt");
+        if(!pr){
+          const stage=document.getElementById("gunStage");
+          if(stage){
+            pr=document.createElement("div");
+            pr.id="stagePrompt"; pr.style.cssText="text-align:center;padding:4px 0 2px";
+            pr.innerHTML=`<button class="artadd-line" id="stagePromptBtn">＋ Add a photo of your own gun — see how</button>`;
+            stage.appendChild(pr);
+          }
+        }
+        if(pr){ pr.hidden=false; const b=document.getElementById("stagePromptBtn"); if(b) b.onclick=()=>benchStepArtViaExample(byId(activeId), 0); }
+      }
+    } else {
+      const pr=document.getElementById("stagePrompt"); if(pr) pr.hidden=true;
+    }
+  };
+
+  /* item 9: VISIBLE AFFORDANCE — the clean-log photo button reads as the multi-shot
+     point it already is (benchImport appends; it never replaced). */
+  (function(){
+    const pb=document.getElementById("logPhotoBtn");
+    if(pb) pb.textContent="Attach Work Photos";
+  })();
+
+  /* test surface for the CDP harness — read-only reaches into the closure, the
+     same way BenchData already stands exposed for the node suites. No data. */
+  window.__fs16={
+    census(){
+      const missing=[], noBranch=[];
+      Object.keys(GUNS).forEach(k=>{
+        const g=GUNS[k];
+        if(!(g.deepSteps && g.deepSteps.length)) missing.push(k);
+        if(!(g.steps && g.steps.some(s=>s.branch))) noBranch.push(k);
+      });
+      return {total:Object.keys(GUNS).length, missing, noBranch};
+    },
+    stepsLen(){ return curSteps().length; },
+    wm(){ return FS_LOGO_WM; },
+    dumpDeep(){
+      const strip=h=>String(h).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+      return Object.keys(GUNS).map(k=>({key:k,
+        branchBody:strip((GUNS[k].steps.find(s=>s.branch)||{}).body||""),
+        deep:(GUNS[k].deepSteps||[]).map(s=>({title:s.title, body:strip(s.body), warn:s.warn?strip(s.warn):null}))}));
+    }
+  };
+  /* ============ V16 ROUND — ends ============ */
 
   /* boot */
   renderSafe();
