@@ -90,6 +90,13 @@
   .lkbtn:active{transform:scale(.96)}
   .lkbtn.del{color:var(--safe-red)}
   .lkempty{font-size:13px;color:var(--muted);text-align:center;padding:18px 6px;line-height:1.6}
+  /* v14 item 4b: per-caliber group headers in the locker */
+  .lkcalhead{display:flex;align-items:baseline;gap:10px;padding:10px 4px 6px;border-bottom:1px solid var(--edge);margin-bottom:8px}
+  .lkcalname{font-family:var(--display);font-size:13px;letter-spacing:1.6px;text-transform:uppercase;color:var(--text)}
+  .lkcaltot{font-family:var(--display);font-size:12px;color:var(--muted)}
+  .lkcaltot.low{color:var(--amber)}
+  .lkcalth{margin-left:auto;font-size:11px;color:var(--muted);white-space:nowrap}
+  .lkthin{width:64px;background:var(--panel);border:1px solid var(--edge);border-radius:7px;color:var(--text);font-size:12px;padding:3px 6px;text-align:right}
   .magrow{display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--edge);border-radius:9px;padding:8px 11px;margin-top:8px}
   .maginfo{flex:1;min-width:0;font-size:12.5px;color:var(--text)}
   .maginfo b{color:#E4E8EE}
@@ -511,51 +518,91 @@
   /* owner examples + first-minute art affordance */
   .artadd-line{background:none;border:none;color:var(--amber);font-family:var(--body);font-size:11.5px;font-style:normal;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
   .uarttag{position:absolute;left:8px;bottom:8px;font-family:var(--display);font-size:8.5px;letter-spacing:1.2px;color:var(--muted);background:rgba(12,14,17,.82);border-radius:4px;padding:2px 7px;text-transform:uppercase}
-  /* ---------- SAFE DOOR + DIAL (machined UI chrome) ---------- */
-  #safeDoor{position:fixed;inset:0;z-index:220;background:#0a0c0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:14px;transition:background .4s ease .5s}
+  /* ---------- SAFE DOOR + DIAL (v14 item 2, ruling-build-order-v14-20260815) ----------
+     THE RULED DOOR FOR REAL: edge-to-edge, no app chrome; a recessed doorway the
+     user looks INTO; machined metal + lighting; bolt-work that visibly throws;
+     the dial dominant; FIELDSTRIP engraved-and-lit. Sequence timing/behavior
+     classes (opening/unbolted/open/fadeout/shudder) and every id are UNCHANGED. */
+  #safeDoor{position:fixed;inset:0;z-index:220;background:#04050a;display:flex;padding:0;transition:background .4s ease .5s}
   #safeDoor.opening{pointer-events:none;background:transparent}
-  /* the safe FRAME: the user is looking INTO their safe — jamb depth all round */
-  .sd-frame{padding:13px;border-radius:22px;
-    background:linear-gradient(150deg,#343b45,#20252c 55%,#2b313a);
-    border:1px solid #414a56;
-    box-shadow:inset 0 2px 6px rgba(255,255,255,.05),inset 0 -3px 10px rgba(0,0,0,.5),0 24px 60px rgba(0,0,0,.7);
+  /* the JAMB: full-bleed machined frame — the visible depth ring the door sits in */
+  .sd-frame{position:absolute;inset:0;padding:clamp(14px,2.8vmin,34px);border-radius:0;
+    background:
+      linear-gradient(150deg,#3b434f,#232830 55%,#2f3742);
+    border:none;
+    box-shadow:inset 0 3px 12px rgba(255,255,255,.06),inset 0 -8px 24px rgba(0,0,0,.65);
     transition:opacity .3s ease .55s}
-  #safeDoor.opening .sd-frame{background:linear-gradient(150deg,#343b4588,#20252c88 55%,#2b313a88)}
-  .sd-scene{width:min(88vw,400px);max-height:56vh;aspect-ratio:4/5;perspective:1400px;
-    background:#07080b;border-radius:14px;
-    box-shadow:inset 0 0 34px rgba(0,0,0,.9)}   /* the dark interior behind the door */
-  .sd-door{position:relative;width:100%;height:100%;border-radius:16px;transform-origin:left center;
-    background:linear-gradient(148deg,#2b3038 0%,#1d2127 55%,#242a32 100%);
-    border:1px solid #3a424d;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 -14px 30px rgba(0,0,0,.45),0 18px 44px rgba(0,0,0,.6);
+  #safeDoor.opening .sd-frame{opacity:.55}
+  /* the interior VOID behind the door — a hard dark reveal all round the slab */
+  .sd-scene{position:relative;width:100%;height:100%;perspective:2000px;
+    background:#030408;border-radius:8px;
+    box-shadow:inset 0 0 0 3px #0b0e13,inset 0 0 70px rgba(0,0,0,.95)}
+  /* the DOOR SLAB: inset from the void so the recess reads; machined face =
+     brushed lines + top-left light + edge falloff */
+  .sd-door{position:absolute;inset:clamp(5px,1vmin,12px);border-radius:10px;transform-origin:left center;
+    background:
+      radial-gradient(130% 95% at 28% 10%,rgba(255,255,255,.075),transparent 55%),
+      linear-gradient(148deg,#2e343e 0%,#1d2127 55%,#262c35 100%);
+    border:1px solid #414a56;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.08),inset 0 -3vmin 8vmin rgba(0,0,0,.5),0 2.4vmin 6vmin rgba(0,0,0,.7);
     transition:transform .62s cubic-bezier(.45,0,.18,1)}
-  .sd-door::after{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;
-    background:repeating-linear-gradient(115deg,rgba(255,255,255,.014) 0 2px,transparent 2px 5px)}
+  .sd-door::after{content:"";position:absolute;inset:0;border-radius:10px;pointer-events:none;
+    background:repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 2px,transparent 2px 6px)}
+  .sd-door::before{content:"";position:absolute;inset:clamp(10px,2vmin,24px);border-radius:8px;pointer-events:none;
+    border:1px solid rgba(255,255,255,.05);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),inset 0 0 3vmin rgba(0,0,0,.35)}   /* machined inner panel line */
   .sd-door.open{transform:rotateY(-104deg)}
-  .sd-hinge{position:absolute;left:-4px;top:10%;bottom:10%;width:9px;display:flex;flex-direction:column;justify-content:space-between}
-  .sd-hinge i{display:block;height:24%;width:100%;border-radius:5px;background:linear-gradient(90deg,#40485380,#20252c);border:1px solid #3a424d}
-  /* v12 item 5: the name reads FIRST — bright engraved fill + amber, never a squint */
-  .sd-brand{position:absolute;top:7%;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:4px;color:#D5DCE6;text-shadow:0 1px 2px rgba(0,0,0,.65),0 0 14px rgba(213,220,230,.12)}
-  .sd-brand span{color:#E8A33D;text-shadow:0 1px 2px rgba(0,0,0,.65),0 0 14px rgba(232,163,61,.22)}
-  .sd-bolts{position:absolute;right:7px;top:16%;bottom:16%;width:16px;display:flex;flex-direction:column;justify-content:space-between}
-  .sd-bolts i{display:block;height:13px;border-radius:7px;background:linear-gradient(180deg,#5a6470,#39404a 60%,#4a525e);border:1px solid #2c333d;box-shadow:0 1px 3px rgba(0,0,0,.5);transition:transform .24s ease-in}
+  /* corner carriage screws — hardware, not decoration */
+  .sd-screws i{position:absolute;width:clamp(10px,1.6vmin,18px);height:clamp(10px,1.6vmin,18px);border-radius:50%;
+    background:radial-gradient(circle at 34% 30%,#6a7482,#3a424d 60%,#232830);border:1px solid #1a1f26;
+    box-shadow:0 1px 2px rgba(0,0,0,.6),inset 0 1px 1px rgba(255,255,255,.25)}
+  .sd-screws i:nth-child(1){left:3.2%;top:2.4%}.sd-screws i:nth-child(2){right:3.2%;top:2.4%}
+  .sd-screws i:nth-child(3){left:3.2%;bottom:2.4%}.sd-screws i:nth-child(4){right:3.2%;bottom:2.4%}
+  /* hinge barrels riding the reveal on the left */
+  .sd-hinge{position:absolute;left:calc(-1 * clamp(6px,1.1vmin,13px));top:12%;bottom:12%;width:clamp(12px,2vmin,24px);display:flex;flex-direction:column;justify-content:space-between}
+  .sd-hinge i{display:block;height:16%;width:100%;border-radius:clamp(5px,1vmin,11px);
+    background:linear-gradient(90deg,#525c6a,#2a3039 55%,#3d4550);border:1px solid #1e242c;
+    box-shadow:0 2px 5px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.16)}
+  /* FIELDSTRIP: engraved-and-lit, reads FIRST */
+  .sd-brand{position:absolute;top:5.5%;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;
+    font-size:clamp(21px,3.6vmin,36px);letter-spacing:.42em;text-indent:.42em;color:#DFE6F0;
+    text-shadow:0 -1px 1px rgba(0,0,0,.85),0 1px 1px rgba(255,255,255,.09),0 0 22px rgba(213,220,230,.16)}
+  .sd-brand span{color:#F0AC3F;text-shadow:0 -1px 1px rgba(0,0,0,.85),0 1px 1px rgba(255,255,255,.06),0 0 26px rgba(232,163,61,.4)}
+  /* BOLT-WORK: chunky locking bolts thrown INTO the reveal; unlock retracts them
+     into the door — the throw is the unlock's first visible act */
+  .sd-bolts{position:absolute;right:calc(-1 * clamp(7px,1.3vmin,15px));top:15%;bottom:15%;width:clamp(30px,4.6vmin,54px);display:flex;flex-direction:column;justify-content:space-between}
+  .sd-bolts i{display:block;height:clamp(16px,2.6vmin,30px);border-radius:clamp(8px,1.3vmin,15px);
+    background:linear-gradient(180deg,#7b8494,#454d59 55%,#5b6472);border:1px solid #232a33;
+    box-shadow:0 2px 6px rgba(0,0,0,.6),inset 0 2px 1px rgba(255,255,255,.3),inset 0 -2px 3px rgba(0,0,0,.35);
+    transition:transform .24s ease-in}
   .sd-bolts i:nth-child(2){transition-delay:.05s}.sd-bolts i:nth-child(3){transition-delay:.1s}.sd-bolts i:nth-child(4){transition-delay:.15s}
-  .sd-door.unbolted .sd-bolts i{transform:translateX(-15px)}
-  .sd-dial{position:absolute;left:50%;top:52%;width:62%;transform:translate(-50%,-50%)}
+  .sd-door.unbolted .sd-bolts i{transform:translateX(calc(-1 * clamp(26px,4vmin,48px)))}
+  /* THE DIAL — the dominant physical object, mounted on a machined backplate */
+  .sd-plate{position:absolute;left:50%;top:36%;width:min(58vw,42vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:14%;
+    background:linear-gradient(155deg,#333a45,#20252d 60%,#2a313b);border:1px solid #444d5a;
+    box-shadow:0 1.6vmin 4vmin rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.09),inset 0 -1vmin 2.4vmin rgba(0,0,0,.4)}
+  .sd-dial{position:absolute;left:50%;top:36%;width:min(52vw,38vh);transform:translate(-50%,-50%);
+    filter:drop-shadow(0 1.6vmin 2.4vmin rgba(0,0,0,.6))}
   .sd-dial.shudder{animation:sdshake .34s linear}
   @keyframes sdshake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 4px),-50%) rotate(-1.2deg)}40%{transform:translate(calc(-50% + 4px),-50%) rotate(1.2deg)}60%{transform:translate(calc(-50% - 3px),-50%)}80%{transform:translate(calc(-50% + 2px),-50%)}}
   #sdDisc{transition:transform .5s cubic-bezier(.35,0,.25,1);transform-origin:100px 100px}
-  .sd-dots{position:absolute;bottom:6%;left:0;right:0;text-align:center;font-size:13px;letter-spacing:8px;color:var(--muted)}
+  /* the PIN dots sit in their own lane just ABOVE the keypad — anchored to the
+     pad's computed height so no viewport shape buries them under the keys */
+  .sd-dots{position:absolute;bottom:calc(3.5% + 4*clamp(46px,6.8vmin,62px) + 3*clamp(7px,1.2vmin,12px) + 1.6vmin);left:0;right:0;text-align:center;font-size:clamp(14px,2vmin,20px);letter-spacing:.7em;text-indent:.7em;color:var(--muted)}
   .sd-dots b{color:var(--amber)}
-  .sd-pad{display:grid;grid-template-columns:repeat(3,72px);gap:9px}
-  .sd-pad button{height:52px;border-radius:11px;font-family:var(--display);font-weight:600;font-size:17px;color:var(--text);cursor:pointer;
-    background:linear-gradient(180deg,#262b33,#1b1f25);border:1px solid #333b45;box-shadow:0 2px 5px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
+  /* keypad ON the door face — machined keys, part of the hardware */
+  .sd-pad{position:absolute;left:50%;bottom:3.5%;transform:translateX(-50%);display:grid;
+    grid-template-columns:repeat(3,clamp(64px,10vmin,92px));gap:clamp(7px,1.2vmin,12px)}
+  .sd-pad button{height:clamp(46px,6.8vmin,62px);border-radius:clamp(9px,1.4vmin,14px);font-family:var(--display);font-weight:600;
+    font-size:clamp(17px,2.4vmin,23px);color:var(--text);cursor:pointer;
+    background:linear-gradient(180deg,#2a303a,#1b1f26);border:1px solid #39424e;
+    box-shadow:0 3px 7px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07)}
   .sd-pad button:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(0,0,0,.4)}
   #safeDoor.fadeout{opacity:0;transition:opacity .28s ease .34s}
-  .sd-setcombo{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);white-space:nowrap;
-    background:linear-gradient(180deg,#262b33,#1b1f25);border:1px solid #3a424d;border-radius:9px;
-    color:var(--amber);font-family:var(--display);font-weight:600;font-size:11px;letter-spacing:1.6px;padding:9px 14px;cursor:pointer;
-    box-shadow:0 2px 6px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
+  .sd-setcombo{position:absolute;bottom:11%;left:50%;transform:translateX(-50%);white-space:nowrap;
+    background:linear-gradient(180deg,#2a303a,#1b1f26);border:1px solid #3a424d;border-radius:11px;
+    color:var(--amber);font-family:var(--display);font-weight:600;font-size:clamp(11px,1.6vmin,15px);letter-spacing:1.8px;padding:clamp(9px,1.4vmin,14px) clamp(14px,2.2vmin,22px);cursor:pointer;
+    box-shadow:0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
   .sd-pad[hidden]{display:none!important}
   /* ---------- V12: hero card + drag reorder ---------- */
   .herocard{padding:10px 10px 12px}
@@ -582,25 +629,40 @@
   <div id="safeDoor" style="display:none">
     <div class="sd-frame"><div class="sd-scene">
       <div class="sd-door" id="sdDoor">
+        <div class="sd-screws"><i></i><i></i><i></i><i></i></div>
         <div class="sd-hinge"><i></i><i></i><i></i></div>
         <div class="sd-brand">FIELD<span>STRIP</span></div>
         <div class="sd-bolts" id="sdBolts"><i></i><i></i><i></i><i></i></div>
+        <div class="sd-plate"></div>
         <svg class="sd-dial" id="sdDial" viewBox="0 0 200 200" aria-label="Combination dial">
-          <circle cx="100" cy="100" r="96" fill="#171b20" stroke="#3a424d" stroke-width="2"/>
-          <circle cx="100" cy="100" r="88" fill="none" stroke="#242a32" stroke-width="10"/>
-          <path d="M100 2 l7 12 h-14 z" fill="#E8A33D"/>
+          <defs>
+            <radialGradient id="sdgBez" cx="35%" cy="28%" r="85%">
+              <stop offset="0" stop-color="#4a5461"/><stop offset=".6" stop-color="#2b323c"/><stop offset="1" stop-color="#1c2129"/>
+            </radialGradient>
+            <radialGradient id="sdgDisc" cx="38%" cy="30%" r="80%">
+              <stop offset="0" stop-color="#272d36"/><stop offset="1" stop-color="#171b21"/>
+            </radialGradient>
+            <radialGradient id="sdgHub" cx="38%" cy="30%" r="75%">
+              <stop offset="0" stop-color="#3a424e"/><stop offset="1" stop-color="#14181e"/>
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="97" fill="url(#sdgBez)" stroke="#454d5a" stroke-width="1.6"/>
+          <circle cx="100" cy="100" r="92.5" fill="none" stroke="#10141a" stroke-width="6" stroke-dasharray="2.2 3.1"/>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="#242a32" stroke-width="6"/>
+          <path d="M100 3 l7.5 13 h-15 z" fill="#E8A33D"/>
           <g id="sdDisc">
-            <circle cx="100" cy="100" r="78" fill="#1d2127" stroke="#333b45" stroke-width="2"/>
+            <circle cx="100" cy="100" r="78" fill="url(#sdgDisc)" stroke="#333b45" stroke-width="2"/>
             <g id="sdTicks"></g>
-            <circle cx="100" cy="100" r="30" fill="#171b20" stroke="#3a424d" stroke-width="2"/>
-            <circle cx="100" cy="100" r="6" fill="#2c333d"/>
+            <circle cx="100" cy="100" r="30" fill="url(#sdgHub)" stroke="#3a424d" stroke-width="2"/>
+            <circle cx="100" cy="100" r="12" fill="none" stroke="#2c333d" stroke-width="3"/>
+            <circle cx="100" cy="100" r="6" fill="#454d59"/>
           </g>
         </svg>
         <div class="sd-dots" id="sdDots"></div>
+        <div class="sd-pad" id="sdPad"></div>
         <button class="sd-setcombo" id="sdSetCombo" type="button" hidden>SET YOUR COMBINATION ▸</button>
       </div>
     </div></div>
-    <div class="sd-pad" id="sdPad"></div>
   </div>
   <script>
     /* pre-app gate: cover the screen from first paint when the lock is on */
@@ -643,14 +705,28 @@
       <div class="hint" id="lkScanMsg" style="margin:8px 0 4px"></div>
       <div id="lockerList"></div>
       <div class="lifebox" style="margin-top:14px">
-        <div class="lrow"><span class="lt">Add ammo</span></div>
+        <!-- v14 item 4a: CASE-LOT INTAKE — one fast entry: qty, caliber, load,
+             lot, price paid; buying a case is one entry. 4b: container field.
+             4f: handload toggle → recipe fields, batch number IS the lot. -->
+        <div class="lrow"><span class="lt">Check in ammo</span></div>
         <div class="lmsg" id="lkTeach" hidden style="color:var(--amber)">New barcode scanned — set this load below and Add to Locker. Fieldstrip remembers the barcode, so next time it's one scan to restock.</div>
         <div class="nfagrid">
           <div class="nf"><label for="lkMk">Manufacturer</label><select id="lkMk"></select></div>
           <div class="nf"><label for="lkCal">Caliber</label><select id="lkCal"></select></div>
           <div class="nf"><label for="lkGr">Grain</label><select id="lkGr"></select></div>
           <div class="nf"><label for="lkBt">Bullet type</label><select id="lkBt"></select></div>
-          <div class="nf wide"><label for="lkQty">Quantity (rounds)</label><input type="number" id="lkQty" min="1" inputmode="numeric" placeholder="e.g. 500"></div>
+          <div class="nf"><label for="lkQty">Quantity (rounds)</label><input type="number" id="lkQty" min="1" inputmode="numeric" placeholder="e.g. 500"></div>
+          <div class="nf"><label for="lkLot">Lot / batch number</label><input type="text" id="lkLot" maxlength="30" placeholder="e.g. FC26-114A"></div>
+          <div class="nf"><label for="lkPaid">Price paid ($, total)</label><input type="number" id="lkPaid" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 129.99"></div>
+          <div class="nf"><label for="lkLoc">Container / location</label><input type="text" id="lkLoc" maxlength="40" list="lkLocList" placeholder="e.g. Can #2"><datalist id="lkLocList"></datalist></div>
+        </div>
+        <label class="lmsg" style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer"><input type="checkbox" id="lkHand" style="width:auto"> Handload — record the recipe</label>
+        <div class="nfagrid" id="lkHandFields" hidden style="margin-top:6px">
+          <div class="nf"><label for="lkPowder">Powder</label><input type="text" id="lkPowder" maxlength="30" placeholder="e.g. CFE Pistol"></div>
+          <div class="nf"><label for="lkCharge">Charge (gr)</label><input type="number" id="lkCharge" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 5.6"></div>
+          <div class="nf"><label for="lkPrimer">Primer</label><input type="text" id="lkPrimer" maxlength="30" placeholder="e.g. CCI 500"></div>
+          <div class="nf"><label for="lkProj">Projectile</label><input type="text" id="lkProj" maxlength="40" placeholder="e.g. 124gr Berry's RN"></div>
+          <div class="nf"><label for="lkOal">OAL (in)</label><input type="number" id="lkOal" min="0" step="0.001" inputmode="decimal" placeholder="e.g. 1.135"></div>
         </div>
         <button class="btn sm primary" id="lkAdd" style="margin-top:11px">Add to Locker</button>
       </div>
@@ -681,6 +757,7 @@
         <div class="lrow"><span class="lt">Cleaning interval</span><span class="lv" id="cleanVal"></span></div>
         <div class="lifebar"><i id="cleanBar"></i></div>
         <div class="lmsg" id="cleanMsg"></div>
+        <div class="lmsg" id="cleanLowStock" hidden style="color:var(--amber)"></div><!-- v14 item 4e: low-stock chip on the care-clock surface -->
         <div class="ivrow"><label for="cleanIvInput">Clean every</label><input type="number" id="cleanIvInput" min="50" max="20000" inputmode="numeric"><span style="font-size:12px;color:var(--muted)">rounds</span></div>
       </div>
       <div class="lifebox" id="nfaBox" style="display:none">
@@ -935,6 +1012,13 @@
       <div class="field">
         <label for="ammoBt">Bullet type</label>
         <select id="ammoBt"></select>
+      </div>
+      <!-- v14 item 4d: the lot rides the session — it feeds the drawdown, the
+           malfunction record, and the zero tie, all from this one field -->
+      <div class="field">
+        <label for="ammoLot">Lot / batch (optional)</label>
+        <input type="text" id="ammoLot" maxlength="30" list="ammoLotList" placeholder="On the box flap — e.g. FC26-114A">
+        <datalist id="ammoLotList"></datalist>
       </div>
       <div class="hint" id="ammoStockHint" style="margin:-6px 0 14px"></div>
       <div class="field">
@@ -2883,6 +2967,41 @@
   const LOW_AT = 100;
   const lkKey = (mk,cal,gr,bt)=> [mk,cal,gr,bt].join("|");
   const findStock = (mk,cal,gr,bt)=> ammoInv.find(a=>a.key===lkKey(mk,cal,gr,bt));
+  /* v14 item 4 (ruling-build-order-v14-20260815): the locker knows lots,
+     containers, price and handloads. All fields are ADDITIVE-ON-WRITE on the
+     existing fs_ammo rows — no rewrite, no migration gate owed. A load may now
+     hold several rows (one per lot/container/recipe); findStock keeps its
+     first-match meaning for legacy callers. */
+  let ammoCfg = store.get("fs_ammo_cfg") || {};                     /* {low:{cal:threshold}} */
+  const saveAmmoCfg = ()=> store.set("fs_ammo_cfg", ammoCfg);
+  const findStockRows=(mk,cal,gr,bt)=> ammoInv.filter(a=>a.key===lkKey(mk,cal,gr,bt));
+  const loadQty=(mk,cal,gr,bt)=> findStockRows(mk,cal,gr,bt).reduce((s,a)=>s+a.qty,0);
+  const calStock=cal=> ammoInv.filter(a=>a.cal===cal).reduce((s,a)=>s+a.qty,0);
+  const calLowAt=cal=> (ammoCfg.low&&ammoCfg.low[cal]!=null)?ammoCfg.low[cal]:LOW_AT;
+  function lowCals(){
+    const cals=[...new Set(ammoInv.map(a=>a.cal))];
+    return cals.map(c=>({cal:c, qty:calStock(c), at:calLowAt(c)})).filter(x=>x.qty<x.at);
+  }
+  const lockerLots=cal=> [...new Set(ammoInv.filter(a=>(!cal||a.cal===cal)&&a.lot).map(a=>a.lot))];
+  const lockerLocs=()=> [...new Set(ammoInv.filter(a=>a.loc).map(a=>a.loc))];
+  const rowPPR=a=> (a.paid>0&&a.bought>0)?(a.paid/a.bought):null;
+  const rowName=a=> a.hand
+    ? `Handload${a.recipe&&a.recipe.powder?` — ${a.recipe.powder}${a.recipe.charge?` ${a.recipe.charge}gr`:""}`:""}${a.recipe&&a.recipe.proj?` · ${a.recipe.proj}`:` · ${a.gr} ${a.bt}`}`
+    : `${a.mk} ${a.gr} ${a.bt}`;
+  /* deduct n rounds from a load — the named lot's rows first, then check-in
+     order; returns rounds actually deducted (partial when stock runs out) */
+  function drawDown(mk,cal,gr,bt,lot,n){
+    let left=n, took=0;
+    const rows=findStockRows(mk,cal,gr,bt);
+    if(lot) rows.sort((a,b)=>(b.lot===lot?1:0)-(a.lot===lot?1:0));
+    for(const r of rows){
+      if(left<=0) break;
+      const d=Math.min(r.qty,left);
+      r.qty-=d; left-=d; took+=d;
+    }
+    if(took) saveAmmo();
+    return took;
+  }
   const byId = id => safe.find(f=>f.id===id);
   const fmtDate = ts => new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
   const fmtN = n => n.toLocaleString();
@@ -3289,14 +3408,28 @@
     /* ---- ammo intel ---- */
     const intel=computeIntel(f);
     const ib=document.getElementById("intelBox"), ir=document.getElementById("intelRows");
-    if(intel.best||intel.avoid.length||intel.malfs>0){
+    if(intel.best||intel.avoid.length||intel.malfs>0||(intel.lotFlags&&intel.lotFlags.length)){
       ib.style.display="block";
       let rows="";
       if(intel.best) rows+=`<div class="intelrow"><span class="tag best">Best load</span><span>${esc(intel.best)}</span></div>`;
       intel.avoid.forEach(l=> rows+=`<div class="intelrow"><span class="tag avoid">Avoid</span><span>${esc(l)}</span></div>`);
+      /* v14 item 4d: named lots that pattern weird, called out on their own */
+      (intel.lotFlags||[]).forEach(t=> rows+=`<div class="intelrow"><span class="tag avoid">Lot flag</span><span>Lot ${esc(t.lot)} patterns weird — ${t.malf+t.avoid} flagged ${t.malf+t.avoid>1?"entries":"entry"} on ${esc(t.load)}</span></div>`);
       if(intel.malfs>0) rows+=`<div class="intelrow"><span class="tag malf">Malfunctions</span><span>${intel.malfs} logged ${intel.malfs>1?"entries":"entry"} — details in the maintenance log</span></div>`;
       ir.innerHTML=rows;
     } else { ib.style.display="none"; }
+    /* v14 item 4e: LOW STOCK on the care-clock surface — the clean clock knows
+       when the caliber it burns is running out */
+    (function(){
+      const el=document.getElementById("cleanLowStock"); if(!el) return;
+      const c0=fcat(f);
+      const cal=calGuess(c0?c0.ch:(f.custom?(f.cch||""):""));
+      const has=cal && ammoInv.some(a=>a.cal===cal);
+      if(has && calStock(cal)<calLowAt(cal)){
+        el.hidden=false;
+        el.textContent=`LOW STOCK — ${fmtN(calStock(cal))} rounds of ${cal} left in the locker.`;
+      } else { el.hidden=true; el.textContent=""; }
+    })();
 
     /* ---- NFA record — Pro feature ----
        Suppressors keep the Form 1/4 record in f.nfa; firearms get the SBR/SBS/AOW
@@ -3410,7 +3543,16 @@
     const f=byId(activeId); if(!f||!(n>0)) return;
     n=Math.floor(n);
     f.totalRounds+=n; f.roundsSinceClean+=n; f.roundsSinceSpring+=n;
-    addLog(f,"rounds",`Fired ${fmtN(n)} rounds`);
+    /* v14 item 4c: AUTO-DRAWDOWN — no new per-trip counting anywhere. The
+       rounds-only path deducts from the firearm's remembered last load; the
+       full session sheet already names its load and deducts there. */
+    let stockNote="";
+    const la=f.lastAmmo;
+    if(la && la.mk){
+      const took=drawDown(la.mk,la.cal,la.gr,la.bt,la.lot,n);
+      if(took) stockNote=` — ${fmtN(loadQty(la.mk,la.cal,la.gr,la.bt))} left in locker (${la.mk} ${la.gr})`;
+    }
+    addLog(f,"rounds",`Fired ${fmtN(n)} rounds${stockNote}`);
     saveSafe(); renderDetail();
   }
   document.querySelectorAll(".chip[data-r]").forEach(c=> c.addEventListener("click",()=> openSession(+c.dataset.r)));
@@ -4010,22 +4152,31 @@
 
   /* ---- aggregate ammo verdicts per load: best load, avoid flags, malfunction count ---- */
   function computeIntel(f){
-    const perLoad={}; let malfs=0;
+    const perLoad={}, perLot={}; let malfs=0;
     (f.log||[]).forEach(e=>{
       if((e.type!=="ammo"&&e.type!=="session")||!e.load||!e.perf) return;
       const L=perLoad[e.load]=perLoad[e.load]||{good:0,malf:0,avoid:0};
       if(GOOD_SET.has(e.perf)) L.good++;
       if(MALF_SET.has(e.perf)){ L.malf++; malfs++; }
       if(e.perf==="Avoid — never buying again") L.avoid++;
+      /* v14 item 4d: a lot that patterns weird is a first-class record —
+         aggregate malfunctions per (load, lot) alongside the per-load view */
+      if(e.lot){
+        const K=e.load+"|"+e.lot;
+        const T=perLot[K]=perLot[K]||{load:e.load,lot:e.lot,malf:0,avoid:0};
+        if(MALF_SET.has(e.perf)) T.malf++;
+        if(e.perf==="Avoid — never buying again") T.avoid++;
+      }
     });
     const avoid=Object.keys(perLoad).filter(l=> perLoad[l].avoid>0 || perLoad[l].malf>=2);
+    const lotFlags=Object.values(perLot).filter(t=> t.avoid>0 || t.malf>=2);
     let best=null,bestScore=0;
     Object.keys(perLoad).forEach(l=>{
       if(avoid.indexOf(l)>=0) return;
       const s=perLoad[l].good - perLoad[l].malf;
       if(perLoad[l].good>0 && s>bestScore){ best=l; bestScore=s; }
     });
-    return {best, avoid, malfs};
+    return {best, avoid, malfs, lotFlags};
   }
 
   function renderAmmoHist(f){
@@ -4034,7 +4185,7 @@
     wrap.hidden=!entries.length;
     hist.innerHTML=entries.map(e=>`
       <div class="ammoitem">
-        <div class="am-top">${esc(e.load||e.msg)}</div>
+        <div class="am-top">${esc(e.load||e.msg)}${e.lot?` · lot ${esc(e.lot)}`:""}</div>
         ${e.perf?`<div class="am-perf${PERF_BAD.has(e.perf)?" bad":""}">${esc(e.perf)}</div>`:""}
         ${e.anote?`<div class="am-note">${esc(e.anote)}</div>`:""}
         <div class="am-date">${fmtDate(e.ts)}</div>
@@ -4052,6 +4203,10 @@
     fillSel(ammoBtSel,BULLET_TYPES,last.bt||BULLET_TYPES[0]);
     fillSel(ammoPerfSel,PERF_OPTS,PERF_OPTS[0]);
     ammoNoteInp.value="";
+    /* v14 item 4d: lot rides the session — prefill the remembered lot, offer
+       the locker's lots for this caliber */
+    document.getElementById("ammoLot").value=last.lot||"";
+    document.getElementById("ammoLotList").innerHTML=lockerLots(cal).map(l=>`<option value="${esc(l)}">`).join("");
     renderAmmoHist(f);
     updateStockHint();
     show("scr-ammo");
@@ -4067,17 +4222,20 @@
     const f=byId(activeId); if(!f) return;
     const n=Math.floor(+document.getElementById("ammoRounds").value||0);
     const mk=ammoMkSel.value, cal=ammoCalSel.value, gr=ammoGrSel.value, bt=ammoBtSel.value,
-          perf=ammoPerfSel.value, note=ammoNoteInp.value.trim();
-    f.lastAmmo={mk,cal,gr,bt};
+          perf=ammoPerfSel.value, note=ammoNoteInp.value.trim(),
+          lot=document.getElementById("ammoLot").value.trim();
+    /* v14 item 4d: the lot rides the session record — malfunction entries carry
+       it, so "that lot patterns weird" is a first-class record */
+    f.lastAmmo={mk,cal,gr,bt,lot};
     const load=`${mk} ${gr} ${bt} · ${cal}`;
     if(n>0){
       f.totalRounds+=n; f.roundsSinceClean+=n; f.roundsSinceSpring+=n;
       let stockNote="";
-      const st=findStock(mk,cal,gr,bt);
-      if(st){ st.qty=Math.max(0,st.qty-n); saveAmmo(); stockNote=` · ${fmtN(st.qty)} left in locker`; }
-      addLog(f,"session",`Fired ${fmtN(n)} rounds — ${load}${stockNote}`,{load, perf, anote:note});
+      const took=drawDown(mk,cal,gr,bt,lot,n);            /* v14 item 4c: rows per lot, named lot first */
+      if(took) stockNote=` · ${fmtN(loadQty(mk,cal,gr,bt))} left in locker`;
+      addLog(f,"session",`Fired ${fmtN(n)} rounds — ${load}${lot?` · lot ${lot}`:""}${stockNote}`,{load, perf, anote:note, lot});
     } else {
-      addLog(f,"ammo",`Ammo logged — ${load}`,{load, perf, anote:note});
+      addLog(f,"ammo",`Ammo logged — ${load}${lot?` · lot ${lot}`:""}`,{load, perf, anote:note, lot});
     }
     saveSafe(); show("scr-detail");
   });
@@ -4145,24 +4303,51 @@
   function renderLocker(){
     const list=document.getElementById("lockerList");
     if(!ammoInv.length){
-      list.innerHTML='<div class="lkempty">Nothing in the locker yet. Add a load below — range sessions with a matching load deduct from it automatically.</div>';
+      list.innerHTML='<div class="lkempty">Nothing in the locker yet. Check in a load below — range sessions deduct from it automatically.</div>';
       return;
     }
+    /* v14 item 4b: STOCK PER CALIBER AND PER CONTAINER — grouped by caliber
+       with a live total + per-caliber low threshold; each row names its lot,
+       its container and its price-per-round. */
     list.innerHTML="";
-    ammoInv.forEach((a,i)=>{
-      const row=document.createElement("div"); row.className="lkrow";
-      const low = a.qty<LOW_AT;
-      row.innerHTML=`<div class="lkinfo">
-          <div class="lkname">${esc(a.mk)} ${esc(a.gr)} ${esc(a.bt)}${low?'<span class="lklow">LOW</span>':''}</div>
-          <div class="lkcal">${esc(a.cal)}</div>
-        </div>
-        <div class="lkqty${low?' low':''}">${fmtN(a.qty)}</div>
-        <div class="lkbtns">
-          <button class="lkbtn" data-i="${i}" data-add="100">+100</button>
-          <button class="lkbtn" data-i="${i}" data-add="500">+500</button>
-          <button class="lkbtn del" data-i="${i}" data-del="1">${lkDelArm===i?"Confirm":"Remove"}</button>
-        </div>`;
-      list.appendChild(row);
+    const cals=[...new Set(ammoInv.map(a=>a.cal))];
+    cals.forEach(cal=>{
+      const tot=calStock(cal), at=calLowAt(cal), low=tot<at;
+      const head=document.createElement("div"); head.className="lkcalhead";
+      head.innerHTML=`<span class="lkcalname">${esc(cal)}</span>
+        <span class="lkcaltot${low?' low':''}">${fmtN(tot)} rds${low?' <span class="lklow">LOW</span>':''}</span>
+        <span class="lkcalth">low&nbsp;under <input type="number" class="lkthin" data-cal="${esc(cal)}" min="0" value="${at}"></span>`;
+      list.appendChild(head);
+      ammoInv.forEach((a,i)=>{
+        if(a.cal!==cal) return;
+        const ppr=rowPPR(a);
+        const tags=[
+          a.lot?`lot ${esc(a.lot)}`:"",
+          a.loc?`▣ ${esc(a.loc)}`:"",
+          ppr!=null?`$${ppr.toFixed(ppr<1?3:2)}/rd`:""
+        ].filter(Boolean).join(" · ");
+        const row=document.createElement("div"); row.className="lkrow";
+        row.innerHTML=`<div class="lkinfo">
+            <div class="lkname">${esc(rowName(a))}${a.hand?'<span class="lklow" style="background:#2b3644;color:var(--amber)">HANDLOAD</span>':''}</div>
+            <div class="lkcal">${tags||esc(a.cal)}</div>
+          </div>
+          <div class="lkqty${a.qty<at?' low':''}">${fmtN(a.qty)}</div>
+          <div class="lkbtns">
+            <button class="lkbtn" data-i="${i}" data-add="100">+100</button>
+            <button class="lkbtn" data-i="${i}" data-add="500">+500</button>
+            <button class="lkbtn del" data-i="${i}" data-del="1">${lkDelArm===i?"Confirm":"Remove"}</button>
+          </div>`;
+        list.appendChild(row);
+      });
+    });
+    list.querySelectorAll(".lkthin").forEach(inp=>{
+      inp.addEventListener("change",()=>{
+        const v=Math.max(0,Math.floor(+inp.value||0));
+        if(!ammoCfg.low) ammoCfg.low={};
+        ammoCfg.low[inp.dataset.cal]=v;
+        saveAmmoCfg(); renderLocker();
+        if(document.getElementById("scr-detail").classList.contains("active")) renderDetail();
+      });
     });
     list.querySelectorAll(".lkbtn").forEach(b=>{
       b.addEventListener("click",()=>{
@@ -4182,6 +4367,7 @@
     fillSel(lkGrSel,grainOpts(lkCalSel.value),grainOpts(lkCalSel.value)[0]);
     fillSel(lkBtSel,BULLET_TYPES,BULLET_TYPES[0]);
     lkQtyInp.value="";
+    document.getElementById("lkLocList").innerHTML=lockerLocs().map(l=>`<option value="${esc(l)}">`).join("");
     lkDelArm=null;
     pendingUpc=null;
     document.getElementById("lkTeach").hidden=true;
@@ -4235,6 +4421,13 @@
     scanCheckIn();
   });
   lkCalSel.addEventListener("change",()=> fillSel(lkGrSel,grainOpts(lkCalSel.value),grainOpts(lkCalSel.value)[0]));
+  document.getElementById("lkHand").addEventListener("change",e=>{
+    document.getElementById("lkHandFields").hidden=!e.target.checked;
+  });
+  /* v14 item 4a: CASE-LOT INTAKE — one entry carries qty, load, lot, price and
+     container; price-per-round is computed from paid/bought. 4f: a handload
+     records its recipe on the same row; its batch number IS the lot, so it
+     plugs into zeros, malfunction records and stock like any factory lot. */
   document.getElementById("lkAdd").addEventListener("click",()=>{
     const qty=Math.floor(+lkQtyInp.value||0);
     if(qty<1){
@@ -4244,9 +4437,32 @@
     }
     document.getElementById("lkScanMsg").textContent="";
     const mk=lkMkSel.value, cal=lkCalSel.value, gr=lkGrSel.value, bt=lkBtSel.value;
-    const ex=findStock(mk,cal,gr,bt);
-    if(ex) ex.qty+=qty;
-    else ammoInv.push({key:lkKey(mk,cal,gr,bt), mk, cal, gr, bt, qty});
+    const lot=document.getElementById("lkLot").value.trim();
+    const paid=Math.max(0,+document.getElementById("lkPaid").value||0);
+    const loc=document.getElementById("lkLoc").value.trim();
+    const hand=document.getElementById("lkHand").checked;
+    const recipe=hand?{
+      powder:document.getElementById("lkPowder").value.trim(),
+      charge:+document.getElementById("lkCharge").value||null,
+      primer:document.getElementById("lkPrimer").value.trim(),
+      proj:document.getElementById("lkProj").value.trim(),
+      oal:+document.getElementById("lkOal").value||null
+    }:null;
+    /* a row is one load in one lot in one container — restocking the same
+       identity merges; anything else is its own row */
+    let ex=ammoInv.find(a=>a.key===lkKey(mk,cal,gr,bt) && (a.lot||"")===lot && (a.loc||"")===loc && !!a.hand===hand);
+    if(ex){
+      ex.qty+=qty;
+      if(paid>0){ ex.paid=(ex.paid||0)+paid; ex.bought=(ex.bought||0)+qty; }
+      if(recipe) ex.recipe=recipe;
+    } else {
+      ex={key:lkKey(mk,cal,gr,bt), mk, cal, gr, bt, qty};
+      if(lot) ex.lot=lot;
+      if(loc) ex.loc=loc;
+      if(paid>0){ ex.paid=paid; ex.bought=qty; }
+      if(hand){ ex.hand=true; ex.recipe=recipe; }
+      ammoInv.push(ex);
+    }
     if(pendingUpc){
       upcMap[pendingUpc]={mk,cal,gr,bt,qty};
       saveUpc();
@@ -4254,15 +4470,24 @@
       pendingUpc=null;
       document.getElementById("lkTeach").hidden=true;
     }
-    lkQtyInp.value="";
+    lkQtyInp.value=""; document.getElementById("lkLot").value="";
+    document.getElementById("lkPaid").value=""; document.getElementById("lkLoc").value="";
+    document.getElementById("lkHand").checked=false; document.getElementById("lkHandFields").hidden=true;
+    ["lkPowder","lkPrimer","lkProj"].forEach(id=>document.getElementById(id).value="");
+    ["lkCharge","lkOal"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("lkLocList").innerHTML=lockerLocs().map(l=>`<option value="${esc(l)}">`).join("");
     saveAmmo(); renderLocker();
   });
 
-  /* session ↔ locker */
+  /* session ↔ locker (v14: a load may hold several lot/container rows) */
   function updateStockHint(){
     const h=document.getElementById("ammoStockHint");
-    const st=findStock(ammoMkSel.value,ammoCalSel.value,ammoGrSel.value,ammoBtSel.value);
-    if(st) h.textContent=`In locker: ${fmtN(st.qty)} rounds of this load${st.qty<LOW_AT?" — running low":""}`;
+    const rows=findStockRows(ammoMkSel.value,ammoCalSel.value,ammoGrSel.value,ammoBtSel.value);
+    const q=rows.reduce((s,a)=>s+a.qty,0);
+    if(rows.length){
+      const lots=rows.filter(a=>a.lot&&a.qty>0).map(a=>`${a.lot}: ${fmtN(a.qty)}`).join(" · ");
+      h.textContent=`In locker: ${fmtN(q)} rounds of this load${lots?` (${lots})`:""}${q<calLowAt(ammoCalSel.value)?" — running low":""}`;
+    }
     else h.textContent="";
   }
   [ammoMkSel,ammoCalSel,ammoGrSel,ammoBtSel].forEach(sel=> sel.addEventListener("change",updateStockHint));
@@ -5663,6 +5888,33 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const cur=f.zeros.length? f.zeros[f.zeros.length-1] : null;
     sum.textContent = cur ? `${cur.dist} ${cur.unit} — ${fmtDate(cur.ts)}` : "Not recorded";
     msg.textContent = cur ? "" : "Distance, the load AND its lot, target photos — a zero is only as good as the box it was shot with.";
+    /* v14 item 4d: the lot↔zero tie, completed. The zero knows its lot; the
+       locker now knows its lots — so the card can say whether the trued lot is
+       still on hand, and flag when a NEW lot has taken over. */
+    if(cur && cur.lot){
+      const onHand=ammoInv.filter(a=>a.lot===cur.lot).reduce((s,a)=>s+a.qty,0);
+      if(onHand>0){
+        msg.textContent=`Zeroed on lot ${cur.lot} — ${fmtN(onHand)} rounds of it still on hand.`;
+        msg.style.color="";
+      } else {
+        const c0=fcat(f);
+        const cal=(typeof calGuess==="function")?calGuess(c0?c0.ch:(f.custom?(f.cch||""):"")):null;
+        const otherLots=cal?[...new Set(ammoInv.filter(a=>a.cal===cal&&a.lot&&a.lot!==cur.lot&&a.qty>0).map(a=>a.lot))]:[];
+        if(otherLots.length){
+          msg.textContent=`Zeroed on lot ${cur.lot} — that lot is gone and lot ${otherLots[0]} is on hand. Confirm your zero on the new lot.`;
+          msg.style.color="var(--amber)";
+        } else { msg.style.color=""; }
+      }
+    } else if(msg) msg.style.color="";
+    /* offer the locker's lots on the zero form */
+    (function(){
+      const zl=document.getElementById("zeroLot"); if(!zl) return;
+      let dl=document.getElementById("zeroLotList");
+      if(!dl){ dl=document.createElement("datalist"); dl.id="zeroLotList"; zl.setAttribute("list","zeroLotList"); zl.parentNode.appendChild(dl); }
+      const c0=fcat(f);
+      const cal=(typeof calGuess==="function")?calGuess(c0?c0.ch:(f.custom?(f.cch||""):"")):null;
+      dl.innerHTML=(cal?lockerLots(cal):lockerLots()).map(l=>`<option value="${esc(l)}">`).join("");
+    })();
     if(!document.getElementById("zeroAmmo").value && f.lastAmmo){
       const la=f.lastAmmo;
       document.getElementById("zeroAmmo").value=[la.mk,la.gr,la.bt].filter(Boolean).join(" ");
@@ -6032,11 +6284,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const FS_LOGO_WM = '<svg viewBox="0 0 184 122" aria-hidden="true" style="opacity:.22"><rect x="52" y="0" width="132" height="30" rx="9" fill="#3E4652"/><rect x="62" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="73" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="84" y="8" width="5" height="14" rx="2" fill="#14161A"/><rect x="26" y="46" width="132" height="30" rx="9" fill="#E8A33D"/><circle cx="49" cy="61" r="7.5" fill="#14161A"/><rect x="0" y="92" width="132" height="30" rx="9" fill="#3E4652"/><circle cx="112" cy="107" r="4" fill="#14161A"/><circle cx="96" cy="107" r="4" fill="#14161A"/></svg>';
   const TEXT_QUIET_LINE = "Custom plates for this model are in the works — the full guide below doesn't wait.";
 
-  /* art pane, injected beside the layer viewport: user photo > plate > logo */
+  /* art pane, injected beside the layer viewport. v14 item 3: the pane's art
+     slot IS the shared attach box (benchAttachBox, defined in the v8 block) —
+     identical frame, states and tap → add / Replace / Remove as the detail
+     hero, so a photo can be attached from inside the guide itself. */
   (function(){
     const pane=document.createElement("div");
     pane.id="textArtPane"; pane.hidden=true;
-    pane.innerHTML='<div class="refill" style="margin:8px 14px 0"><span id="textArtSvg"></span><img id="textArtImg" alt="Your firearm" hidden></div>'
+    pane.innerHTML='<div id="textArtBox" style="margin:8px 14px 0"></div>'
       +'<div class="textartline" id="textArtLine"></div>';
     const vp=document.getElementById("layerViewport");
     vp.parentNode.insertBefore(pane, vp.nextSibling);
@@ -6048,15 +6303,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchOwnerExamplePath(f){
     return (f && f.model && OWNER_EXAMPLES[f.model]) || null;
   }
-  async function benchShowUserArtInPane(rec){
-    const img=document.getElementById("textArtImg");
-    const svg=document.getElementById("textArtSvg");
-    svg.innerHTML=""; img.hidden=false;
-    try{
-      const fA=BenchEnv.files();
-      if(fA && rec.file){ const b=await fA.readB64(rec.file); img.src="data:image/jpeg;base64,"+b; }
-    }catch(e){}
-  }
+  /* v14 item 3: benchShowUserArtInPane retired — the shared attach box renders
+     every pane state (photo included) through the one component. */
 
   /* ---------- shared gates already defined above (DEFAULT_GATE / SUPPRESSOR_GATE) ---------- */
   const TG_CLEAR_WARN = "Magazine out FIRST, then lock the slide and look INTO the chamber — eyes and a fingertip. The round that hurts someone is the one that was 'definitely' not there.";
@@ -6671,34 +6919,17 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("layerViewport").hidden=true;
     document.querySelectorAll(".gun-svg").forEach(s=>s.classList.remove("active"));
     const pane=document.getElementById("textArtPane");
-    const img=document.getElementById("textArtImg");
-    img.hidden=true; img.removeAttribute("src");
-    const line=document.getElementById("textArtLine");
+    /* v14 item 3: the pane's art IS the shared attach box — one component,
+       identical states and interactions to the detail hero. The quiet line
+       stays as the pane's caption in the branded-empty state only (its ruled
+       copy untouched); over a photo, plate or example there is nothing to sell. */
     const f0=byId(activeId);
-    const example=f0?benchOwnerExamplePath(f0):null;
-    if(photo){
-      benchShowUserArtInPane(photo);
-      /* the plates-in-the-works line shows ONLY when the logo is displayed;
-         over the owner's own photo there is nothing to sell */
-      line.innerHTML="";
-    } else if(example){
-      /* owner example: shipped proof of what the slot becomes */
-      const im=document.getElementById("textArtImg");
-      document.getElementById("textArtSvg").innerHTML="";
-      im.hidden=false; im.src=example;
-      line.innerHTML = BenchEnv.hasFS()
-        ? `example photo — <button type="button" class="artadd-line" id="paneAddArt">add a photo of yours</button>`
-        : "example photo";
-    } else {
-      document.getElementById("textArtSvg").innerHTML=FS_LOGO_WM;
-      /* discoverability (ruled): the logo state sells the option immediately */
-      line.innerHTML = esc(TEXT_QUIET_LINE)
-        + (BenchEnv.hasFS()
-            ? ` <button type="button" class="artadd-line" id="paneAddArt">Add a photo of yours ▸</button>`
-            : "");
-    }
-    const pa=document.getElementById("paneAddArt");
-    if(pa) pa.onclick=()=>{ const f2=byId(activeId); if(f2) benchSetUserArt(f2); };
+    const line=document.getElementById("textArtLine");
+    const boxHost=document.getElementById("textArtBox");
+    let st="empty";
+    if(f0) st=benchAttachBox(boxHost, f0);
+    else boxHost.innerHTML=`<div class="heroart empty abBox">${FS_LOGO_WM}</div>`;
+    line.innerHTML = st==="empty" ? esc(TEXT_QUIET_LINE) : "";
     pane.hidden=false;
     branched=false;
     buildProgress();
@@ -7064,6 +7295,21 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(!f || !f.userArt) return null;
     return BenchAttach.readReg(BenchEnv.store).find(a=>a.id===f.userArt) || null;
   }
+  /* v14 item 3: an art change refreshes WHEREVER the attach box lives — the
+     detail hero, and the guide player pane if the user attached from inside
+     the guide. The player re-derives its presentation in place, keeping the
+     user's step and branch state (startGuide resets both; restore after). */
+  function benchArtChanged(){
+    renderDetail();
+    const pl=document.getElementById("scr-player");
+    if(pl && pl.classList.contains("active")){
+      const si=stepIndex, br=branched;
+      startGuide();
+      branched=br; buildProgress();
+      stepIndex=Math.min(si, curSteps().length-1);
+      renderStep(false);
+    }
+  }
   async function benchSetUserArt(f){
     benchPickPhoto(async (b64,dims)=>{
       try{
@@ -7072,7 +7318,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         if(old) await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), old.id);
         f.userArt=rec.id;
         addLog(f,"note","Photo set as this firearm's art");
-        saveSafe(); renderDetail();
+        saveSafe(); benchArtChanged();
       }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
     });
   }
@@ -7081,7 +7327,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(rec) await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), rec.id);
     f.userArt=null;
     addLog(f,"note","Firearm photo removed — art reverts");
-    saveSafe(); renderDetail();
+    saveSafe(); benchArtChanged();
   }
   function benchRenderUserArtSlot(f){
     let slot=document.getElementById("userArtSlot");
@@ -7503,6 +7749,63 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }).join("");
     return `<div class="heroplate" style="aspect-ratio:${aw} / ${ah};width:min(100%,${wCap}px)">${imgs}</div>`;
   }
+  /* ============ v14 item 3: THE ATTACH BOX — ONE COMPONENT, EVERYWHERE ============
+     Identical frame, states and interactions wherever the firearm's art slot
+     appears: user photo (tap → Replace / Remove) → illustrated plate → owner
+     example → branded empty invitation (logo watermark — empty is branded,
+     never blank). Used by the detail hero card AND the guide player's art
+     pane, so a photo can be attached from inside the guide itself.
+     Invitation wording UNCHANGED (Darren rewording pending, phrase TBD).
+     Class-scoped, no ids — the box exists on two screens at once. */
+  function benchAttachBox(host, f){
+    const rec=benchUserArtRec(f);
+    const example=rec?null:benchOwnerExamplePath(f);
+    const plate=rec?null:benchHeroPlate(f);
+    const canFS=BenchEnv.hasFS();
+    const attach=canFS?'<button class="uartbtn abAttach" title="Attach your piece">＋</button>':"";
+    let art, state;
+    if(rec){
+      state="photo";
+      art=`<div class="heroart abBox"><img class="abImg" alt="Your firearm">
+        <div class="heroacts abActs" hidden>
+          <button class="btn sm primary abReplace">Replace</button>
+          <button class="btn sm abRemove">Remove</button>
+        </div></div>`;
+    } else if(plate){
+      state="plate";
+      art=`<div class="heroart abBox">${plate}${attach}</div>`;
+    } else if(example){
+      state="example";
+      art=`<div class="heroart abBox"><img src="${example}" alt="Example photo"><span class="uarttag">EXAMPLE</span>${attach}</div>`;
+    } else {
+      /* the empty state IS the invitation — a visible framed box, never a
+         hidden tap zone, never blank: the logo watermark brands it */
+      state="empty";
+      art=`<div class="heroart empty abBox">${FS_LOGO_WM}${canFS?'<div class="heroinvite">Attach your piece here.</div>':""}</div>`;
+    }
+    host.innerHTML=art;
+    const box=host.querySelector(".abBox");
+    if(rec){
+      benchLoadThumb(box.querySelector(".abImg"), rec);
+      const actsEl=box.querySelector(".abActs");
+      box.querySelector(".abImg").onclick=()=>{ actsEl.hidden=!actsEl.hidden; };
+      actsEl.onclick=e=>{ if(e.target===actsEl) actsEl.hidden=true; };
+      box.querySelector(".abReplace").onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
+      let armed=false;
+      box.querySelector(".abRemove").onclick=e=>{
+        e.stopPropagation();
+        const b=e.target;
+        if(!armed){ armed=true; b.textContent="Remove — sure?"; setTimeout(()=>{armed=false; b.textContent="Remove";},3000); return; }
+        benchRemoveUserArt(f);
+      };
+    } else {
+      const ha=box.querySelector(".abAttach");
+      if(ha) ha.onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
+      if(state==="empty" && canFS) box.onclick=()=>benchSetUserArt(f);
+    }
+    return state;
+  }
+
   benchRenderUserArtSlot = function(f){
     const old=document.getElementById("userArtSlot"); if(old) old.remove();
     let hero=document.getElementById("heroCard");
@@ -7513,57 +7816,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       hero.id="heroCard"; hero.className="lifebox herocard";
       head.parentNode.insertBefore(hero, head.nextSibling);
     }
-    const rec=benchUserArtRec(f);
-    const example=rec?null:benchOwnerExamplePath(f);
-    const plate=rec?null:benchHeroPlate(f);
-    const attach=BenchEnv.hasFS()?'<button class="uartbtn" id="heroAttach" title="Attach your piece">＋</button>':"";
-    let art;
-    if(rec){
-      art=`<div class="heroart" id="heroArt"><img id="heroImg" alt="Your firearm">
-        <div class="heroacts" id="heroActs" hidden>
-          <button class="btn sm primary" id="heroReplace">Replace</button>
-          <button class="btn sm" id="heroRemove">Remove</button>
-        </div></div>`;
-    } else if(plate){
-      art=`<div class="heroart" id="heroArt">${plate}${attach}</div>`;
-    } else if(example){
-      art=`<div class="heroart" id="heroArt"><img src="${example}" alt="Example photo"><span class="uarttag">EXAMPLE</span>${attach}</div>`;
-    } else {
-      /* the empty state IS the invitation — a visible framed box, never a
-         hidden tap zone */
-      art=`<div class="heroart empty" id="heroArt">${FS_LOGO_WM}${BenchEnv.hasFS()?'<div class="heroinvite">Attach your piece here.</div>':""}</div>`;
-    }
     /* the Clean button LIVES on this card — move the real buttons in, listeners
        and all. Grab the refs BEFORE the innerHTML wipe: on a re-render the
        buttons are inside this card, and assigning innerHTML would destroy them
        (a detached-but-referenced node survives and re-inserts intact). */
     const gb=document.getElementById("guideBtn"), qc=document.getElementById("quickClean");
-    hero.innerHTML=art+'<div class="actions heroacts-row" id="heroBtnRow"></div>';
+    hero.innerHTML='<div class="heroartHost"></div><div class="actions heroacts-row" id="heroBtnRow"></div>';
+    benchAttachBox(hero.querySelector(".heroartHost"), f);
     const row=hero.querySelector("#heroBtnRow");
     if(gb) row.appendChild(gb);
     if(qc) row.appendChild(qc);
     const oldActs=document.querySelector("#scr-detail .actions:not(.heroacts-row)");
     if(oldActs && !oldActs.children.length) oldActs.style.display="none";
-    /* state wiring */
-    if(rec){
-      benchLoadThumb(document.getElementById("heroImg"), rec);
-      const actsEl=document.getElementById("heroActs");
-      document.getElementById("heroImg").onclick=()=>{ actsEl.hidden=!actsEl.hidden; };
-      actsEl.onclick=e=>{ if(e.target===actsEl) actsEl.hidden=true; };
-      document.getElementById("heroReplace").onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
-      let armed=false;
-      document.getElementById("heroRemove").onclick=e=>{
-        e.stopPropagation();
-        const b=e.target;
-        if(!armed){ armed=true; b.textContent="Remove — sure?"; setTimeout(()=>{armed=false; b.textContent="Remove";},3000); return; }
-        benchRemoveUserArt(f);
-      };
-    } else {
-      const ha=document.getElementById("heroAttach");
-      if(ha) ha.onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
-      const box=document.getElementById("heroArt");
-      if(box.classList.contains("empty") && BenchEnv.hasFS()) box.onclick=()=>benchSetUserArt(f);
-    }
   };
 
   /* ---------- item 4: press-and-hold drag reorder, order persisted ---------- */
@@ -7713,6 +7977,28 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       benchBoxTwins(box.id).forEach(t=>benchBindDrag(t));
     });
   };
+
+  /* ================================================================
+     V14 item 4e (ruling-build-order-v14-20260815): LOW-STOCK CHIPS on
+     the Bench overview — every caliber under its threshold surfaces at
+     the top of the Bench, beside the care clocks it starves. The
+     care-clock surface itself (cleanBox) carries its own line in core.
+     ================================================================ */
+  function benchAmmoChips(){
+    const body=document.getElementById("benchBody"); if(!body) return;
+    const old=document.getElementById("benchAmmoLow"); if(old) old.remove();
+    if(!isPro()) return;                      /* the free Bench is a locked preview */
+    const lows=lowCals(); if(!lows.length) return;
+    const box=document.createElement("div");
+    box.className="lifebox warn"; box.id="benchAmmoLow";
+    box.innerHTML=`<div class="lrow"><span class="lt">Ammo running low</span><span class="lv" style="color:var(--amber)">${lows.length} caliber${lows.length===1?"":"s"}</span></div>`
+      + lows.map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.cal)}</div><div class="bs">${fmtN(x.qty)} rounds on hand — threshold ${fmtN(x.at)}</div></div><span class="statuschip due">LOW STOCK</span></div>`).join("");
+    const head=body.querySelector(".d-head");
+    if(head && head.nextSibling) body.insertBefore(box, head.nextSibling);
+    else body.appendChild(box);
+  }
+  const benchPrevRenderBench_v14=renderBench;
+  renderBench=function(){ benchPrevRenderBench_v14(); benchAmmoChips(); };
   /* ============ V8 PRESENTATION ROUND — ends ============ */
 
   /* boot */
