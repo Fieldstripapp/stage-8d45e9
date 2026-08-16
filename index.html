@@ -618,10 +618,17 @@
   .sd-plate{position:absolute;left:50%;top:33%;width:min(44vw,33vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
     background:linear-gradient(155deg,#333a45,#20252d 60%,#2a313b);border:1px solid #444d5a;
     box-shadow:0 1vmin 2vmin rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.09),inset 0 -1vmin 2.4vmin rgba(0,0,0,.4)}
-  /* ITEM 3: brass wheel — larger than the plate and behind it, so the spokes
-     ring the dial. Spins a full three turns on a correct PIN, then the bolts
-     retract and the door swings (see sdOpenSequence). */
-  .sd-handle{position:absolute;left:50%;top:33%;width:min(84vw,58vh);aspect-ratio:1;
+  /* ITEM 3: the brass handle — its OWN object, mounted BELOW the dial, the way a
+     real safe carries them (Darren's reference: Champion Trophy — dial up top,
+     spoked handle under it). It was previously a hub-less six-spoke wheel
+     centred ON the dial; that made the dial the handle's centre, and mid-spin a
+     spoke rode up into the wordmark and read "FIELD TRIP". A separate handle
+     fixes the layout and that collision together, and it needs a real hub now
+     that the dial is no longer standing in for one.
+     Sized and placed to sit in the clear band between the dial's lower edge and
+     the PIN dots at BOTH viewports. Spins three full turns on a correct PIN,
+     then the bolts retract and the door swings (see sdOpenSequence). */
+  .sd-handle{position:absolute;left:50%;top:59.7%;width:min(37vw,28vh);aspect-ratio:1;
     transform:translate(-50%,-50%);pointer-events:none;z-index:0;
     filter:drop-shadow(0 1.2vmin 2vmin rgba(0,0,0,.65))}
   .sd-handle svg{width:100%;height:100%;display:block;transform:rotate(0deg)}
@@ -736,8 +743,10 @@
         <div class="sd-hinge"><i></i><i></i><i></i></div>
         <div class="sd-brand">FIELD<span>STRIP</span></div>
         <div class="sd-bolts" id="sdBolts"><i></i><i></i><i></i><i></i></div>
-        <!-- ITEM 3: the brass wheel. Behind the plate in DOM order so the dial
-             stays fully readable on top of it; spins on a correct PIN. -->
+        <!-- ITEM 3: the brass handle, mounted UNDER the dial as its own piece of
+             hardware. Kept ahead of the plate in DOM order so that if a short
+             viewport ever squeezes the two together the dial still reads on top.
+             Spins on a correct PIN. -->
         <div class="sd-handle" id="sdHandle" aria-hidden="true">
           <svg viewBox="0 0 200 200">
             <defs>
@@ -749,36 +758,50 @@
                 <stop offset="0" stop-color="#B98C33"/><stop offset=".5" stop-color="#E4C078"/><stop offset="1" stop-color="#7A5A1B"/>
               </linearGradient>
             </defs>
-            <!-- SIX FREE SPOKES, NO RING (Darren's reference: a vault hub-and-spoke
-                 handle). Angles 0/60/120/180/240/300 deliberately avoid straight
-                 up-and-down, which is what keeps the lower spokes clear of the
-                 PIN dots. Each spoke is drawn twice: a wider root for taper, then
-                 the shaft, both round-capped so the tips read as turned brass.
-                 They start at r=67, just inside the escutcheon, so they appear to
-                 emerge from behind it rather than floating. -->
+            <!-- FIVE SPOKES ON A TURNED HUB. The handle is its own object now, so
+                 it carries its own centre — the previous art had NO hub because
+                 it was mounted on the dial and borrowed the dial's.
+                 Angles 90/162/234/306/18 put one spoke straight DOWN and none
+                 straight UP, so nothing reaches toward the dial above it. Each
+                 spoke is a wide root plus a shaft, round-capped, with a turned
+                 ball at the tip. Ink stops at r=97 of the 100 half-viewBox. -->
             <g fill="none" stroke="url(#sdBrass)" stroke-linecap="round">
-              <g stroke-width="13" opacity=".95">
-                <line x1="152" y1="100" x2="170" y2="100"/>
-                <line x1="126" y1="145.0" x2="135" y2="160.6"/>
-                <line x1="74" y1="145.0" x2="65" y2="160.6"/>
-                <line x1="48" y1="100" x2="30" y2="100"/>
-                <line x1="74" y1="55.0" x2="65" y2="39.4"/>
-                <line x1="126" y1="55.0" x2="135" y2="39.4"/>
+              <g stroke-width="15" opacity=".95">
+                <line x1="100" y1="122" x2="100" y2="150"/>
+                <line x1="79.08" y1="106.80" x2="52.45" y2="115.45"/>
+                <line x1="87.07" y1="82.20" x2="70.61" y2="59.55"/>
+                <line x1="112.93" y1="82.20" x2="129.39" y2="59.55"/>
+                <line x1="120.92" y1="106.80" x2="147.55" y2="115.45"/>
               </g>
-              <g stroke-width="9">
-                <line x1="152" y1="100" x2="196" y2="100"/>
-                <line x1="126" y1="145.0" x2="148" y2="183.1"/>
-                <line x1="74" y1="145.0" x2="52" y2="183.1"/>
-                <line x1="48" y1="100" x2="4" y2="100"/>
-                <line x1="74" y1="55.0" x2="52" y2="16.9"/>
-                <line x1="126" y1="55.0" x2="148" y2="16.9"/>
+              <g stroke-width="10">
+                <line x1="100" y1="122" x2="100" y2="186"/>
+                <line x1="79.08" y1="106.80" x2="18.21" y2="126.58"/>
+                <line x1="87.07" y1="82.20" x2="49.45" y2="30.43"/>
+                <line x1="112.93" y1="82.20" x2="150.55" y2="30.43"/>
+                <line x1="120.92" y1="106.80" x2="181.79" y2="126.58"/>
               </g>
-              <g stroke-width="4" stroke="url(#sdBrass2)" opacity=".7">
-                <line x1="156" y1="97" x2="192" y2="97"/>
-                <line x1="44" y1="97" x2="8" y2="97"/>
+              <g stroke-width="3.5" stroke="url(#sdBrass2)" opacity=".55">
+                <line x1="100" y1="130" x2="100" y2="180"/>
+                <line x1="71.47" y1="109.27" x2="23.91" y2="124.72"/>
+                <line x1="82.37" y1="75.73" x2="52.98" y2="35.28"/>
+                <line x1="117.63" y1="75.73" x2="147.02" y2="35.28"/>
+                <line x1="128.53" y1="109.27" x2="176.09" y2="124.72"/>
               </g>
             </g>
-            <!-- the hub sits behind the dial by design: the dial IS the centre -->
+            <!-- turned ball ends -->
+            <g fill="url(#sdBrass2)">
+              <circle cx="100" cy="188" r="9"/>
+              <circle cx="16.30" cy="127.19" r="9"/>
+              <circle cx="48.27" cy="28.81" r="9"/>
+              <circle cx="151.73" cy="28.81" r="9"/>
+              <circle cx="183.70" cy="127.19" r="9"/>
+            </g>
+            <!-- THE HUB — drawn last so it caps the spoke roots cleanly -->
+            <circle cx="100" cy="100" r="30" fill="url(#sdBrass)"/>
+            <circle cx="100" cy="100" r="30" fill="none" stroke="#5E4413" stroke-width="1.5" opacity=".7"/>
+            <circle cx="100" cy="100" r="18" fill="url(#sdBrass2)" opacity=".9"/>
+            <circle cx="100" cy="100" r="18" fill="none" stroke="#4A3510" stroke-width="1.2" opacity=".6"/>
+            <circle cx="100" cy="100" r="5.5" fill="#4A3510" opacity=".8"/>
           </svg>
         </div>
         <div class="sd-plate"></div>
