@@ -630,6 +630,21 @@
   /* V16 item 14: the hero card is the firearm's face — it stands OFF the page instead of
      dissolving into it: elevated two-stop face, brighter edge, real shadow. */
   .herocard{padding:10px 10px 12px;background:linear-gradient(180deg,#272d36,#1d2127);border-color:#3d4754;box-shadow:0 6px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06)}
+  /* V17 item 1: the ART blends, not the card — charcoal renders need the guide
+     stage's own workbench gradient behind them, exactly as the player provides.
+     Applied to the hero art region and the step-slot art box alike. */
+  .heroart{background:
+    linear-gradient(rgba(200,205,212,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,205,212,.05) 1px,transparent 1px),
+    radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);
+    background-size:28px 28px,28px 28px,100% 100%;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),inset 0 -14px 30px rgba(0,0,0,.35)}
+  .heroart.empty{background:
+    linear-gradient(rgba(200,205,212,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,205,212,.05) 1px,transparent 1px),
+    radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);
+    background-size:28px 28px,28px 28px,100% 100%;
+    border:1px solid rgba(255,255,255,.08)}
   .heroart{position:relative;border-radius:10px;overflow:hidden;background:var(--panel2)}
   .heroart>img{display:block;width:100%;max-height:260px;object-fit:cover}
   .heroart.empty{border:1px dashed var(--edge);background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 12px;cursor:pointer;min-height:120px}
@@ -641,12 +656,22 @@
   .heroacts[hidden]{display:none!important}
   .heroacts-row{margin-top:12px}
   .carddrag{position:relative;z-index:30;box-shadow:0 12px 30px rgba(0,0,0,.55);opacity:.94}
-  /* ---------- V16 item 6: bench cards — tap-to-open, default-expanded ---------- */
-  .benchcard .lrow{cursor:pointer;user-select:none;padding-right:30px}
-  .benchcard .bcchev{display:inline-block;color:var(--muted);font-size:11px;margin-right:8px;transition:transform .2s}
+  /* ---------- V16 item 6 + V17 item 3: bench cards — header-toggled, animated,
+     sticky headers, vitals always visible ---------- */
+  .benchcard{padding-top:0;overflow:visible}
+  .benchcard .lrow{cursor:pointer;user-select:none;padding:12px 30px 10px 0;position:sticky;top:0;z-index:4;background:var(--panel);border-radius:12px 12px 0 0;align-items:center}
+  .benchcard .bcchev{display:inline-block;color:var(--muted);font-size:11px;margin-right:8px;transition:transform .15s ease}
   .benchcard.closed .bcchev{transform:rotate(-90deg)}
-  .benchcard.closed .bcbody{display:none}
-  .bcbody{margin-top:2px}
+  /* ~150ms smooth tuck, no bounce: grid-track interpolation, inner min-height:0 */
+  .bcbody{display:grid;grid-template-rows:1fr;transition:grid-template-rows .15s ease}
+  .benchcard.closed .bcbody{grid-template-rows:0fr}
+  .bcin{min-height:0;overflow:hidden}
+  .bcvitals{display:inline-flex;gap:6px;align-items:baseline;flex-wrap:wrap;justify-content:flex-end}
+  .benchbar{display:flex;justify-content:flex-end;margin:-4px 0 2px}
+  .benchbar button{background:none;border:1px solid var(--edge);border-radius:8px;color:var(--muted);font-family:var(--display);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;padding:6px 10px;cursor:pointer}
+  .benchbar button:active{color:var(--text)}
+  /* V17 item 8: a safe card shows EVERY flag — the row wraps, nothing truncates */
+  .fa-card .dots{flex-wrap:wrap;justify-content:flex-end;row-gap:5px;max-width:60%}
   /* ---------- V16 items 1+3: first-open page + security page ---------- */
   #firstOpen{position:fixed;inset:0;z-index:230;background:radial-gradient(ellipse 120% 90% at 50% 0%,#1b2027 0%,#101318 55%,#0a0c10 100%);display:none;overflow-y:auto}
   #firstOpen.on{display:block}
@@ -1672,7 +1697,7 @@
       <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, on every guide. Standard guides stay free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Custom firearms</b> — add and <i>guide</i> firearms the catalog doesn't cover yet; assign any family's strip + parts diagram. One custom entry is free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Request a Firearm</b> — ask us to add a model that's missing. Opens your email app; nothing leaves your phone on its own.</span></div>
-      <div class="price" id="proPrice">$19.99 · one time</div>
+      <div class="price" id="proPrice">$14.99 · one time</div>
       <button class="btn primary full" id="proBuy">Unlock Pro</button>
       <button class="btn full" id="proRestore" style="margin-top:8px">Restore Purchase</button>
       <button class="btn full" id="proClose" style="margin-top:8px">Not Now</button>
@@ -3189,7 +3214,7 @@
 
   /* =============== FIELDSTRIP PRO =============== */
   const FREE_MAX_GUNS = 2;
-  const PRO_PRICE_LABEL = "$19.99 · one time";   /* v15 item 6: $19.99, LOCKED */
+  const PRO_PRICE_LABEL = "$14.99 · one time";   /* V17 item 9 (Darren 2026-08-16): this price supersedes the v15 figure */
   let proState = store.get("fs_pro", null) || {on:false, src:null, ts:null};
   const isPro = ()=> !!proState.on;
   const savePro = ()=> store.set("fs_pro", proState);
@@ -3807,8 +3832,10 @@
     const showMags=hasMags(f);
     magBoxEl.style.display=showMags?"block":"none";
     if(showMags) renderMags(f);
-    renderCare(f);
-    renderSvc(f);
+    /* V17 item 7 (scope-leak vector 1): the detail render no longer repaints the
+       shared care/svc cards — they live on the Bench (and, for suppressors, on
+       the can's own page), rendered ONLY by the surface that owns them. The old
+       calls here were a last-writer-wins race against the Bench's selection. */
     /* Zero Record — Pro, locked-VISIBLE. Suppressors never show it at all; for
        everything else the row stays with a lock tag and the stored record count.
        f.zeros is never trimmed, so a lapsed Pro gets its zeros back on re-upgrade. */
@@ -4662,23 +4689,20 @@
           <div class="lkbtns">
             <button class="lkbtn" data-i="${i}" data-add="100">+100</button>
             <button class="lkbtn" data-i="${i}" data-add="500">+500</button>
-            <button class="lkbtn" data-i="${i}" data-att="${esc(a.id)}">Receipts</button>
             <button class="lkbtn del" data-i="${i}" data-del="1">${lkDelArm===i?"Confirm":"Remove"}</button>
           </div>`;
         list.appendChild(row);
-        /* receipts / photos / files ride the stock row — collapsed until asked for */
-        const aw=document.createElement("div"); aw.className="attwrap lkatt"; aw.dataset.ammoid=a.id; aw.hidden=true;
+        /* V17 item 5: photos, receipts AND files ride every stock row as the same
+           VISIBLE multi-attach tiles used everywhere else — no hidden toggle. */
+        const aw=document.createElement("div"); aw.className="attwrap lkatt"; aw.dataset.ammoid=a.id;
         list.appendChild(aw);
       });
     });
-    list.querySelectorAll("[data-att]").forEach(b=>{
-      b.addEventListener("click",()=>{
-        const w=list.querySelector(`.lkatt[data-ammoid="${b.dataset.att}"]`); if(!w) return;
-        w.hidden=!w.hidden;
-        if(!w.hidden && typeof benchAttGrid==="function")
-          benchAttGrid(w, {kind:"ammo", id:b.dataset.att}, {kind:"receipt", addLabel:"RECEIPT / FILE", onchange:()=>renderLocker()});
+    if(typeof benchAttGrid==="function"){
+      list.querySelectorAll(".lkatt").forEach(w=>{
+        benchAttGrid(w, {kind:"ammo", id:w.dataset.ammoid}, {kind:"receipt", addLabel:"PHOTO / RECEIPT / FILE", onchange:()=>renderLocker()});
       });
-    });
+    }
     list.querySelectorAll(".lkthin").forEach(inp=>{
       inp.addEventListener("change",()=>{
         const v=Math.max(0,Math.floor(+inp.value||0));
@@ -6398,13 +6422,22 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       if(isPro() && hasMags(f) && Array.isArray(f.mags) && f.mags.some(mm=>(mm.status||"active")==="active" && mm.role==="Carry" && (!mm.lastRot || (Date.now()-mm.lastRot)/86400000 >= (f.magRotDays||90)))) dots.push('<div class="alertdot amber">ROTATE MAGS</div>');
       if(Array.isArray(f.mags) && f.mags.some(mm=>mm.status==="problem")) dots.push('<div class="alertdot">MAG PROBLEM</div>');
       if(Array.isArray(f.reminders) && f.reminders.some(r=>benchDue(f,r).due)) dots.push('<div class="alertdot amber">CARE DUE</div>');
+      /* V17 item 8: low ammo for THIS firearm's caliber surfaces on its card */
+      (function(){
+        try{
+          const c0=fcat(f);
+          const cal=(typeof calGuess==="function")?calGuess(c0?c0.ch:(f.custom?(f.cch||""):"")):null;
+          if(cal && ammoInv.some(a=>a.cal===cal) && calStock(cal)<calLowAt(cal)) dots.push('<div class="alertdot amber">LOW AMMO</div>');
+        }catch(e){}
+      })();
       const itemType=f.nfaItemType||null;
       const card=document.createElement("div");
       card.className="fa-card"; card.setAttribute("role","button"); card.tabIndex=0;
+      /* V17 item 8: EVERY flagged item renders — the truncation is struck */
       card.innerHTML=`
         <div class="row1">
           <div><div class="fname">${esc(m.name)}${f.custom?' <span class="protag customtag">CUSTOM</span>':""}${itemType?` <span class="protag">${esc(itemType.toUpperCase())}</span>`:""}</div><div class="fsub">${esc(m.sub)}</div></div>
-          ${dots.length?`<div class="dots">${dots.slice(0,2).join("")}</div>`:""}
+          ${dots.length?`<div class="dots">${dots.join("")}</div>`:""}
         </div>
         <div class="stats">
           <div class="st"><div class="v">${fmtN(f.totalRounds)}</div><div class="k">Rounds</div></div>
@@ -9578,7 +9611,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchBHidden(){ const o=benchLayoutGet(); return Array.isArray(o.hidden)?o.hidden:[]; }
   function benchBHide(id){ const o=benchLayoutGet(); if(!Array.isArray(o.hidden)) o.hidden=[]; if(o.hidden.indexOf(id)<0) o.hidden.push(id); benchLayoutSave(o); renderBench(); }
   function benchBShow(id){ const o=benchLayoutGet(); const h=Array.isArray(o.hidden)?o.hidden:[]; const i=h.indexOf(id); if(i>=0){ h.splice(i,1); o.hidden=h; benchLayoutSave(o); } renderBench(); }
-  let benchBOpen={};                     /* per-session collapse state; default-expanded */
+  /* V17 item 3a: collapse state PERSISTS per card on the existing layout key —
+     first-ever open is all-expanded, then curate once, stays curated. */
+  let benchBOpen={};                     /* session-only extras (the hidden-row disclosure) */
+  function benchBCollapsed(){ const o=benchLayoutGet(); return Array.isArray(o.collapsed)?o.collapsed:[]; }
+  function benchBSetCollapsed(id, closed){
+    const o=benchLayoutGet();
+    if(!Array.isArray(o.collapsed)) o.collapsed=[];
+    const i=o.collapsed.indexOf(id);
+    if(closed && i<0) o.collapsed.push(id);
+    if(!closed && i>=0) o.collapsed.splice(i,1);
+    benchLayoutSave(o);
+  }
   let benchCareTargetId=null, benchSvcTargetId=null;
 
   /* the two cards leave the firearm page ENTIRELY: parked in a hidden pen until
@@ -9598,13 +9642,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     });
   })();
 
-  /* target-aware renderers: the SAME cards now edit whichever firearm the Bench
-     has selected. Passed-in f already drives the display; the handlers resolved
-     byId(activeId) — they now resolve the bench target first. */
-  function benchCareF(){ return byId(benchCareTargetId)||byId(activeId); }
-  function benchSvcF(){ return byId(benchSvcTargetId)||byId(activeId); }
+  /* V17 item 7 — OWNERSHIP RIDES THE CARD, set by the render, consumed by every
+     handler. The old resolution (bench selector state, falling back to activeId)
+     is exactly the leak Darren called: selector state crossing into per-item
+     views. Now the card itself says whose records it holds. */
+  function benchCareF(){ const b=document.getElementById("careBox"); return byId(b&&b.dataset.owner)||null; }
+  function benchSvcF(){ const b=document.getElementById("svcBox"); return byId(b&&b.dataset.owner)||null; }
   const benchPrevRenderCare_v16=renderCare;
   renderCare=function(f){
+    if(f&&f.id) document.getElementById("careBox").dataset.owner=f.id;
     benchPrevRenderCare_v16(f);
     /* re-point the row handlers at the rendered firearm, not activeId */
     const list=document.getElementById("careList");
@@ -9626,6 +9672,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   };
   const benchPrevRenderSvc_v16=renderSvc;
   renderSvc=function(f){
+    if(f&&f.id) document.getElementById("svcBox").dataset.owner=f.id;
     benchPrevRenderSvc_v16(f);
     const list=document.getElementById("svcList");
     /* the shipped attach grids refresh via renderDetail — wrong (and a stray
@@ -9713,21 +9760,52 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       saveSafe(); benchAfterCardEdit();
     });
   })();
-  /* detail no longer renders the moved cards' contents for its own firearm */
+  /* V17 items 6 + 7: the detail wrapper. Firearm pages carry NEITHER moved card
+     (one home: the Bench). Suppressor pages ADD Service & Mods in place (Darren's
+     explicit item-6 order — a can's bench work logs on the can), scoped to the
+     can via the ownership dataset, and drop the Ammo Locker button. Entering the
+     Bench from a hero anchors the selectors to the item you came from. */
   const benchPrevRenderDetail_v16=renderDetail;
   renderDetail=function(){
     benchPrevRenderDetail_v16();
-    /* nothing extra: careBox/svcBox live in the Bench now; core renderCare/renderSvc
-       calls repaint them harmlessly wherever they sit */
+    const f=byId(activeId); if(!f) return;
+    const isSupp=(typeof benchIsSuppressor==="function") && benchIsSuppressor(f);
+    const sbx=document.getElementById("svcBox");
+    const lkb=document.getElementById("lockerBtn");
+    if(isSupp){
+      const anchor=document.getElementById("suppBox")||document.getElementById("attBox");
+      if(sbx && anchor && anchor.parentNode){
+        anchor.parentNode.insertBefore(sbx, anchor.nextSibling);
+        sbx.style.display="block";
+        renderSvc(f);                      /* sets owner = the can */
+      }
+      if(lkb) lkb.style.display="none";    /* item 6: Ammo Locker is not a suppressor card */
+    } else {
+      if(sbx && sbx.closest("#scr-detail")) benchHoldPen.appendChild(sbx);   /* one home per card */
+      if(lkb) lkb.style.display="";
+    }
+    /* the hero's Bench button anchors the Bench to THIS item */
+    const hbb=document.getElementById("heroBenchBtn");
+    if(hbb && !hbb.dataset.v17){
+      hbb.dataset.v17="1";
+      hbb.addEventListener("click",()=>{
+        benchCareTargetId=activeId;
+        if(!benchIsSuppressor(byId(activeId))) benchSvcTargetId=activeId;
+      }, true);   /* capture: runs before the v8 renderBench listener */
+    }
   };
 
-  function benchCard(id, title, val, bodyHtml){
+  /* V17 item 3c: the header IS the summary — title, vitals line, and urgent
+     chips that stay visible collapsed or not. Collapsing tucks the list, never
+     a warning. chips = [{label,cls}] rendered as statuschips in the header. */
+  function benchCard(id, title, val, bodyHtml, chips){
     const hidden=benchBHidden();
     if(hidden.indexOf(id)>=0) return "";
-    const open=benchBOpen[id]!==false;   /* default-expanded (item 6) */
+    const open=benchBCollapsed().indexOf(id)<0;   /* item 3a: expanded until curated */
+    const chipHtml=(chips||[]).map(c=>`<span class="statuschip ${c.cls}">${c.label}</span>`).join("");
     return `<div class="lifebox benchcard${open?"":" closed"}" id="${id}" data-bc="1">
-      <div class="lrow bc-h" data-bch="${id}"><span class="lt"><span class="bcchev">▾</span>${title}</span><span class="lv">${val}</span></div>
-      <div class="bcbody">${bodyHtml}</div></div>`;
+      <div class="lrow bc-h" data-bch="${id}"><span class="lt"><span class="bcchev">▾</span>${title}</span><span class="bcvitals"><span class="lv">${val}</span>${chipHtml}</span></div>
+      <div class="bcbody"><div class="bcin">${bodyHtml}</div></div></div>`;
   }
   const BENCH_CARD_LABELS={bcNfa:"NFA Items",bcMags:"Magazines",bcZeros:"Zero Records",bcCare:"Care Reminders",bcSvc:"Service & Mods",bcAtt:"Attachments",bcBackup:"Backup"};
   renderBench=function(){
@@ -9742,6 +9820,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const c=benchCollect();
     const totMags=c.fleets.reduce((a,g)=>a+g.mags.length,0);
     let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>`;
+    h+=`<div class="benchbar"><button id="benchToggleAll" type="button">${benchBCollapsed().length?"Expand all":"Collapse all"}</button></div>`;
     if(c.overdue.length){
       h+=`<div class="lifebox warn"><div class="lrow"><span class="lt">Needs attention</span><span class="lv" style="color:var(--safe-red)">${c.overdue.length} item${c.overdue.length===1?"":"s"}</span></div>`;
       c.overdue.slice(0,6).forEach(o=>{
@@ -9756,7 +9835,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const s=benchNfaSummary(x.f); const first=s.fls[0];
       nb+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.name)}</div><div class="bs">${esc(x.f.nfaItemType||"type unset")}${first?` · ${esc(benchFilingLabel(first))} · ${esc(first.entity)}`:""}${x.f.stamp?" · stamp photo attached":""}</div></div>${first?`<span class="statuschip ${first.status==="Approved"?"active":(first.status==="Denied"?"problem":"due")}">${esc(first.status.toUpperCase())}</span>`:""}</div>`;
     });
-    h+=benchCard("bcNfa","NFA Items", c.nfa.length||"none", nb);
+    const nfaPend=c.nfa.reduce((a,x)=>a+((x.f.nfaFilings||[]).filter(fl=>fl.status==="Pending"||fl.status==="Submitted").length),0);
+    h+=benchCard("bcNfa","NFA Items", c.nfa.length?`${c.nfa.length} item${c.nfa.length===1?"":"s"}`:"none", nb,
+      nfaPend?[{label:nfaPend+" PENDING",cls:"due"}]:[]);
     /* Magazines */
     let mb="";
     if(!c.fleets.length) mb=`<div class="lmsg">Add mags on a firearm — one spec, the whole fleet numbered at once.</div>`;
@@ -9767,7 +9848,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const nums=g.mags.map(m=>m.num).sort((a,b)=>a-b);
       mb+=`<div class="benchrow" data-nav="${g.f.id}"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}${g.brand?` · ${esc(g.brand)}`:""}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · #${nums[0]}–#${nums[nums.length-1]} · ${esc(g.name)} · ${act} active${prob?`, ${prob} problem`:""}${ret?`, ${ret} retired`:""}</div></div><span class="statuschip ${prob?"problem":"active"}">${prob?"CHECK":"FLEET"}</span></div>`;
     });
-    h+=benchCard("bcMags","Magazines", totMags?`${totMags} mags`:"none", mb);
+    const magProb=c.fleets.reduce((a,g)=>a+g.mags.filter(m=>m.status==="problem").length,0);
+    h+=benchCard("bcMags","Magazines", totMags?`${totMags} mag${totMags===1?"":"s"}`:"none", mb,
+      magProb?[{label:magProb+" PROBLEM",cls:"problem"}]:[]);
     /* Zeros */
     let zb="";
     if(!c.zeros.length) zb=`<div class="lmsg">Log a zero on a firearm and it shows here.</div>`;
@@ -9784,16 +9867,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       cb+=`<div class="benchrow${benchCareTargetId===f.id?" on":""}" data-caresel="${f.id}" style="${benchCareTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${n?`${n} clock${n===1?"":"s"}${due?` · ${due} due`:""}`:"no clocks yet"}</div></div><span class="statuschip ${due?"due":(n?"active":"")}">${due?"DUE":(n?"OK":"—")}</span></div>`;
     });
     cb+=`<div id="benchCareHost"></div>`;
-    h+=benchCard("bcCare","Care Reminders", c.care.length?`${c.care.length} clock${c.care.length===1?"":"s"}${careDue?` · ${careDue} due`:""}`:"none", cb);
-    /* Service & Mods — the moved card lives here (item 5) */
-    let sb=`<div class="lmsg">Pick a firearm — its Service &amp; Mods card opens below, exactly as it lived on the firearm page.</div>`;
-    safe.forEach(f=>{
+    h+=benchCard("bcCare","Care Reminders", c.care.length?`${c.care.length} clock${c.care.length===1?"":"s"}`:"none", cb,
+      careDue?[{label:careDue+" OVERDUE",cls:"due"}]:[]);
+    /* Service & Mods — FIREARMS ONLY here (V17 item 6: a can's Service & Mods
+       lives on the can's own page; one home per card, per item) */
+    const svcGuns=safe.filter(f=>!(typeof benchIsSuppressor==="function" && benchIsSuppressor(f)));
+    let sb=`<div class="lmsg">Pick a firearm — its Service &amp; Mods card opens below, exactly as it lived on the firearm page. A suppressor's Service &amp; Mods lives on its own page.</div>`;
+    svcGuns.forEach(f=>{
       const n=(f.service||[]).length;
       sb+=`<div class="benchrow${benchSvcTargetId===f.id?" on":""}" data-svcsel="${f.id}" style="${benchSvcTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${n?`${n} record${n===1?"":"s"}`:"no records yet"}</div></div></div>`;
     });
     sb+=`<div id="benchSvcHost"></div>`;
-    const svcTotal=safe.reduce((a,f)=>a+((f.service||[]).length),0);
-    h+=benchCard("bcSvc","Service & Mods", svcTotal||"none", sb);
+    const svcTotal=svcGuns.reduce((a,f)=>a+((f.service||[]).length),0);
+    h+=benchCard("bcSvc","Service & Mods", svcTotal?`${svcTotal} record${svcTotal===1?"":"s"}`:"none", sb);
     /* Attachments */
     h+=benchCard("bcAtt","Attachments", c.attCount?`${c.attCount} files`:"none",
       `<div class="lmsg">Receipts, work photos, stamp photos and targets across the safe — attached on each record's own card, stored on this phone only.</div>`);
@@ -9815,13 +9901,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     body.innerHTML=h;
     body.onclick=null;
-    /* wire: open/close, corner-x, restore, nav, selectors, backup */
+    /* wire: open/close (persisted — item 3a), collapse/expand all (3d),
+       corner-x, restore, nav, selectors, backup. ONLY the header toggles (3b). */
     body.querySelectorAll("[data-bch]").forEach(el=>el.addEventListener("click",e=>{
       if(e.target.closest(".boxhide")) return;
       const id=el.dataset.bch;
-      benchBOpen[id]=!(benchBOpen[id]!==false);
-      document.getElementById(id).classList.toggle("closed", benchBOpen[id]===false);
+      const card=document.getElementById(id);
+      const nowClosed=!card.classList.contains("closed");
+      card.classList.toggle("closed", nowClosed);
+      benchBSetCollapsed(id, nowClosed);
+      const tb=document.getElementById("benchToggleAll");
+      if(tb) tb.textContent=benchBCollapsed().length?"Expand all":"Collapse all";
     }));
+    (function(){
+      const tb=document.getElementById("benchToggleAll"); if(!tb) return;
+      tb.addEventListener("click",()=>{
+        const ids=Object.keys(BENCH_CARD_LABELS).filter(id=>document.getElementById(id));
+        const collapse=benchBCollapsed().length===0;   /* all open -> collapse all; else expand all */
+        ids.forEach(id=>{ document.getElementById(id).classList.toggle("closed", collapse); benchBSetCollapsed(id, collapse); });
+        tb.textContent=collapse?"Expand all":"Collapse all";
+      });
+    })();
     body.querySelectorAll("[data-bc]").forEach(card=>{
       const x=document.createElement("button");
       x.className="boxhide"; x.type="button"; x.setAttribute("aria-label","Hide this card");
@@ -9844,13 +9944,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       benchSvcTargetId=row.dataset.svcsel;
       renderBench();
     }));
-    /* seat the moved cards for the selected firearms */
+    /* seat the moved cards for the selected items (svc: firearms only — a can's
+       card lives on the can's page) */
     if(!byId(benchCareTargetId)) benchCareTargetId=safe.length?safe[0].id:null;
-    if(!byId(benchSvcTargetId)) benchSvcTargetId=safe.length?safe[0].id:null;
+    if(!svcGuns.some(f=>f.id===benchSvcTargetId)) benchSvcTargetId=svcGuns.length?svcGuns[0].id:null;
     const ch=document.getElementById("benchCareHost"), svh=document.getElementById("benchSvcHost");
     const cbx=document.getElementById("careBox"), sbx=document.getElementById("svcBox");
-    if(ch && cbx && benchCareTargetId){ ch.appendChild(cbx); cbx.style.display="block"; renderCare(byId(benchCareTargetId)); benchFillVendorSelect(document.getElementById("svcVendor"),"Self"); }
-    if(svh && sbx && benchSvcTargetId){ svh.appendChild(sbx); sbx.style.display="block"; renderSvc(byId(benchSvcTargetId)); }
+    if(ch && cbx && benchCareTargetId){ ch.appendChild(cbx); cbx.style.display="block"; renderCare(byId(benchCareTargetId)); }
+    if(svh && sbx && benchSvcTargetId){ svh.appendChild(sbx); sbx.style.display="block"; renderSvc(byId(benchSvcTargetId)); benchFillVendorSelect(document.getElementById("svcVendor"),"Self"); }
     const be=document.getElementById("benchExport"), br=document.getElementById("benchRestore");
     if(be) be.onclick=benchDoExport;
     if(br) br.onclick=()=>benchRestoreFlow();
@@ -10056,6 +10157,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const canFS=BenchEnv.hasFS();
     const line=document.getElementById("textArtLine");
     const pane=document.getElementById("textArtPane");
+    /* V17 item 10 — THE DOUBLE-RENDER: the text pane lives INSIDE #gunStage, so
+       a text guide opened after an illustrated one inherited the stage's stale
+       #stagePrompt and #stageAttach (two prompts, two + glyphs; the X-Bolt
+       sighting). Sweep BOTH stage surfaces on every render, then draw exactly
+       the one this step earns. */
+    (function(){
+      const pr=document.getElementById("stagePrompt"); if(pr) pr.hidden=true;
+      const sa=document.getElementById("stageAttach");
+      if(sa && pane && !pane.hidden) sa.hidden=true;   /* slot pane showing: the stage + is never its attach point */
+    })();
     if(stepIndex===0 && canFS && !benchStepArtRec(f,0)){
       if(pane && !pane.hidden && line){
         /* text-guide step 1: the visible prompt rides the slot's caption line */
