@@ -10195,6 +10195,56 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(pb) pb.textContent="Attach Work Photos";
   })();
 
+  /* ================================================================
+     V17 item 2 — DROPDOWNS, settled in OUR layer: the WebView's select popup
+     ignored css color-scheme, the dark activity theme, AND forced night mode
+     (three device screenshots say so). So native popups are RETIRED: every
+     <select> tap opens an app-themed picker sheet instead. Deterministic on
+     every device — a native picker can't be white if it never opens.
+     Programmatic value-setting + change events are untouched (harness-safe).
+     ================================================================ */
+  function benchSelectSheet(sel){
+    let sh=document.getElementById("selSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="selSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="selSheet") sh.classList.remove("open"); });
+    }
+    const label=(function(){
+      if(sel.id){ const l=document.querySelector('label[for="'+sel.id+'"]'); if(l) return l.textContent; }
+      const nf=sel.closest(".nf"); if(nf){ const l=nf.querySelector("label"); if(l) return l.textContent; }
+      const fd=sel.closest(".field"); if(fd){ const l=fd.querySelector("label"); if(l) return l.textContent; }
+      return "Choose";
+    })();
+    const opts=[...sel.options];
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="ssX">×</button>
+      <h3 style="text-transform:none;letter-spacing:.5px">${esc(label)}</h3>
+      <div>${opts.map((o,i)=>`<button class="benchrow selrow" data-oi="${i}" ${o.disabled?"disabled":""} style="width:100%;text-align:left${o.selected?";color:var(--amber)":""}"><div class="bi"><div class="bn" style="font-weight:${o.selected?"600":"400"}">${esc(o.textContent||"—")}</div></div>${o.selected?'<span class="lv" style="color:var(--amber)">✓</span>':""}</button>`).join("")}</div></div>`;
+    sh.querySelector("#ssX").onclick=()=>sh.classList.remove("open");
+    sh.querySelectorAll("[data-oi]").forEach(b=>b.addEventListener("click",()=>{
+      const o=opts[+b.dataset.oi];
+      if(!o || o.disabled) return;
+      sel.value=o.value;
+      sel.dispatchEvent(new Event("change",{bubbles:true}));
+      sh.classList.remove("open");
+    }));
+    sh.classList.add("open");
+  }
+  document.addEventListener("pointerdown",function(e){
+    const sel=e.target && e.target.closest && e.target.closest("select");
+    if(!sel || sel.disabled || sel.multiple) return;
+    e.preventDefault();                          /* the native popup never opens */
+    benchSelectSheet(sel);
+  }, true);
+  /* keyboard/assistive paths that would still open the native list */
+  document.addEventListener("keydown",function(e){
+    const sel=e.target && e.target.tagName==="SELECT";
+    if(sel && (e.key===" "||e.key==="Enter"||e.key==="ArrowDown"||e.key==="ArrowUp")){
+      e.preventDefault(); benchSelectSheet(e.target);
+    }
+  }, true);
+
   /* test surface for the CDP harness — read-only reaches into the closure, the
      same way BenchData already stands exposed for the node suites. No data. */
   window.__fs16={
