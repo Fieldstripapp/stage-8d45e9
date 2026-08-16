@@ -205,6 +205,14 @@
   .logitem .lx b{color:var(--text);font-weight:500}
   .logitem .ld{color:var(--muted);font-size:11px;margin-top:3px;font-family:var(--display);letter-spacing:1px}
   .lognote{color:var(--muted);font-size:12.5px;text-align:center;padding:14px 0}
+  /* A3: per-entry delete + the show-more control on the maintenance log */
+  .logitem .lgdel{flex:0 0 auto;align-self:flex-start;background:none;border:1px solid var(--edge);border-radius:7px;
+    color:var(--muted);font-size:12px;line-height:1;padding:4px 7px;cursor:pointer;font-family:var(--body)}
+  .logitem .lgdel:active{border-color:var(--safe-red);color:var(--safe-red)}
+  .logmore{width:100%;margin-top:10px;background:none;border:1px solid var(--edge);border-radius:9px;
+    color:var(--muted);font-family:var(--display);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+    padding:9px 0;cursor:pointer}
+  .logmore:active{border-color:var(--muted);color:var(--text)}
   .removelink{background:none;border:none;color:var(--muted);font-size:11.5px;font-family:var(--display);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;padding:10px;margin-top:4px}
   .removelink:hover{color:var(--safe-red)}
 
@@ -539,6 +547,16 @@
      into a card corner. Item 4 could not fix it: the glyph already used --text.
      The RING was the problem — --edge on --panel measures 1.27:1. Now --muted,
      7.12:1, at full opacity. */
+  /* A2: collapse for the firearm-page cards. The header row and the corner ×
+     stay; everything below folds away. .bccard is stamped in JS on every
+     registered card, so .lifebox / .logbox / .roundsbox all behave alike. */
+  #scr-detail .bccard > :first-child{cursor:pointer;user-select:none}
+  #scr-detail .bccard .bcchev{display:inline-block;width:15px;color:var(--muted);font-size:10px;transition:transform .18s ease}
+  #scr-detail .bccard.bcclosed .bcchev{transform:rotate(-90deg)}
+  #scr-detail .bccard.bcclosed > *{display:none!important}
+  #scr-detail .bccard.bcclosed > :first-child{display:block!important}
+  #scr-detail .bccard.bcclosed > .lrow:first-child{display:flex!important}
+  #scr-detail .bccard.bcclosed > .boxhide{display:flex!important}
   .boxhide{position:absolute;right:8px;top:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14);border:1px solid var(--muted);border-radius:50%;color:var(--text);opacity:1;font-size:16px;line-height:1;padding:0;cursor:pointer;z-index:3}
   .boxhide:hover{opacity:1;background:rgba(255,255,255,.12)}
   /* reserve the corner: header rows shift their right-aligned content clear of the chip */
@@ -4076,8 +4094,15 @@
   /* =============== DETAIL =============== */
   function addLog(f, type, msg, extra){ f.log.unshift(Object.assign({ts:Date.now(), type, msg}, extra||{})); }
 
+  /* A3: maintenance-log paging. Deliberately NOT persisted — the log opens
+     short every time and expands on request, and moving to another firearm
+     resets it rather than carrying one gun's view onto the next. */
+  const LOG_PAGE=10;
+  let logShowAll=false, logShowFor=null;
+
   function renderDetail(){
     const f=byId(activeId); if(!f){ show("scr-safe"); return; }
+    if(logShowFor!==f.id){ logShowFor=f.id; logShowAll=false; }
     const m=faInfo(f);
     document.getElementById("dName").textContent=m.name;
     document.getElementById("dSub").textContent=m.sub;
@@ -4277,7 +4302,12 @@
     const ll=document.getElementById("logList");
     ll.innerHTML="";
     if(!f.log.length){ ll.innerHTML='<div class="lognote">No entries yet.</div>'; }
-    f.log.slice(0,40).forEach(e=>{
+    /* A3: the log used to render a flat slice(0,40) — no way to reach entry 41,
+       and no way to remove a wrong one. Now it shows the last LOG_PAGE with a
+       show-all toggle, and each entry carries an arm-then-confirm delete. Both
+       slices start at 0, so the rendered index IS the f.log index. */
+    const entries=f.log||[];
+    (logShowAll?entries:entries.slice(0,LOG_PAGE)).forEach((e,i)=>{
       const d=document.createElement("div");
       d.className="logitem t-"+e.type;
       const icon = e.type==="clean"?"✓":(e.type==="rounds"||e.type==="session"?"＋":(e.type==="spring"?"⟳":(e.type==="ammo"?"◉":(e.type==="dry"?"◇":(e.type==="nfa"?"▣":(e.type==="weight"?"⚖":(e.type==="mag"?"▤":(e.type==="care"?"◷":(e.type==="svc"?"⚙":(e.type==="zero"?"◎":"·"))))))))));
@@ -4287,8 +4317,27 @@
       if(e.perf)  extras += `<div class="lx"><b>Performance:</b> ${esc(e.perf)}</div>`;
       if(e.anote) extras += `<div class="lx"><b>Notes:</b> ${esc(e.anote)}</div>`;
       d.innerHTML=`<div class="ic">${icon}</div><div class="lw"><div class="lm">${e.msg}</div>${extras}<div class="ld">${fmtDate(e.ts)}</div></div>`;
+      const del=document.createElement("button");
+      del.type="button"; del.className="lgdel"; del.textContent="×";
+      del.setAttribute("aria-label","Delete this log entry");
+      let armed=false;
+      del.addEventListener("click",ev=>{
+        ev.stopPropagation();
+        if(!armed){ armed=true; del.textContent="delete?"; setTimeout(()=>{ armed=false; del.textContent="×"; },3000); return; }
+        f.log.splice(i,1);
+        saveSafe();
+        renderDetail();
+      });
+      d.appendChild(del);
       ll.appendChild(d);
     });
+    if(entries.length>LOG_PAGE){
+      const more=document.createElement("button");
+      more.type="button"; more.className="logmore";
+      more.textContent=logShowAll?`Show last ${LOG_PAGE}`:`View all ${entries.length} entries`;
+      more.addEventListener("click",()=>{ logShowAll=!logShowAll; renderDetail(); });
+      ll.appendChild(more);
+    }
   }
 
   function logRounds(n){
@@ -6341,11 +6390,32 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     return BenchAttach.importPhoto(BenchEnv.store, fA, parent, b64,
       {now:Date.now(), thumbnailer:BenchEnv.thumbnailer, dims, kind:kind||"photo", note:note||""});
   }
+  /* A7: attachments are classified from a LIST, never typed free-hand. These are
+     the physical things that hang off a firearm, and the same list serves
+     rifles, handguns and suppressors — a can takes mounts, muzzle devices and a
+     case like anything else. "Other" is the only escape hatch; without one a
+     real accessory that is not on the list has nowhere to go. */
+  const ATT_TYPES=["Optic","Red dot","Scope","Mount / rings","Sling","Light","Laser",
+                   "Foregrip","Bipod","Grip","Muzzle device","Trigger","Stock","Choke",
+                   "Case","Receipt","Work photo","Other"];
   function benchAttGrid(container, parent, opts){
     opts=opts||{};
     const items=BenchAttach.listFor(BenchEnv.store, parent);
     container.innerHTML="";
     if(!BenchEnv.hasFS() && !items.length){ return 0; }
+    /* the type picker sits ABOVE the grid: you choose what it is, then add it.
+       A plain <select> deliberately — benchSelectSheet intercepts every select
+       in the app and draws the in-app picker, so this inherits that for free
+       instead of introducing a second chooser. */
+    let typeSel=null;
+    if(opts.types && BenchEnv.hasFS()){
+      const wrap=document.createElement("div");
+      wrap.className="nf wide"; wrap.style.marginBottom="9px";
+      wrap.innerHTML=`<label for="attTypeSel">Type</label>`
+        +`<select id="attTypeSel">${opts.types.map(t=>`<option value="${escAttr(t)}">${esc(t)}</option>`).join("")}</select>`;
+      container.appendChild(wrap);
+      typeSel=wrap.querySelector("select");
+    }
     const grid=document.createElement("div"); grid.className="attgrid";
     items.forEach(a=>{
       const cell=document.createElement("div"); cell.className="attthumb";
@@ -6372,8 +6442,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(BenchEnv.hasFS()){
       const add=document.createElement("div"); add.className="attthumb add"; add.innerHTML="＋<span>"+(opts.addLabel||"ADD")+"</span>";
       add.addEventListener("click",()=>{
+        /* read the type at ADD time, not at render time — the user picks it
+           after the grid is drawn */
+        const chosen=typeSel && typeSel.value ? typeSel.value : (opts.kind||"photo");
         benchPickPhoto(async (b64,dims)=>{
-          try{ await benchImport(parent,b64,dims,opts.kind||"photo"); if(opts.onchange) opts.onchange(); }
+          try{ await benchImport(parent,b64,dims,chosen); if(opts.onchange) opts.onchange(); }
           catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
         });
       });
@@ -6519,6 +6592,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const MAG_STATUS_NEXT={active:"problem", problem:"retired", retired:"active"};
   renderMags = function(f){
     if(!Array.isArray(f.mags)) f.mags=[];
+    /* A6: per-mag photos are seated on data-mid, which comes from m.id. Both
+       add paths assign one, but a mag created before ids existed has none — its
+       attwrap rendered empty and the photo option silently did not exist for
+       that mag. Backfill rather than leaving a record that can never take a
+       photo; ids are additive, nothing is rewritten. */
+    let magIdFix=false;
+    f.mags.forEach((m,i)=>{
+      if(m && !m.id){ m.id="mag_"+Date.now().toString(36)+"_r"+i.toString(36); magIdFix=true; }
+    });
+    if(magIdFix) saveSafe();
     if(f.magRotDays==null) f.magRotDays=90;
     const sum=document.getElementById("magSummary"), msg=document.getElementById("magMsg"), list=document.getElementById("magList");
     const rotPro=isPro();
@@ -7041,10 +7124,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const ab=document.getElementById("attBox");
     if(ab){
       const wrap=document.getElementById("attGridWrap");
-      const n=benchAttGrid(wrap, {kind:"firearm", id:f.id}, {kind:"photo", onchange:()=>benchAfterCardEdit()});
+      const n=benchAttGrid(wrap, {kind:"firearm", id:f.id},
+        {kind:"photo", types:ATT_TYPES, onchange:()=>benchAfterCardEdit()});
       document.getElementById("attSummary").textContent = n ? `${n} file${n===1?"":"s"}` : "None yet";
       document.getElementById("attMsg").textContent = BenchEnv.hasFS()
-        ? "Receipts, work photos, notes — stored on this phone as files. Thumbnails here; full size on tap."
+        ? "Pick the type, then add the photo — optics, mounts, slings, cases and the rest. Thumbnails here; full size on tap."
         : "Photos attach on the phone app.";
     }
   };
@@ -7083,7 +7167,34 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       (f.zeros||[]).slice(-2).forEach(z=>out.zeros.push({name, z}));
     });
     out.zeros.sort((a,b)=>b.z.ts-a.z.ts);
+    out.attCount=benchScopedAtt().length;   /* A4: scoped, see below */
     return out;
+  }
+  /* ---------- A4: attachments, resolved to their firearm ----------
+     An attachment is parented either to a firearm directly (kinds firearm /
+     spec / stamp / nfa all key on the FIREARM id) or to one of its children
+     (mag / zero / service, which key on the child record's id). Nothing mapped
+     those child ids back, so the Bench could not scope attachments the way it
+     scopes everything else — a scoped Bench reported the WHOLE safe's file
+     count, which is what made a suppressor claim 11 files that were not its.
+     Ammo receipts are parented to Locker records and belong to no firearm;
+     they count on the global Bench and are excluded from a scoped one. */
+  function benchAttOwners(list){
+    const m=new Map();
+    (list||safe).forEach(f=>{
+      const name=faInfo(f).name;
+      m.set(f.id, {f, name, what:""});
+      (f.mags||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"mag #"+(x.num||"")}); });
+      (f.zeros||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"zero"}); });
+      (f.service||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"service"}); });
+    });
+    return m;
+  }
+  function benchScopedAtt(){
+    const reg=BenchAttach.readReg(BenchEnv.store);
+    if(!benchScopeId) return reg;
+    const own=benchAttOwners(benchScopedSafe());
+    return reg.filter(a=>a && a.parent && own.has(a.parent.id));
   }
   function renderBench(){
     const body=document.getElementById("benchBody");
@@ -8892,8 +9003,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchShowBox(f, id){
     const h=benchHiddenList(f);
     const i=h.indexOf(id);
-    if(i>=0){ h.splice(i,1); if(!h.length) delete f.layout; saveSafe(); }
+    if(i>=0){ h.splice(i,1); if(!h.length && !benchCollapsedList(f).length) delete f.layout; saveSafe(); }
     renderDetail();
+  }
+  /* A2: collapse state, per firearm, alongside hidden in f.layout. Collapsing is
+     a VIEW state and never touches records — same contract as hiding. */
+  function benchCollapsedList(f){ return (f.layout && Array.isArray(f.layout.collapsed)) ? f.layout.collapsed : []; }
+  function benchToggleCollapsed(f, id){
+    if(!f.layout) f.layout={hidden:[]};
+    if(!Array.isArray(f.layout.collapsed)) f.layout.collapsed=[];
+    const c=f.layout.collapsed, i=c.indexOf(id);
+    if(i>=0) c.splice(i,1); else c.push(id);
+    if(!c.length && !benchHiddenList(f).length) delete f.layout;
+    saveSafe(); renderDetail();
   }
   let benchHiddenOpen=false;
   function benchApplyCards(f){
@@ -8914,6 +9036,29 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         x.textContent="×";
         x.addEventListener("click",e=>{ e.stopPropagation(); const f2=byId(activeId); if(f2) benchHideBox(f2, def.id); });
         el.appendChild(x);
+      }
+      /* A2: EVERY card collapses as well as hides, uniformly. Driven off
+         BENCH_BOXES rather than a CSS class because these cards are a mix of
+         .lifebox, .logbox and .roundsbox — a class-based rule would have
+         silently skipped the maintenance log and the range-session card, which
+         are two of the three the user most wants folded away.
+         The header is the card's first element child whatever its class.
+         Handlers are assigned with onclick, not addEventListener: this runs on
+         every renderDetail and listeners would otherwise stack up. */
+      el.classList.add("bccard");
+      const head=el.firstElementChild;
+      if(head && !head.classList.contains("boxhide")){
+        if(!head.querySelector(":scope > .bcchev")){
+          const chev=document.createElement("span");
+          chev.className="bcchev"; chev.textContent="▾";
+          head.insertBefore(chev, head.firstChild);
+        }
+        el.classList.toggle("bcclosed", benchCollapsedList(f).indexOf(def.id)>=0);
+        head.onclick=e=>{
+          if(e.target.closest(".boxhide")) return;
+          const f2=byId(activeId); if(!f2) return;
+          benchToggleCollapsed(f2, def.id);
+        };
       }
     });
     /* one quiet restore row at the bottom when anything is hidden */
@@ -9438,7 +9583,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     host.innerHTML=art;
     const box=host.querySelector(".abBox");
     if(rec){
-      benchLoadThumb(box.querySelector(".abImg"), rec);
+      /* A1: the hero card shows the FULL stored file, never the 320px thumb.
+         This box is the firearm's face at full card width — feeding it the
+         thumbnail is what made imported photos look poor on device, and the
+         encoder was never at fault (a 4000x3000 import stores at 2600x1950
+         q0.95 and always did). benchSlotImg falls back to the thumb if the
+         full read fails, so a missing file degrades instead of blanking. */
+      benchSlotImg(box.querySelector(".abImg"), rec);
       const actsEl=box.querySelector(".abActs");
       box.querySelector(".abImg").onclick=()=>{ actsEl.hidden=!actsEl.hidden; };
       actsEl.onclick=e=>{ if(e.target===actsEl) actsEl.hidden=true; };
@@ -10396,6 +10547,54 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* V17 item 3c: the header IS the summary — title, vitals line, and urgent
      chips that stay visible collapsed or not. Collapsing tucks the list, never
      a warning. chips = [{label,cls}] rendered as statuschips in the header. */
+  /* A4: fill the Attachments card. Grouped by owner so a file's provenance is
+     on screen — a wall of anonymous thumbnails is not an answer to "what are
+     these 11 files". Cells reuse benchLoadThumb for the tile and benchViewAtt
+     for the full-size open, the same pair every other attachment surface uses. */
+  function benchSeatAttCard(){
+    const host=document.getElementById("benchAttHost"); if(!host) return;
+    const items=benchScopedAtt();
+    host.innerHTML="";
+    if(!items.length){
+      host.innerHTML=`<div class="lmsg">Nothing attached in view yet.</div>`;
+      return;
+    }
+    const own=benchAttOwners();
+    const groups=new Map();
+    items.slice().sort((a,b)=>(b.addedAt||0)-(a.addedAt||0)).forEach(a=>{
+      const o=own.get(a.parent && a.parent.id);
+      const key=o?o.f.id:("~"+((a.parent&&a.parent.kind)||"other"));
+      const label=o?o.name:(((a.parent&&a.parent.kind)||"other")+" records");
+      if(!groups.has(key)) groups.set(key,{label, items:[]});
+      groups.get(key).items.push(a);
+    });
+    groups.forEach(g=>{
+      const head=document.createElement("div");
+      head.className="lmsg";
+      head.style.cssText="margin-top:10px;color:var(--text)";
+      head.textContent=`${g.label} — ${g.items.length} file${g.items.length===1?"":"s"}`;
+      host.appendChild(head);
+      const grid=document.createElement("div"); grid.className="attgrid";
+      g.items.forEach(a=>{
+        const cell=document.createElement("div"); cell.className="attthumb";
+        const o=own.get(a.parent && a.parent.id);
+        if(a.kind==="note" || !a.file){
+          cell.innerHTML=`<span class="atag">note</span><div style="font-size:10px;color:var(--muted);padding:6px;overflow:hidden">${esc(a.note||"")}</div>`;
+        } else {
+          const img=document.createElement("img"); img.alt=a.kind;
+          img.style.cssText="width:100%;height:100%;object-fit:cover";
+          cell.appendChild(img);
+          const tag=document.createElement("span"); tag.className="atag";
+          tag.textContent=(o&&o.what)?o.what:a.kind;
+          cell.appendChild(tag);
+          benchLoadThumb(img, a);
+          cell.addEventListener("click",()=>benchViewAtt(a));
+        }
+        grid.appendChild(cell);
+      });
+      host.appendChild(grid);
+    });
+  }
   function benchCard(id, title, val, bodyHtml, chips){
     const hidden=benchBHidden();
     if(hidden.indexOf(id)>=0) return "";
@@ -10501,7 +10700,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const prob=g.mags.filter(m=>m.status==="problem").length;
       const ret=g.mags.filter(m=>m.status==="retired").length;
       const nums=g.mags.map(m=>m.num).sort((a,b)=>a-b);
-      mb+=`<div class="benchrow" data-nav="${g.f.id}"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}${g.brand?` · ${esc(g.brand)}`:""}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · #${nums[0]}–#${nums[nums.length-1]} · ${esc(g.name)} · ${act} active${prob?`, ${prob} problem`:""}${ret?`, ${ret} retired`:""}</div></div><span class="statuschip ${prob?"problem":"active"}">${prob?"CHECK":"FLEET"}</span></div>`;
+      /* A5: this row used to carry data-nav, which sets activeId and shows
+         scr-detail. Reached from a firearm's own hero the Bench is already
+         scoped to that firearm, so tapping a fleet row navigated to the page
+         you just came from and read as a back button. A magazine row now opens
+         that firearm's Magazines card in place, which is what tapping a
+         magazine should do and never leaves the Bench. */
+      mb+=`<div class="benchrow" data-magsel="${g.f.id}"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}${g.brand?` · ${esc(g.brand)}`:""}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · #${nums[0]}–#${nums[nums.length-1]} · ${esc(g.name)} · ${act} active${prob?`, ${prob} problem`:""}${ret?`, ${ret} retired`:""}</div></div><span class="statuschip ${prob?"problem":"active"}">${prob?"CHECK":"FLEET"}</span></div>`;
     });
     /* V21: the real Magazines card (spec fields + batch add) now lives here */
     const magGuns=benchScopedSafe().filter(f=>typeof hasMags!=="function" || hasMags(f));
@@ -10544,9 +10749,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     sb+=`<div id="benchSvcHost"></div>`;
     const svcTotal=svcGuns.reduce((a,f)=>a+((f.service||[]).length),0);
     h+=benchCard("bcSvc","Service & Mods", svcTotal?`${svcTotal} record${svcTotal===1?"":"s"}`:"none", sb);
-    /* Attachments */
-    h+=benchCard("bcAtt","Attachments", c.attCount?`${c.attCount} files`:"none",
-      `<div class="lmsg">Receipts, work photos, stamp photos and targets across the safe — attached on each record's own card, stored on this phone only.</div>`);
+    /* Attachments — A4: this card counted files and then showed a paragraph, so
+       there was nothing to open. It now lists them, grouped by what they belong
+       to, and every one opens full-size. */
+    h+=benchCard("bcAtt","Attachments", c.attCount?`${c.attCount} file${c.attCount===1?"":"s"}`:"none",
+      `<div class="lmsg">Receipts, work photos, stamp photos and targets — attached on each record's own card, stored on this phone only.</div>
+       <div id="benchAttHost"></div>`);
     /* Backup + the V18 CSV system (one feature: export + template import) */
     h+=benchCard("bcBackup","Backup & CSV","",
       `<div class="lmsg">One local file with everything the Bench knows. You choose where it goes — nothing leaves this phone on its own.</div>
@@ -10638,6 +10846,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(nh && nbx && benchNfaTargetId){ nh.appendChild(nbx); nbx.style.display="block"; renderNfa(byId(benchNfaTargetId)); }
     const mh=document.getElementById("benchMagHost"), mbx=document.getElementById("magBox");
     if(mh && mbx && benchMagTargetId){ mh.appendChild(mbx); mbx.style.display="block"; renderMags(byId(benchMagTargetId)); }
+    benchSeatAttCard();
     const be=document.getElementById("benchExport"), br=document.getElementById("benchRestore");
     if(be) be.onclick=benchDoExport;
     if(br) br.onclick=()=>benchRestoreFlow();
@@ -11439,13 +11648,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       lk.addEventListener("click",()=>{ if(typeof openLocker==="function") openLocker(); else show("scr-ammoinv"); });
     }
     lk.innerHTML="<b>Ammo Locker</b> — what you have on hand: lots, prices, stock";
-    let kg=document.getElementById("kegRow");
-    if(!kg){
-      kg=document.createElement("button"); kg.id="kegRow"; kg.className="prorow";
-      lk.parentNode.insertBefore(kg, lk.nextSibling);
-      kg.addEventListener("click",()=>{ kegRender(); show("scr-keg"); });
-    }
-    kg.innerHTML="<b>The Keg</b> — your loads and what they did";
+    /* B1: THE KEG IS NOT A HOME DESTINATION (Darren ruling). It is a card slot
+       reached from an item — on a muzzleloader it takes the Ammo Performance
+       slot. The home row is removed, and an already-built one is torn out so a
+       session that rendered home before this change does not keep it. The Keg
+       SCREEN and kegRender() stay: the card still opens them. */
+    const kgOld=document.getElementById("kegRow");
+    if(kgOld && kgOld.parentNode) kgOld.parentNode.removeChild(kgOld);
   }
   kegHomeRows();
 
