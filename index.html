@@ -1697,7 +1697,7 @@
       <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, on every guide. Standard guides stay free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Custom firearms</b> — add and <i>guide</i> firearms the catalog doesn't cover yet; assign any family's strip + parts diagram. One custom entry is free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Request a Firearm</b> — ask us to add a model that's missing. Opens your email app; nothing leaves your phone on its own.</span></div>
-      <div class="price" id="proPrice">$14.99 · one time</div>
+      <div class="price" id="proPrice">$19.99 · one time</div>
       <button class="btn primary full" id="proBuy">Unlock Pro</button>
       <button class="btn full" id="proRestore" style="margin-top:8px">Restore Purchase</button>
       <button class="btn full" id="proClose" style="margin-top:8px">Not Now</button>
@@ -3214,7 +3214,7 @@
 
   /* =============== FIELDSTRIP PRO =============== */
   const FREE_MAX_GUNS = 2;
-  const PRO_PRICE_LABEL = "$14.99 · one time";   /* V17 item 9 (Darren 2026-08-16): this price supersedes the v15 figure */
+  const PRO_PRICE_LABEL = "$19.99 · one time";   /* PRICE LOCKED (Darren ruling 2026-08-16, ruling-price-locked-20260816.md): $19.99. No block, copy draft, or defect round changes this — only an explicit ruling naming the price. */
   let proState = store.get("fs_pro", null) || {on:false, src:null, ts:null};
   const isPro = ()=> !!proState.on;
   const savePro = ()=> store.set("fs_pro", proState);
