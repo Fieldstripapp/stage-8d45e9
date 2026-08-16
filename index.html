@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FieldStrip">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>FieldStrip — v0.8</title>
+<title>FieldStrip</title>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -782,7 +782,7 @@
   <section class="screen" id="scr-ammoinv">
     <div class="logform">
       <h2>Ammo Locker</h2>
-      <p class="sub">On-hand stock by load. Range sessions deduct automatically when the load matches. <span style="opacity:.45">v0.4.7</span></p>
+      <p class="sub">On-hand stock by load. Range sessions deduct automatically when the load matches.</p>
       <button class="btn full" id="lkScanBtn" hidden>▥ Scan Barcode to Check In</button>
       <div class="hint" id="lkScanMsg" style="margin:8px 0 4px"></div>
       <div id="lockerList"></div>
@@ -1891,7 +1891,7 @@
 })(typeof self!=="undefined" ? self : this, function(){
   "use strict";
 
-  const SCHEMA_VERSION = 2;
+  const SCHEMA_VERSION = 3;   /* v3 (V19 item 2/4 root cause): repair migration-guessed Suppressor item types */
   const VERSION_KEY = "fs_schema_v";
   const DAY = 86400000;
 
@@ -1967,7 +1967,11 @@
       if(f.nfa && (f.nfa.form||f.nfa.sub||f.nfa.app||f.nfa.stamp)) out.nfaFilings.push(legacyNfaFiling(f.nfa, now));
     }
     if(out.nfaItemType===undefined){
-      out.nfaItemType = CLASS_MAP[f.nfaClass] || (f.nfa ? "Suppressor" : null);
+      /* V19 root-cause fix: the old fallback branded ANY firearm carrying a legacy
+         NFA form record as a "Suppressor" — which re-homed its cards, hid its
+         locker, and re-routed its guide. Item type migrates only from an explicit
+         class; suppressor-ness is the CATALOG GROUP's to say, not a guess. */
+      out.nfaItemType = CLASS_MAP[f.nfaClass] || null;
     }
     return out;
   }
@@ -1983,6 +1987,38 @@
     store.setRaw("fs_safe", JSON.stringify(out));
     store.setRaw(VERSION_KEY, String(SCHEMA_VERSION));
     return {from:cur, to:SCHEMA_VERSION, firearms:out.length};
+  }
+
+  /* v3 REPAIR (V19): stores already migrated under the old guess carry
+     nfaItemType:"Suppressor" on real FIREARMS. Clear it wherever the catalog
+     says the model is not a suppressor; each repair leaves a log note. Runs
+     under the same snapshot gate as every migration. isSuppModel(modelId) is
+     the caller's catalog predicate (the app passes the CATALOG group test). */
+  function migrateStoreV3(store, now, isSuppModel){
+    const cur = parseInt(store.getRaw(VERSION_KEY)||"1", 10);
+    const raw = store.getRaw("fs_safe");
+    let safe = [];
+    if(raw){ try{ safe = JSON.parse(raw); }catch(e){ throw new Error("fs_safe unparseable — refuse to migrate"); } }
+    let repaired = 0;
+    safe.forEach(f=>{
+      if(f && f.nfaItemType==="Suppressor" && !f.custom && f.model && !isSuppModel(f.model)){
+        f.nfaItemType = null;
+        if(!Array.isArray(f.log)) f.log = [];
+        f.log.unshift({ts:now, type:"note", msg:"NFA item type repaired — a migration had mis-tagged this firearm as a Suppressor"});
+        repaired++;
+      }
+      else if(f && !f.nfaItemType && ((!f.custom && f.model && isSuppModel(f.model)) || (f.custom && f.ctype==="Suppressor"))
+              && ((Array.isArray(f.nfaFilings)&&f.nfaFilings.length) || f.nfa)){
+        /* symmetric heal: a real catalog CAN with NFA paperwork gets its item
+           type back — the forward migration no longer guesses, so the catalog
+           sets it here instead */
+        f.nfaItemType = "Suppressor";
+        repaired++;
+      }
+    });
+    store.setRaw("fs_safe", JSON.stringify(safe));
+    store.setRaw(VERSION_KEY, String(SCHEMA_VERSION));
+    return {from:cur, to:SCHEMA_VERSION, repaired};
   }
 
   /* =============== MAGAZINES =============== */
@@ -2086,7 +2122,7 @@
   }
 
   return {SCHEMA_VERSION, VERSION_KEY, OPTIONS, makeId,
-          migrateSafeV2, migrateStoreV2, migrateFirearm,
+          migrateSafeV2, migrateStoreV2, migrateStoreV3, migrateFirearm,
           batchCreateMags, setMagStatus, nextMagNum,
           createReminder, reminderState, markReminderDone,
           createZero, createFiling, setItemType};
@@ -2156,7 +2192,7 @@
 
   const KEY = "fs_attachments";
   const DIR = "bench/att";
-  const PARENT_KINDS = ["firearm","mag","nfa","zero"];
+  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp"];  /* V19 item 6: ammo/svc/spec/stamp were never allowlisted — every add on those surfaces threw "bad parent" since their UIs shipped */
   /* compress-on-import threshold: only shots whose longest side exceeds this get the
      gentle recompress; below it the original bytes are stored untouched. Not a cap. */
   const IMPORT_MAX_DIM = 2600;
@@ -2191,7 +2227,10 @@
        ones. Size still caps at IMPORT_MAX_DIM; smaller photos keep their pixels
        and lose their metadata. */
     if(thumbnailer){
-      stored = await thumbnailer(b64, IMPORT_MAX_DIM);
+      /* V19 item 9: the EXIF-strip re-encode was running at thumbnail quality
+         (0.82) on EVERY photo — the ruled GENTLE compress means the full-size
+         pass re-encodes at 0.95 and only DOWNSCALES past IMPORT_MAX_DIM. */
+      stored = await thumbnailer(b64, IMPORT_MAX_DIM, 0.95);
       recompressed = true;
     }
     await filesB64.writeB64(file, stored);
@@ -2349,11 +2388,19 @@
         if(cur >= BenchData.SCHEMA_VERSION) return;
         const files = filesAdapter(FS);
         const res = await BenchSnapshot.runGatedMigration(st, files, Date.now(), async ()=>{
-          const mig = BenchData.migrateStoreV2(st, Date.now());
-          const migSafe = JSON.parse(st.getRaw("fs_safe")||"[]");
-          const stamps = await BenchStampMigrate.migrateStamps(st, files, migSafe, Date.now());
-          st.setRaw("fs_safe", JSON.stringify(migSafe));
-          return {mig, stamps:{migrated:stamps.migrated, missing:stamps.missing, failed:stamps.failed, skipped:stamps.skipped}};
+          let mig=null, stamps={migrated:0,missing:0,failed:0,skipped:0};
+          if(cur < 2){
+            mig = BenchData.migrateStoreV2(st, Date.now());
+            const migSafe = JSON.parse(st.getRaw("fs_safe")||"[]");
+            const st2 = await BenchStampMigrate.migrateStamps(st, files, migSafe, Date.now());
+            st.setRaw("fs_safe", JSON.stringify(migSafe));
+            stamps={migrated:st2.migrated, missing:st2.missing, failed:st2.failed, skipped:st2.skipped};
+          }
+          /* v3 REPAIR (V19): suppressor-ness is the catalog group's call */
+          /* catalog may be absent in harness sandboxes — a missing catalog answers false and the repair only ever clears nothing */
+          const isSupp = id=>{ try{ const c=(typeof CATALOG!=="undefined")?CATALOG.find(x=>x.i===id):null; return !!(c && c.gp==="Suppressors"); }catch(e){ return false; } };
+          const rep = BenchData.migrateStoreV3(st, Date.now(), isSupp);
+          return {mig, repair:{repaired:rep.repaired}, stamps};
         });
         st.setRaw(REPORT, JSON.stringify({at:Date.now(), ok:res.ok, migrated:!!res.migrated,
           gate:{ok:res.gate.ok, path:res.gate.path, keys:res.gate.keys, problems:res.gate.problems},
@@ -3549,7 +3596,7 @@
     document.getElementById("homeBtn").style.display = id==="scr-safe" ? "none" : "block";
     const f = byId(activeId);
     /* topbar stays clean of the model name everywhere — the detail heading and gate screen carry it */
-    ctxLabel.textContent = id==="scr-safe" ? "My Safe · v0.8" : (id==="scr-pick" ? "Add Firearm" : "");
+    ctxLabel.textContent = id==="scr-safe" ? ("My Safe"+(APP_INFO.real?" · v"+APP_INFO.version+" ("+APP_INFO.build+")":"")) : (id==="scr-pick" ? "Add Firearm" : "");   /* V19 item 11 */
     if(id==="scr-safe") renderSafe();
     if(id==="scr-detail") renderDetail();
     if(push && id!=="scr-safe" && !(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App)) history.pushState({scr:id},"");
@@ -3640,9 +3687,9 @@
 
   /* =============== CUSTOM FIREARM + REQUEST A FIREARM =============== */
   /* real native version/build for the request body; falls back on web preview */
-  let APP_INFO={version:"0.8",build:"—"};
+  let APP_INFO={version:"0.8",build:"—", real:false};   /* V19 item 11: display derives from getInfo at runtime, never a typed string */
   (async()=>{ try{ const A=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
-    if(A&&A.getInfo){ const i=await A.getInfo(); APP_INFO={version:i.version||APP_INFO.version, build:(i.build!=null&&i.build!=="")?String(i.build):APP_INFO.build}; } }catch(e){} })();
+    if(A&&A.getInfo){ const i=await A.getInfo(); APP_INFO={version:i.version||APP_INFO.version, build:(i.build!=null&&i.build!=="")?String(i.build):APP_INFO.build, real:true}; if(typeof ctxLabel!=="undefined"&&current==="scr-safe") ctxLabel.textContent="My Safe · v"+APP_INFO.version+" ("+APP_INFO.build+")"; } }catch(e){} })();
 
   const custSheet=document.getElementById("customSheet");
   const reqSheet=document.getElementById("reqSheet");
@@ -5996,8 +6043,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         async removeFile(p){ await fs.deleteFile({path:p, directory:"DATA"}); }
       };
     }
-    /* b64 -> downscaled jpeg b64 via canvas (thumbnails + gentle compress-on-import) */
-    function thumbnailer(b64, maxDim){
+    /* b64 -> downscaled jpeg b64 via canvas (thumbnails + gentle compress-on-import).
+       V19 item 9: quality is now a parameter — the full-size EXIF-strip pass runs
+       at 0.95 (visually faithful); 0.82 stays the THUMBNAIL quality only. */
+    function thumbnailer(b64, maxDim, quality){
       return new Promise((res, rej)=>{
         const img=new Image();
         img.onload=()=>{ try{
@@ -6005,7 +6054,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           const c=document.createElement("canvas");
           c.width=Math.max(1,Math.round(img.width*sc)); c.height=Math.max(1,Math.round(img.height*sc));
           c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-          res(c.toDataURL("image/jpeg",0.82).split(",")[1]);
+          res(c.toDataURL("image/jpeg", quality||0.82).split(",")[1]);
         }catch(e){ rej(e); } };
         img.onerror=()=>rej(new Error("decode"));
         img.src="data:image/jpeg;base64,"+b64;
@@ -6098,7 +6147,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       add.addEventListener("click",()=>{
         benchPickPhoto(async (b64,dims)=>{
           try{ await benchImport(parent,b64,dims,opts.kind||"photo"); if(opts.onchange) opts.onchange(); }
-          catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+          catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
         });
       });
       grid.appendChild(add);
@@ -6233,7 +6282,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           if(prevStatus!==fl.status) addLog(f2,"nfa",benchFilingLabel(fl)+" — "+fl.status);
         }
         benchFilingOpen=null; saveSafe(); renderDetail();
-      }catch(e){ alert(e.message||String(e)); }
+      }catch(e){ console.error(e); alert("That didn't save — check the fields and try again."); }
     };
   }
   /* the old SBR/SBS/AOW segment is retired — item type covers it */
@@ -6340,7 +6389,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         addLog(f,"mag", qty>1
           ? `${qty} magazines added — #${made[0].num}–#${made[made.length-1].num} · ${cap}-rd${model?` ${model}`:""}${brand?` (${brand})`:""} · ${role}`
           : `Magazine added — #${made[0].num} · ${cap}-rd${model?` ${model}`:""} · ${role}`);
-      }catch(e){ alert(e.message||String(e)); return; }
+      }catch(e){ console.error(e); alert("That didn't save — check the fields and try again."); return; }
       document.getElementById("magCap").value=""; document.getElementById("magQty").value="1";
       document.getElementById("magModel").value=""; document.getElementById("magBrand").value="";
       magDelArm=null;
@@ -6449,7 +6498,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           r.last=r.lastDone;
         }
         addLog(f,"care",`Reminder added — ${label}, ${clock.type==="rounds"?`every ${fmtN(clock.every)} rounds`:`every ${clock.every} ${clock.unit}`}`);
-      }catch(e){ alert(e.message||String(e)); return; }
+      }catch(e){ console.error(e); alert("That didn't save — check the fields and try again."); return; }
       ["careComp","careBatt","careTorque","careLube","careNote","careLabel"].forEach(id=>{ document.getElementById(id).value=""; });
       careDelArm=null;
       saveSafe(); renderDetail();
@@ -6540,7 +6589,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const note=document.getElementById("zeroNote").value.trim();
       let z;
       try{ z=BenchData.createZero(f, {dist, unit, ammo, lot, note}, Date.now()); }
-      catch(e){ alert(e.message||String(e)); return; }
+      catch(e){ console.error(e); alert("That didn't save — check the fields and try again."); return; }
       addLog(f,"zero",`Zeroed at ${dist} ${unit}${ammo?` — ${ammo}`:""}${lot?` · lot ${lot}`:""}${note?` · ${note}`:""}`);
       for(const which of ["before","after"]){
         const st=benchZeroStage[which];
@@ -6548,7 +6597,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           try{
             const rec=await benchImport({kind:"zero", id:z.id}, st.b64, st.dims, "target", which);
             if(which==="before") z.photoBefore=rec.id; else z.photoAfter=rec.id;
-          }catch(e){ alert("Target photo ("+which+") could not be saved: "+(e&&e.message||e)); }
+          }catch(e){ console.error("attach:",e); alert("Couldn't save the "+which+" target photo. Try again."); }
         }
       }
       benchZeroStage={before:null, after:null};
@@ -6851,7 +6900,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       msg.textContent=`Backup built — ${r.report.keys} data keys${r.export.meta.photos?`, ${r.report.files} photo files`:""}${r.report.missing&&r.report.missing.length?` · ${r.report.missing.length} missing file${r.report.missing.length===1?"":"s"} skipped (listed in the file)`:""}.`;
     }catch(e){
       if(String(e&&e.message||e).indexOf("canceled")>=0){ msg.textContent=""; return; }
-      msg.textContent="Backup failed: "+(e&&e.message||e);
+      console.error("backup:",e); msg.textContent="Backup failed — nothing left this phone. Try again.";
     }
   }
   /* v15 item 5: the Bench left the home screen — the hero card's The Bench
@@ -8275,8 +8324,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   };
 
   function benchIsSuppressor(f){
+    /* V19 hardening: for CATALOG entries the GROUP is authoritative — an
+       nfaItemType tag can never re-home a firearm's cards or re-route its
+       guide (the migration-guess incident). The tag only counts for CUSTOM
+       entries, which have no catalog group to consult. */
     const c=fcat(f);
-    return (c && c.gp==="Suppressors") || (f.custom && f.ctype==="Suppressor") || f.nfaItemType==="Suppressor";
+    if(c) return c.gp==="Suppressors";
+    return !!(f.custom && (f.ctype==="Suppressor" || f.nfaItemType==="Suppressor"));
   }
   /* host-link (ruled default): a rounds clock carrying hostId ticks from the HOST's
      logged rounds. Manual adjustment = editing anchorRounds via 'adjust'. */
@@ -8475,7 +8529,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         try{
           await benchImport({kind:"firearm", id:f.id}, b64, dims, "work");
           document.getElementById("logPhotoMsg").textContent="Photo attached ✓";
-        }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+        }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
       });
     });
     /* Service & Mods: same vendor memory; original svcAdd handler reads
@@ -8598,7 +8652,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         f.userArt=rec.id;
         addLog(f,"note","Photo set as this firearm's art");
         saveSafe(); benchArtChanged();
-      }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+      }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
     });
   }
   async function benchRemoveUserArt(f){
@@ -8874,7 +8928,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           a.download=fname; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
         }
         msgEl.textContent="Backup exported ✓ — keep it somewhere safe.";
-      }catch(e){ msgEl.textContent="Backup failed: "+(e&&e.message||e); }
+      }catch(e){ console.error("backup:",e); msgEl.textContent="Backup failed — nothing left this phone. Try again."; }
     })();
   }
   function benchLockSheet(){
@@ -9171,7 +9225,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       let sy=e.clientY; const sx=e.clientX, pid=e.pointerId;
       let lifted=false, moved=false, curY=sy;
       const unitEls=()=>[box].concat(benchBoxTwins(unitId));
-      const hold=setTimeout(lift, 430);
+      /* V19 item 10: 430ms caught scroll pauses and then BLOCKED the scroll —
+         the hold is longer, and any real scroll cancels the pending lift */
+      const hold=setTimeout(lift, 650);
+      const scroller=el.closest(".screen");
+      const cancelOnScroll=()=>{ if(!lifted) done(); };
+      if(scroller) scroller.addEventListener("scroll", cancelOnScroll, {passive:true});
       function lift(){
         lifted=true; benchDragging=true;
         unitEls().forEach(u=>u.classList.add("carddrag"));
@@ -9224,6 +9283,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       }
       function done(){
         clearTimeout(hold);
+        if(scroller) scroller.removeEventListener("scroll", cancelOnScroll);
         el.removeEventListener("pointermove", move);
         el.removeEventListener("pointerup", done);
         el.removeEventListener("pointercancel", done);
@@ -9343,7 +9403,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           if(!f.stepArt) f.stepArt={};
           f.stepArt[key]=rec.id;
           saveSafe(); renderStep(false);
-        }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+        }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
       }, mode);
     });
   }
@@ -9921,7 +9981,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           r.last=r.lastDone;
         }
         addLog(f,"care",`Reminder added — ${label}, ${clock.type==="rounds"?`every ${fmtN(clock.every)} rounds`:`every ${clock.every} ${clock.unit}`}`);
-      }catch(e){ alert(e.message||String(e)); return; }
+      }catch(e){ console.error(e); alert("That didn't save — check the fields and try again."); return; }
       ["careComp","careBatt","careTorque","careLube","careNote","careLabel"].forEach(id=>{ document.getElementById(id).value=""; });
       careDelArm=null;
       saveSafe(); benchAfterCardEdit();
@@ -10377,7 +10437,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           if(!f.stepArt) f.stepArt={};
           f.stepArt[key]=rec.id;
           saveSafe(); renderStep(false);
-        }catch(e){ alert("Photo could not be saved: "+(e&&e.message||e)); }
+        }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
       }, mode);
     });
   }
@@ -10466,13 +10526,34 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }));
     sh.classList.add("open");
   }
+  /* V19 items 7+10: preventDefault on pointerdown alone was NOT enough — the
+     tap's touchend/click still reached the select on device, so the NATIVE list
+     opened on top of the app's sheet (the "misbehaving menus" and part of the
+     ghost-input flashing). Every path to the native picker is now suppressed:
+     the full tap event chain, focus itself, and the keyboard route. The sheet
+     opens ONCE per gesture. */
+  let benchSelGesture=0;
   document.addEventListener("pointerdown",function(e){
     const sel=e.target && e.target.closest && e.target.closest("select");
     if(!sel || sel.disabled || sel.multiple) return;
-    e.preventDefault();                          /* the native popup never opens */
+    e.preventDefault(); e.stopPropagation();
+    const now=Date.now();
+    if(now-benchSelGesture<450) return;           /* one sheet per gesture, ever */
+    benchSelGesture=now;
     benchSelectSheet(sel);
   }, true);
-  /* keyboard/assistive paths that would still open the native list */
+  ["mousedown","mouseup","click","touchstart","touchend"].forEach(t=>{
+    document.addEventListener(t,function(e){
+      const sel=e.target && e.target.closest && e.target.closest("select");
+      if(!sel || sel.disabled || sel.multiple) return;
+      e.preventDefault(); e.stopPropagation();    /* the native popup never opens */
+    }, true);
+  });
+  document.addEventListener("focusin",function(e){
+    if(e.target && e.target.tagName==="SELECT" && !e.target.multiple){
+      e.target.blur();                            /* no focus ring, no keyboard flash */
+    }
+  }, true);
   document.addEventListener("keydown",function(e){
     const sel=e.target && e.target.tagName==="SELECT";
     if(sel && (e.key===" "||e.key==="Enter"||e.key==="ArrowDown"||e.key==="ArrowUp")){
@@ -10503,7 +10584,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       }
       if(msg) msg.textContent=fname+" built ✓ — a copy for the outside world; the app keeps everything.";
     }catch(e){
-      if(msg && String(e&&e.message||e).indexOf("canceled")<0) msg.textContent="CSV failed: "+(e&&e.message||e);
+      console.error("csv:",e); if(msg && String(e&&e.message||e).indexOf("canceled")<0) msg.textContent="CSV failed — nothing was written. Try again.";
     }
   }
   /* ---------- item 3: template import — preview, then the snapshot-gated commit ---------- */
@@ -10737,6 +10818,95 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     renderSpec(f);
   };
 
+  /* ================================================================
+     V19 (ruling-build-order-v19-20260816)
+     item 1 RE-LOCK ON BACKGROUND · item 8 MID-FLOW ESCAPE
+     ================================================================ */
+
+  /* ---------- item 1: leaving the app re-arms the door; unlock RESTORES the
+     user exactly where they were. Applies only when a combination is set —
+     "Leave door open" users are untouched. A full close resets naturally. ---------- */
+  function benchRelock(){
+    const lock=benchLockGet();
+    if(!lock.on) return false;
+    const overlay=document.getElementById("safeDoor"); if(!overlay) return false;
+    if(overlay.style.display==="flex" && !sdState.open) return true;   /* already armed */
+    sdState.buf=""; sdState.open=false;
+    overlay.classList.remove("opening","fadeout");
+    overlay.style.opacity="";
+    const door=document.getElementById("sdDoor");
+    if(door) door.classList.remove("open","unbolted");
+    const pad=document.getElementById("sdPad"); if(pad) pad.hidden=false;
+    const combo=document.getElementById("sdSetCombo"); if(combo) combo.hidden=true;
+    sdDots();
+    overlay.style.display="flex";
+    /* biometric users get the sensor again, exactly like a launch */
+    if(lock.bio && !lock.twofa){
+      setTimeout(async ()=>{ if(!sdState.open && await benchBioVerify()) sdOpenSequence(false); }, 700);
+    }
+    return true;
+  }
+  (function(){
+    const CapApp2=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    let lastBg=0;
+    const onBg=()=>{ lastBg=Date.now(); benchRelock(); };
+    if(CapApp2 && CapApp2.addListener) CapApp2.addListener("appStateChange", s=>{ if(s && s.isActive===false) onBg(); });
+    document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") onBg(); });
+  })();
+
+  /* ---------- item 5: the LAST single-photo surfaces become the standard
+     visible multi-attach tiles — the stamp card and the clean-log form ---------- */
+  const benchPrevRenderDetail_v19=renderDetail;
+  renderDetail=function(){
+    benchPrevRenderDetail_v19();
+    const f=byId(activeId); if(!f) return;
+    const sw=document.getElementById("stampWrap");
+    if(sw && !sw.hidden){
+      let host=document.getElementById("stampAttWrap");
+      if(!host){
+        host=document.createElement("div"); host.id="stampAttWrap"; host.style.marginTop="8px";
+        sw.appendChild(host);
+      }
+      if(typeof benchAttGrid==="function")
+        benchAttGrid(host, {kind:"stamp", id:f.id}, {kind:"document", addLabel:"PHOTO / FILE", onchange:()=>renderDetail()});
+    }
+  };
+  const benchPrevOpenCleanForm_v19=openCleanForm;
+  openCleanForm=function(guided){
+    benchPrevOpenCleanForm_v19(guided);
+    const pb=document.getElementById("logPhotoBtn");
+    if(!pb) return;
+    let host=document.getElementById("logAttWrap");
+    if(!host){
+      host=document.createElement("div"); host.id="logAttWrap";
+      pb.parentNode.insertBefore(host, pb);
+    }
+    if(BenchEnv.hasFS() && typeof benchAttGrid==="function"){
+      pb.style.display="none";                       /* the tiles ARE the affordance */
+      const seat=()=>benchAttGrid(host, {kind:"firearm", id:activeId}, {kind:"work", addLabel:"WORK PHOTO / FILE", onchange:seat});
+      seat();
+    } else { host.innerHTML=""; }
+  };
+
+  /* burn entry always lands on the fresh, empty My Safe — never a stale page
+     from before the wipe (matters most when the burn arrives at a RE-lock) */
+  const benchPrevBurnWipe_v19=benchBurnWipe;
+  benchBurnWipe=function(){
+    benchPrevBurnWipe_v19();
+    try{ show("scr-safe", false); }catch(e){}
+  };
+
+  /* ---------- item 8: MID-FLOW ESCAPE — back closes the top sheet first, then
+     navigates. No half-finished flow can trap the user. ---------- */
+  const benchPrevNavBack_v19=navBack;
+  navBack=function(){
+    const openSheet=document.querySelector(".prosheet.open");
+    if(openSheet){ openSheet.classList.remove("open"); return true; }
+    const fo=document.getElementById("firstOpen");
+    if(fo) return true;                                  /* the first-open page owns its own exits */
+    return benchPrevNavBack_v19();
+  };
+
   /* test surface for the CDP harness — read-only reaches into the closure, the
      same way BenchData already stands exposed for the node suites. No data. */
   window.__fs16={
@@ -10751,6 +10921,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     },
     stepsLen(){ return curSteps().length; },
     wm(){ return FS_LOGO_WM; },
+    relock(){ return benchRelock(); },
+    isSuppModel(id){ const c=CATALOG.find(x=>x.i===id); return !!(c && c.gp==="Suppressors"); },
+    current(){ return current; },
     dumpDeep(){
       const strip=h=>String(h).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
       return Object.keys(GUNS).map(k=>({key:k,
