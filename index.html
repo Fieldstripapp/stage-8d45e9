@@ -14,8 +14,18 @@
 <style>
   :root{
     --bg:#14161A; --panel:#1D2127; --panel2:#232830; --edge:#2C333D;
-    --text:#C9CFD8; --muted:#78828F; --amber:#E8A33D; --amber-dim:#8a6524;
-    --safe-red:#D4553F; --green:#5FA36B;
+    /* ⛔ ITEM 4 (Darren 2026-08-16): ALL non-white text was too dark to read.
+       Fixed HERE, once, at the token level — every dark label lifts together and
+       none get missed. Measured WCAG ratios against the three surfaces this app
+       actually paints on (--bg #14161A / --panel #1D2127 / --panel2 #232830);
+       AA normal text needs 4.5. Before -> after, worst case of the three:
+         --muted      #78828F  3.80  FAILED  ->  #A3ADBA  6.52
+         --amber-dim  #8a6524  2.80  FAILED  ->  #C2954A  5.43
+         --safe-red   #D4553F  3.65  FAILED  ->  #E87A63  5.22
+         --green      #5FA36B  4.89  marginal->  #6FB57B  6.05
+       --text (9.45) and --amber (6.87) already passed and are untouched. */
+    --text:#C9CFD8; --muted:#A3ADBA; --amber:#E8A33D; --amber-dim:#C2954A;
+    --safe-red:#E87A63; --green:#6FB57B;
     --display:'Chakra Petch',sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -524,7 +534,12 @@
      sat ON each card's right-aligned header content (values, PRO tags) and read as
      absent on device. Removal must be VISIBLY available: a bordered chip in its own
      reserved corner. */
-  .boxhide{position:absolute;right:8px;top:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:50%;color:var(--text);opacity:.85;font-size:16px;line-height:1;padding:0;cursor:pointer;z-index:3}
+  /* ITEM 6 (Darren 2026-08-16): the hide-x was PRESENT but not LEGIBLE — a
+     rgba(255,255,255,.05) chip inside a --edge ring at opacity .85 disappears
+     into a card corner. Item 4 could not fix it: the glyph already used --text.
+     The RING was the problem — --edge on --panel measures 1.27:1. Now --muted,
+     7.12:1, at full opacity. */
+  .boxhide{position:absolute;right:8px;top:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14);border:1px solid var(--muted);border-radius:50%;color:var(--text);opacity:1;font-size:16px;line-height:1;padding:0;cursor:pointer;z-index:3}
   .boxhide:hover{opacity:1;background:rgba(255,255,255,.12)}
   /* reserve the corner: header rows shift their right-aligned content clear of the chip */
   #scr-detail .lifebox .lrow{padding-right:30px}
@@ -600,10 +615,19 @@
   .sd-bolts i:nth-child(2){transition-delay:.05s}.sd-bolts i:nth-child(3){transition-delay:.1s}.sd-bolts i:nth-child(4){transition-delay:.15s}
   .sd-door.unbolted .sd-bolts i{transform:translateX(calc(-1 * clamp(26px,4vmin,48px)))}
   /* THE DIAL — the dominant physical object, mounted on a machined backplate */
-  .sd-plate{position:absolute;left:50%;top:36%;width:min(58vw,42vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:14%;
+  .sd-plate{position:absolute;left:50%;top:33%;width:min(44vw,33vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
     background:linear-gradient(155deg,#333a45,#20252d 60%,#2a313b);border:1px solid #444d5a;
-    box-shadow:0 1.6vmin 4vmin rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.09),inset 0 -1vmin 2.4vmin rgba(0,0,0,.4)}
-  .sd-dial{position:absolute;left:50%;top:36%;width:min(52vw,38vh);transform:translate(-50%,-50%);
+    box-shadow:0 1vmin 2vmin rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.09),inset 0 -1vmin 2.4vmin rgba(0,0,0,.4)}
+  /* ITEM 3: brass wheel — larger than the plate and behind it, so the spokes
+     ring the dial. Spins a full three turns on a correct PIN, then the bolts
+     retract and the door swings (see sdOpenSequence). */
+  .sd-handle{position:absolute;left:50%;top:33%;width:min(84vw,58vh);aspect-ratio:1;
+    transform:translate(-50%,-50%);pointer-events:none;z-index:0;
+    filter:drop-shadow(0 1.2vmin 2vmin rgba(0,0,0,.65))}
+  .sd-handle svg{width:100%;height:100%;display:block;transform:rotate(0deg)}
+  #sdDoor.spin .sd-handle svg{transform:rotate(1080deg);
+    transition:transform .95s cubic-bezier(.25,.7,.2,1)}
+  .sd-dial{position:absolute;left:50%;top:33%;width:min(40vw,30vh);transform:translate(-50%,-50%);
     filter:drop-shadow(0 1.6vmin 2.4vmin rgba(0,0,0,.6))}
   .sd-dial.shudder{animation:sdshake .34s linear}
   @keyframes sdshake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 4px),-50%) rotate(-1.2deg)}40%{transform:translate(calc(-50% + 4px),-50%) rotate(1.2deg)}60%{transform:translate(calc(-50% - 3px),-50%)}80%{transform:translate(calc(-50% + 2px),-50%)}}
@@ -712,28 +736,73 @@
         <div class="sd-hinge"><i></i><i></i><i></i></div>
         <div class="sd-brand">FIELD<span>STRIP</span></div>
         <div class="sd-bolts" id="sdBolts"><i></i><i></i><i></i><i></i></div>
+        <!-- ITEM 3: the brass wheel. Behind the plate in DOM order so the dial
+             stays fully readable on top of it; spins on a correct PIN. -->
+        <div class="sd-handle" id="sdHandle" aria-hidden="true">
+          <svg viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="sdBrass" gradientUnits="userSpaceOnUse" x1="18" y1="18" x2="182" y2="182">
+                <stop offset="0" stop-color="#F0D191"/><stop offset=".35" stop-color="#C79A45"/>
+                <stop offset=".7" stop-color="#8E6822"/><stop offset="1" stop-color="#5E4413"/>
+              </linearGradient>
+              <linearGradient id="sdBrass2" gradientUnits="userSpaceOnUse" x1="18" y1="182" x2="182" y2="18">
+                <stop offset="0" stop-color="#B98C33"/><stop offset=".5" stop-color="#E4C078"/><stop offset="1" stop-color="#7A5A1B"/>
+              </linearGradient>
+            </defs>
+            <!-- SIX FREE SPOKES, NO RING (Darren's reference: a vault hub-and-spoke
+                 handle). Angles 0/60/120/180/240/300 deliberately avoid straight
+                 up-and-down, which is what keeps the lower spokes clear of the
+                 PIN dots. Each spoke is drawn twice: a wider root for taper, then
+                 the shaft, both round-capped so the tips read as turned brass.
+                 They start at r=67, just inside the escutcheon, so they appear to
+                 emerge from behind it rather than floating. -->
+            <g fill="none" stroke="url(#sdBrass)" stroke-linecap="round">
+              <g stroke-width="13" opacity=".95">
+                <line x1="152" y1="100" x2="170" y2="100"/>
+                <line x1="126" y1="145.0" x2="135" y2="160.6"/>
+                <line x1="74" y1="145.0" x2="65" y2="160.6"/>
+                <line x1="48" y1="100" x2="30" y2="100"/>
+                <line x1="74" y1="55.0" x2="65" y2="39.4"/>
+                <line x1="126" y1="55.0" x2="135" y2="39.4"/>
+              </g>
+              <g stroke-width="9">
+                <line x1="152" y1="100" x2="196" y2="100"/>
+                <line x1="126" y1="145.0" x2="148" y2="183.1"/>
+                <line x1="74" y1="145.0" x2="52" y2="183.1"/>
+                <line x1="48" y1="100" x2="4" y2="100"/>
+                <line x1="74" y1="55.0" x2="52" y2="16.9"/>
+                <line x1="126" y1="55.0" x2="148" y2="16.9"/>
+              </g>
+              <g stroke-width="4" stroke="url(#sdBrass2)" opacity=".7">
+                <line x1="156" y1="97" x2="192" y2="97"/>
+                <line x1="44" y1="97" x2="8" y2="97"/>
+              </g>
+            </g>
+            <!-- the hub sits behind the dial by design: the dial IS the centre -->
+          </svg>
+        </div>
         <div class="sd-plate"></div>
         <svg class="sd-dial" id="sdDial" viewBox="0 0 200 200" aria-label="Combination dial">
           <defs>
             <radialGradient id="sdgBez" cx="35%" cy="28%" r="85%">
-              <stop offset="0" stop-color="#4a5461"/><stop offset=".6" stop-color="#2b323c"/><stop offset="1" stop-color="#1c2129"/>
+              <stop offset="0" stop-color="#6C7889"/><stop offset=".6" stop-color="#3B434F"/><stop offset="1" stop-color="#262C34"/>
             </radialGradient>
             <radialGradient id="sdgDisc" cx="38%" cy="30%" r="80%">
-              <stop offset="0" stop-color="#272d36"/><stop offset="1" stop-color="#171b21"/>
+              <stop offset="0" stop-color="#39424E"/><stop offset="1" stop-color="#232932"/>
             </radialGradient>
             <radialGradient id="sdgHub" cx="38%" cy="30%" r="75%">
               <stop offset="0" stop-color="#3a424e"/><stop offset="1" stop-color="#14181e"/>
             </radialGradient>
           </defs>
-          <circle cx="100" cy="100" r="97" fill="url(#sdgBez)" stroke="#454d5a" stroke-width="1.6"/>
+          <circle cx="100" cy="100" r="97" fill="url(#sdgBez)" stroke="#97A2B1" stroke-width="1.6"/>
           <circle cx="100" cy="100" r="92.5" fill="none" stroke="#10141a" stroke-width="6" stroke-dasharray="2.2 3.1"/>
           <circle cx="100" cy="100" r="86" fill="none" stroke="#242a32" stroke-width="6"/>
           <path d="M100 3 l7.5 13 h-15 z" fill="#E8A33D"/>
           <g id="sdDisc">
-            <circle cx="100" cy="100" r="78" fill="url(#sdgDisc)" stroke="#333b45" stroke-width="2"/>
+            <circle cx="100" cy="100" r="78" fill="url(#sdgDisc)" stroke="#7B8593" stroke-width="2"/>
             <g id="sdTicks"></g>
-            <circle cx="100" cy="100" r="30" fill="url(#sdgHub)" stroke="#3a424d" stroke-width="2"/>
-            <circle cx="100" cy="100" r="12" fill="none" stroke="#2c333d" stroke-width="3"/>
+            <circle cx="100" cy="100" r="30" fill="url(#sdgHub)" stroke="#8A94A3" stroke-width="2"/>
+            <circle cx="100" cy="100" r="12" fill="none" stroke="#68727F" stroke-width="3"/>
             <circle cx="100" cy="100" r="6" fill="#454d59"/>
           </g>
         </svg>
@@ -911,8 +980,8 @@
         <div class="nfagrid" style="margin-top:11px">
           <div class="nf wide"><label for="magModel">Model (optional)</label><input type="text" id="magModel" maxlength="40" placeholder="e.g. PMAG 30 AR/M4 GEN M3"></div>
           <div class="nf"><label for="magBrand">Brand (optional)</label><input type="text" id="magBrand" maxlength="30" placeholder="e.g. Magpul"></div>
-          <div class="nf"><label for="magCap">Capacity</label><input type="number" id="magCap" min="1" max="200" inputmode="numeric" placeholder="e.g. 15"></div>
-          <div class="nf"><label for="magQty">Quantity</label><input type="number" id="magQty" min="1" max="200" inputmode="numeric" value="1"></div>
+          <div class="nf"><label for="magCap">Capacity — rounds in ONE mag</label><input type="number" id="magCap" min="1" max="200" inputmode="numeric" placeholder="e.g. 15"></div>
+          <div class="nf"><label for="magQty">Quantity — HOW MANY mags to add</label><input type="number" id="magQty" min="1" max="200" inputmode="numeric" value="1"></div>
           <div class="nf"><label for="magRole">Role</label><select id="magRole"><option>Range</option><option>Carry</option><option>Storage</option></select></div>
         </div>
         <div class="lmsg" style="margin-top:8px">Each mag gets its own number — mark your physical mags to match (paint pen on the baseplate works), so "mag #7 has a problem" means the same thing in the app and in your hand.</div>
@@ -1758,6 +1827,37 @@
 (function(){
   "use strict";
 
+  /* ============ ITEM 5: TOUCH SLOP, APP-WIDE (Darren 2026-08-16) ============
+     Measured on device first: one hardware tap already produces exactly ONE
+     click, so this was never double-firing. The defect is that there is NO
+     MOVEMENT THRESHOLD — a grazing finger that starts on a control and slides
+     to scroll still delivers a click, so lists are hard to scroll and light
+     contact fires buttons. Fixed once, here, at document level in the CAPTURE
+     phase, so it covers EVERY tappable surface including ones added later — a
+     per-control fix would miss the next control anyone adds.
+     A pointer that travels more than SLOP px between down and up is a SCROLL:
+     the gesture itself is untouched, only the resulting click is cancelled. */
+  (function(){
+    const SLOP = 10;
+    let down=false, sx=0, sy=0, moved=false;
+    document.addEventListener("pointerdown", e=>{
+      if(e.pointerType==="mouse" && e.button!==0) return;
+      down=true; moved=false; sx=e.clientX; sy=e.clientY;
+    }, true);
+    document.addEventListener("pointermove", e=>{
+      if(!down || moved) return;
+      if(Math.abs(e.clientX-sx)>SLOP || Math.abs(e.clientY-sy)>SLOP) moved=true;
+    }, true);
+    document.addEventListener("pointercancel", ()=>{ moved=true; down=false; }, true);
+    document.addEventListener("pointerup", ()=>{ down=false; }, true);
+    document.addEventListener("click", e=>{
+      if(!moved) return;
+      moved=false;
+      e.stopPropagation(); e.preventDefault();     /* a drag is not a tap */
+    }, true);
+    window.addEventListener("blur", ()=>{ down=false; moved=false; });
+  })();
+
   /* =============== STORAGE =============== */
   const store = (()=>{
     let mem = {}, persistent = false;
@@ -1956,9 +2056,31 @@
       attachments: []
     };
   }
+  /* V20 item 2 (Darren ruling 2026-08-16). migrateFirearm was a SHALLOW
+     Object.assign: mags/reminders/zeros/nfaFilings were rebuilt, but log,
+     service and nfa stayed SHARED BY IDENTITY with the input record, so a
+     migrated record could reach the same array as its source. Same class as
+     the m500sw shallow-copy hazard.
+     ⛔ THIS IS NOT THE SCOPE-LEAK ROOT CAUSE. That remains UNFOUND. This is a
+     latent hazard closed on its own merits — do not log it as the items 2/4
+     fix. Guarded permanently by scratchpad/bench/wire/refscan_v20.js. */
+  function cloneDeep(v){
+    if(v===null || typeof v!=="object") return v;
+    if(Array.isArray(v)) return v.map(cloneDeep);
+    const o={}; for(const k of Object.keys(v)) o[k]=cloneDeep(v[k]); return o;
+  }
   const CLASS_MAP = {sbr:"SBR", sbs:"SBS", aow:"AOW"};
   function migrateFirearm(f, now){
-    const out = Object.assign({}, f);
+    /* ⛔ DERIVED, NOT ENUMERATED (Darren standing rule 2026-08-16). This was a
+       shallow Object.assign plus a hand-written list of fields to deep-clone.
+       The list named log/service/nfa; f.stamp drifted out of it within days. A
+       hand-maintained list beside a generic record shape always rots, so the
+       WHOLE record is cloned — every field is covered, including ones nobody
+       has added yet. Presence semantics are unchanged: cloneDeep copies exactly
+       the own keys present, so an absent field stays absent.
+       ⛔ STILL NOT THE SCOPE-LEAK ROOT CAUSE. That remains UNFOUND. Guarded by
+       scratchpad/bench/wire/refscan_v20.js, which fails on ANY shared identity. */
+    const out = cloneDeep(f);
     out.mags = (Array.isArray(f.mags)?f.mags:[]).map((m,i)=>migrateMag(m,i,now));
     out.reminders = (Array.isArray(f.reminders)?f.reminders:[]).map(r=>migrateReminder(r,now));
     out.zeros = (Array.isArray(f.zeros)?f.zeros:[]).map(z=>migrateZero(z,now));
@@ -2786,13 +2908,21 @@
       if(localStorage.getItem("fs_safe")!==null) return;          // data present, nothing to do
       if(sessionStorage.getItem("__fs_restored")) return;          // already tried this session
       sessionStorage.setItem("__fs_restored","1");
-      /* v10: bench keys + the lock join the recovery list (fs_lock especially —
-         an evicted webview must not silently unlock the safe door) */
-      Promise.all([P.get({key:"fs_safe"}), P.get({key:"fs_ammo"}), P.get({key:"fs_pro"}),
-                   P.get({key:"fs_lock"}), P.get({key:"fs_vendors"}), P.get({key:"fs_attachments"}), P.get({key:"fs_schema_v"})]).then(rs=>{
+      /* ⛔ DERIVED, NOT ENUMERATED (Darren standing rule 2026-08-16). This was a
+         hand-written SEVEN-key list sitting beside a GENERIC mirror: store.set()
+         mirrors every key it writes, so the list silently fell TWELVE keys behind
+         and those twelve were lost for good on any WebView eviction — including
+         fs_ack, fs_owner, fs_bench_layout, fs_upc, fs_ammo_cfg and every
+         fs_stamp_<id>. Recovery now reads back whatever was ACTUALLY mirrored,
+         so the two sides cannot drift again. P.keys() is the authority; the fs_
+         filter keeps other plugins keys out. fs_lock still rides along — an
+         evicted webview must not silently unlock the safe door. */
+      P.keys().then(res=>{
+        const keys = ((res && res.keys) || []).filter(k=>k.indexOf("fs_")===0);
+        return Promise.all(keys.map(k=>P.get({key:k}).then(r=>[k,r], ()=>[k,null])));
+      }).then(pairs=>{
         let recovered=false;
-        [["fs_safe",rs[0]],["fs_ammo",rs[1]],["fs_pro",rs[2]],
-         ["fs_lock",rs[3]],["fs_vendors",rs[4]],["fs_attachments",rs[5]],["fs_schema_v",rs[6]]].forEach(([k,r])=>{
+        pairs.forEach(([k,r])=>{
           if(r && r.value!=null){ localStorage.setItem(k, r.value); recovered=true; }
         });
         if(recovered) location.reload();
@@ -3449,7 +3579,16 @@
   /* =============== FIELDSTRIP PRO =============== */
   const FREE_MAX_GUNS = 2;
   const PRO_PRICE_LABEL = "$19.99 · one time";   /* PRICE LOCKED (Darren ruling 2026-08-16, ruling-price-locked-20260816.md): $19.99. No block, copy draft, or defect round changes this — only an explicit ruling naming the price. */
+  /* [DEV-BUILD-FLAG] tools/devflag.js flips this to false for the store artifact.
+     It is a BUILD FLAG, not a debug variant: internal vC builds stay release-signed
+     with the same key so `install -r` keeps working and nothing is ever uninstalled. */
+  const FS_DEV_BUILD = true;
   let proState = store.get("fs_pro", null) || {on:false, src:null, ts:null};
+  /* A dev grant is honoured ONLY in a dev build. A production artifact refuses a
+     persisted src:"dev" — otherwise a device unlocked by the seven-tap toggle keeps
+     Pro forever. Deliberately NOT written back: the stored value is left untouched,
+     it is simply not trusted, so nothing is destroyed if the device is re-flagged. */
+  if(!FS_DEV_BUILD && proState && proState.src==="dev") proState = {on:false, src:null, ts:null};
   const isPro = ()=> !!proState.on;
   const savePro = ()=> store.set("fs_pro", proState);
 
@@ -3514,6 +3653,8 @@
        is owned, grantPro("play-restore"). */
     alert("Restore goes live with the Play Store listing.");
   });
+  /* [DEV-BUILD-ONLY:START] excised from the store artifact by tools/devflag.js.
+     Nothing below may be load-bearing for production behaviour. */
   /* dev unlock: 7 taps on the topbar label while on My Safe toggles Pro */
   (function(){
     let taps=0, timer=null;
@@ -3528,6 +3669,7 @@
       }
     });
   })();
+  /* [DEV-BUILD-ONLY:END] */
   const LOW_AT = 100;
   const lkKey = (mk,cal,gr,bt)=> [mk,cal,gr,bt].join("|");
   const findStock = (mk,cal,gr,bt)=> ammoInv.find(a=>a.key===lkKey(mk,cal,gr,bt));
@@ -4021,7 +4163,9 @@
     /* stamp slot: always for a can; for a firearm only once it is actually classified */
     document.getElementById("stampWrap").hidden=!(isNFA||nfaCls);
     if(!nfaLocked){
-      if(isNFA){ renderNfa(f); renderStamp(f); }
+      /* V21: NFA (and its stamp UI) lives in the Bench now — same rule */
+      const nbxD=document.getElementById("nfaBox");
+      if(isNFA && nbxD && nbxD.closest("#scr-detail")){ renderNfa(f); renderStamp(f); }
       else if(nfaEligible){ renderNfaClass(f); if(nfaCls) renderStamp(f); }
     }
     /* badge is READ-ONLY and survives a lapse — it renders regardless of Pro */
@@ -4063,9 +4207,14 @@
     }
 
     const magBoxEl=document.getElementById("magBox");
-    const showMags=hasMags(f);
-    magBoxEl.style.display=showMags?"block":"none";
-    if(showMags) renderMags(f);
+    /* V21: Magazines lives in the Bench now. If this node is not inside the
+       detail screen the Bench owns it, and repainting it here would show the
+       detail's firearm inside the Bench card — the very leak being fixed. */
+    if(magBoxEl && magBoxEl.closest("#scr-detail")){
+      const showMags=hasMags(f);
+      magBoxEl.style.display=showMags?"block":"none";
+      if(showMags) renderMags(f);
+    }
     /* V17 item 7 (scope-leak vector 1): the detail render no longer repaints the
        shared care/svc cards — they live on the Bench (and, for suppressors, on
        the can's own page), rendered ONLY by the surface that owns them. The old
@@ -4422,6 +4571,11 @@
     if(!m.lastRot) return true;
     return daysBetween(m.lastRot, Date.now()) >= (f.magRotDays||90);
   }
+  /* V21: magAdd parks its confirmation here. Writing #magMsg directly did not
+     survive — the LIVE renderMags (there are two) ends with an if/else chain
+     that always repaints that element, and the Bench re-seats the card after
+     an add. The renderer owns the element, so the renderer applies the flash. */
+  let magFlash=null;
   function renderMags(f){
     if(!Array.isArray(f.mags)) f.mags=[];
     if(f.magRotDays==null) f.magRotDays=90;
@@ -4479,16 +4633,63 @@
     });
   }
   document.getElementById("magAdd").addEventListener("click",()=>{
+    /* ⛔ DEAD CODE — DO NOT FIX HERE. The batch-capable block further down
+       (search: batchCreateMags) CLONES this button and replaces the node,
+       which discards this listener. It is kept only because removing a
+       node-replaced binding is riskier than leaving it inert. The LIVE
+       handler is the one that calls BenchData.batchCreateMags. */
+    /* V21 (Darren ruling 2026-08-16 — "Magazines still does not work").
+       THREE defects in the old four lines: it read only 2 of the 5 fields, so
+       Model, Brand and QUANTITY were collected from the user and thrown away
+       (asking for 5 mags added 1); it assigned no num, so the Bench fleet row
+       rendered "#undefined–#undefined"; and a blank capacity hit a SILENT
+       `return` — the button did nothing and said nothing, which is exactly
+       what "doesn't work" looks like in the hand. */
     const f=byId(activeId); if(!f) return;
-    const cap=Math.floor(+document.getElementById("magCap").value||0); if(cap<1) return;
+    const msgEl=()=>document.getElementById("magMsg");
+    const say=t=>{ magFlash=t; const el=msgEl(); if(el){ el.textContent=t; el.style.color="var(--amber)"; } };
+    const cap=Math.floor(+document.getElementById("magCap").value||0);
+    if(cap<1){
+      say("Enter a capacity — how many rounds each magazine holds — then add.");
+      const cf=document.getElementById("magCap"); if(cf) cf.focus();
+      return;
+    }
+    const qty=Math.max(1, Math.min(200, Math.floor(+document.getElementById("magQty").value||1)));
+    const model=(document.getElementById("magModel").value||"").trim();
+    const brand=(document.getElementById("magBrand").value||"").trim();
     const role=document.getElementById("magRole").value;
-    const m={cap,role};
-    if(role==="Carry") m.lastRot=Date.now();
-    f.mags.push(m);
-    addLog(f,"mag",`Magazine added — ${cap}-rd ${role}`);
+    if(!Array.isArray(f.mags)) f.mags=[];
+    /* ruled batch-add: ONE spec, the whole fleet numbered at once. Each magazine
+       is its OWN record — that is what lets a single mag be flagged, retired or
+       rotated without touching its siblings. Numbering continues from the
+       highest number already on THIS firearm, so it never collides or restarts. */
+    const now=Date.now();
+    let next=f.mags.reduce((a,m)=>Math.max(a, +m.num||0), 0);
+    const first=next+1;
+    for(let i=0;i<qty;i++){
+      next++;
+      const m={ id:"mag_"+now.toString(36)+"_"+next.toString(36), num:next, cap, role,
+                model, brand, status:"active", note:"", addedAt:now };
+      if(role==="Carry") m.lastRot=now;
+      f.mags.push(m);
+    }
+    const spec=(model||cap+"-rd")+(brand?" · "+brand:"");
+    const range=qty>1?`#${first}–#${next}`:`#${first}`;
+    addLog(f,"mag",`${qty} magazine${qty===1?"":"s"} added — ${spec}, ${cap}-rd ${role} (${range})`);
     document.getElementById("magCap").value="";
+    document.getElementById("magQty").value="1";
+    document.getElementById("magModel").value="";
+    document.getElementById("magBrand").value="";
     magDelArm=null;
-    saveSafe(); renderDetail();
+    saveSafe();
+    /* V21: the card may be seated in the BENCH now, in which case renderDetail
+       deliberately skips it — so nothing repainted after an add and the card
+       sat there reading "None tracked" with the mags already saved. Refresh
+       whichever surface actually owns the card. */
+    const ownerBox=document.getElementById("magBox");
+    if(ownerBox && !ownerBox.closest("#scr-detail")) renderBench(); else renderDetail();
+    /* after the re-render, so renderMags cannot wipe the confirmation */
+    say(`${qty} magazine${qty===1?"":"s"} added — ${range}, ${cap}-rd ${role}.`);
   });
   document.getElementById("magRotDays").addEventListener("change",e=>{
     const f=byId(activeId); if(!f) return;
@@ -4586,7 +4787,7 @@
        pattern and thumbnails the zero targets use */
     if(typeof benchAttGrid==="function"){
       list.querySelectorAll(".attwrap[data-svcid]").forEach(w=>{
-        benchAttGrid(w, {kind:"svc", id:w.dataset.svcid}, {kind:"work", addLabel:"PHOTO / FILE", onchange:()=>renderDetail()});
+        benchAttGrid(w, {kind:"svc", id:w.dataset.svcid}, {kind:"work", addLabel:"PHOTO / FILE", onchange:()=>benchAfterCardEdit()});
       });
     }
     list.querySelectorAll(".magbtn").forEach(b=>{
@@ -6232,7 +6433,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     host.innerHTML=h;
     /* attachment grids per filing */
     host.querySelectorAll(".attwrap").forEach(w=>{
-      benchAttGrid(w, {kind:"nfa", id:w.dataset.fid}, {kind:"document", addLabel:"DOC", onchange:()=>renderDetail()});
+      benchAttGrid(w, {kind:"nfa", id:w.dataset.fid}, {kind:"document", addLabel:"DOC", onchange:()=>benchAfterCardEdit()});
     });
     const itemSel=document.getElementById("nfaItemSel");
     if(itemSel) itemSel.onchange=()=>{
@@ -6314,7 +6515,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     else if(!f.mags.length){ msg.textContent="Your mag fleet, individually numbered — mark the real mags to match, and a problem mag stays identified for good."; msg.style.color=""; }
     else if(!isPro() && f.mags.length>=3){ msg.textContent=`${f.mags.length} of 3 free mags on this firearm — the unlimited numbered fleet is part of Fieldstrip Pro.`; msg.style.color=""; }
     else { msg.textContent=""; msg.style.color=""; }
+    if(magFlash){ const t=magFlash; magFlash=null; msg.textContent=t; msg.style.color="var(--amber)"; }
     list.innerHTML="";
+    /* ITEM 7: SELECT-ALL + BATCH DELETE. 180 records must be clearable in one
+       action, and a batch delete must never fire on one stray tap — hence the
+       single explicit confirmation naming the count. */
+    if(f.mags.length){
+      const bar=document.createElement("div");
+      bar.className="magrow"; bar.style.cssText="align-items:center;gap:10px";
+      bar.innerHTML='<label class="maginfo" style="display:flex;align-items:center;gap:8px;cursor:pointer">'
+        +'<input type="checkbox" id="magSelAll" style="width:auto;margin:0"> <span>Select all ('+f.mags.length+')</span></label>'
+        +'<button class="magbtn del" id="magBulkDel" disabled>Delete selected</button>';
+      list.appendChild(bar);
+    }
     f.mags.forEach((m,i)=>{
       const row=document.createElement("div"); row.className="magrow";
       const status=m.status||"active";
@@ -6327,15 +6540,47 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       }
       if(m.note) rot += `<span class="rot">${esc(m.note)}</span>`;
       const label = `<b>#${m.num||i+1}</b> · ${m.cap}-rd${m.model?` · ${esc(m.model)}`:""}${m.brand?` · ${esc(m.brand)}`:""} · ${esc(m.role)}`;
-      row.innerHTML=`<div class="maginfo">${label}${rot}<div class="attwrap" data-mid="${m.id||""}"></div></div>`
+      row.innerHTML=`<input type="checkbox" class="magsel" data-i="${i}" aria-label="Select mag ${m.num||i+1}" style="width:auto;margin:0 8px 0 0;flex:0 0 auto">`
+        + `<div class="maginfo">${label}${rot}<div class="attwrap" data-mid="${m.id||""}"></div></div>`
         + `<button class="statuschip ${status}" data-i="${i}" data-st="1">${status.toUpperCase()}</button>`
         + (rotPro && m.role==="Carry" && status==="active"?`<button class="magbtn" data-i="${i}" data-rot="1">Rotate</button>`:"")
         + `<button class="magbtn" data-i="${i}" data-note="1">✎</button>`
         + `<button class="magbtn del" data-i="${i}" data-del="1">${magDelArm===i?"Confirm":"×"}</button>`;
       list.appendChild(row);
     });
+    (function(){
+      const all=list.querySelector("#magSelAll"), del=list.querySelector("#magBulkDel");
+      if(!del) return;
+      const boxes=()=>[...list.querySelectorAll(".magsel")];
+      const chosen=()=>boxes().filter(b=>b.checked).map(b=>+b.dataset.i);
+      const sync=()=>{
+        const n=chosen().length;
+        del.disabled=!n;
+        del.textContent = n ? "Delete selected ("+n+")" : "Delete selected";
+        if(all) all.checked = n>0 && n===boxes().length;
+      };
+      boxes().forEach(b=>b.addEventListener("change", sync));
+      if(all) all.addEventListener("change",()=>{ boxes().forEach(b=>{ b.checked=all.checked; }); sync(); });
+      del.addEventListener("click",()=>{
+        const f2=byId(activeId); if(!f2) return;
+        const idx=chosen(); if(!idx.length) return;
+        const nums=idx.map(i=>(f2.mags[i]&&f2.mags[i].num)||i+1);
+        /* ONE confirmation, naming what goes — never a bare "are you sure" */
+        if(!window.confirm("Delete "+idx.length+" magazine"+(idx.length===1?"":"s")+"?"
+          +"\n\n#"+nums.slice(0,8).join(", #")+(nums.length>8?" and "+(nums.length-8)+" more":"")
+          +"\n\nThis cannot be undone.")) return;
+        idx.sort((a,b)=>b-a).forEach(i=>{ f2.mags.splice(i,1); });
+        addLog(f2,"mag",idx.length+" magazine"+(idx.length===1?"":"s")+" removed (#"+nums.join(", #")+")");
+        magFlash=idx.length+" magazine"+(idx.length===1?"":"s")+" deleted.";
+        magDelArm=null;
+        saveSafe();
+        const ob=document.getElementById("magBox");
+        if(ob && !ob.closest("#scr-detail")) renderBench(); else renderDetail();
+      });
+      sync();
+    })();
     list.querySelectorAll(".attwrap").forEach(w=>{
-      if(w.dataset.mid) benchAttGrid(w, {kind:"mag", id:w.dataset.mid}, {onchange:()=>renderDetail()});
+      if(w.dataset.mid) benchAttGrid(w, {kind:"mag", id:w.dataset.mid}, {onchange:()=>benchAfterCardEdit()});
     });
     list.querySelectorAll("[data-st]").forEach(b=>{
       b.addEventListener("click",()=>{
@@ -6375,8 +6620,29 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const nu=old.cloneNode(true); old.parentNode.replaceChild(nu,old);
     nu.addEventListener("click",()=>{
       const f=byId(activeId); if(!f) return;
-      const cap=Math.floor(+document.getElementById("magCap").value||0); if(cap<1) return;
-      const qty=Math.max(1,Math.floor(+document.getElementById("magQty").value||1));
+      /* V21 (Darren: "Magazines still does not work"). This was a SILENT return:
+         Capacity ships blank (placeholder "e.g. 15"), so tapping Add did nothing
+         and said nothing. THIS is the live handler — the one further up is dead,
+         its button having been cloned and replaced below. */
+      const cap=Math.floor(+document.getElementById("magCap").value||0);
+      if(cap<1){
+        const mm=document.getElementById("magMsg");
+        if(mm){ mm.textContent="Enter a capacity — how many rounds each magazine holds — then add."; mm.style.color="var(--amber)"; }
+        const cf=document.getElementById("magCap"); if(cf) cf.focus();
+        return;
+      }
+      /* ITEM 7 (Darren 2026-08-16): CAP THE QUANTITY. The field's max=200 was
+         markup-only — nothing enforced it in code, and batchCreateMags accepts
+         up to 500. A mistyped Quantity could mint hundreds of records in one
+         tap with no warning, which is how a safe ends up with 180 magazines. */
+      const QTY_MAX=200, QTY_CONFIRM_OVER=20;
+      let qty=Math.max(1,Math.floor(+document.getElementById("magQty").value||1));
+      if(qty>QTY_MAX){
+        const mm=document.getElementById("magMsg");
+        if(mm){ mm.textContent="That's more than "+QTY_MAX+" magazines in one go. Check Quantity — it is how many mags to add, not the capacity."; mm.style.color="var(--amber)"; }
+        return;
+      }
+      if(qty>QTY_CONFIRM_OVER && !window.confirm("Add "+qty+" magazines to this firearm?\n\nQuantity is how many magazines to create. Capacity is how many rounds each one holds.")) return;
       const model=document.getElementById("magModel").value.trim();
       const brand=document.getElementById("magBrand").value.trim();
       const role=document.getElementById("magRole").value;
@@ -6384,8 +6650,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       /* v8 free cap (Darren ruling reversal 2026-08-13): 3 mags per firearm free.
          Add-time gate only — anything already stored keeps rendering forever. */
       if(!isPro() && (f.mags.length + qty) > 3){ openProSheet(`Free tracks 3 mags per firearm — this one has ${f.mags.length}. The whole numbered fleet is part of Fieldstrip Pro.`); return; }
+      let made=null;
       try{
-        const made=BenchData.batchCreateMags(f, {model, brand, cap, role}, qty, Date.now());
+        made=BenchData.batchCreateMags(f, {model, brand, cap, role}, qty, Date.now());
         addLog(f,"mag", qty>1
           ? `${qty} magazines added — #${made[0].num}–#${made[made.length-1].num} · ${cap}-rd${model?` ${model}`:""}${brand?` (${brand})`:""} · ${role}`
           : `Magazine added — #${made[0].num} · ${cap}-rd${model?` ${model}`:""} · ${role}`);
@@ -6393,7 +6660,17 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       document.getElementById("magCap").value=""; document.getElementById("magQty").value="1";
       document.getElementById("magModel").value=""; document.getElementById("magBrand").value="";
       magDelArm=null;
-      saveSafe(); renderDetail();
+      /* V21: confirm the add, and repaint the surface that actually OWNS the
+         card — Magazines lives in the Bench now, and renderDetail deliberately
+         skips it there, so nothing refreshed and the card kept reading
+         "None tracked" with the mags already saved. */
+      magFlash = made && made.length
+        ? (made.length>1 ? made.length+" magazines added — #"+made[0].num+"–#"+made[made.length-1].num+"."
+                         : "Magazine added — #"+made[0].num+".")
+        : null;
+      saveSafe();
+      const ownerBox=document.getElementById("magBox");
+      if(ownerBox && !ownerBox.closest("#scr-detail")) renderBench(); else renderDetail();
     });
   })();
 
@@ -6566,7 +6843,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       list.appendChild(row);
     });
     list.querySelectorAll(".attwrap").forEach(w=>{
-      if(w.dataset.zid) benchAttGrid(w, {kind:"zero", id:w.dataset.zid}, {kind:"target", addLabel:"TARGET", onchange:()=>renderDetail()});
+      if(w.dataset.zid) benchAttGrid(w, {kind:"zero", id:w.dataset.zid}, {kind:"target", addLabel:"TARGET", onchange:()=>benchAfterCardEdit()});
     });
     list.querySelectorAll(".magbtn").forEach(b=>{
       b.addEventListener("click",()=>{
@@ -6738,7 +7015,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const ab=document.getElementById("attBox");
     if(ab){
       const wrap=document.getElementById("attGridWrap");
-      const n=benchAttGrid(wrap, {kind:"firearm", id:f.id}, {kind:"photo", onchange:()=>renderDetail()});
+      const n=benchAttGrid(wrap, {kind:"firearm", id:f.id}, {kind:"photo", onchange:()=>benchAfterCardEdit()});
       document.getElementById("attSummary").textContent = n ? `${n} file${n===1?"":"s"}` : "None yet";
       document.getElementById("attMsg").textContent = BenchEnv.hasFS()
         ? "Receipts, work photos, notes — stored on this phone as files. Thumbnails here; full size on tap."
@@ -6747,9 +7024,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   };
 
   /* ---------- THE BENCH (top-level view; Pro, locked-visible) ---------- */
+  /* ⛔ SCOPE LEAK ROOT FIX (Darren ruling 2026-08-16, reproduced live on vC20).
+     THE DEFECT: benchCollect took no scope and walked the WHOLE safe, and the
+     hero's "The Bench" button called renderBench() with no argument — so a
+     firearm's Bench WAS the global Bench and every card showed every entry.
+     It was never object aliasing; three fixes missed because they were at the
+     wrong layer (V17 card-ownership/highlight, V19 migration mis-tag, V20
+     deep-clone). ⛔ DERIVED, NOT ENUMERATED: scope resolves HERE, once, and
+     benchCollect + every direct iteration in renderBench read from it, so a
+     card cannot forget to filter. Do NOT re-scope individual cards. */
+  let benchScopeId=null;                 /* null = whole safe = the global Bench */
+  function benchScopedSafe(){ return benchScopeId ? safe.filter(f=>f.id===benchScopeId) : safe; }
   function benchCollect(){
     const out={overdue:[], nfa:[], fleets:[], zeros:[], care:[], attCount:BenchAttach.readReg(BenchEnv.store).length};
-    safe.forEach(f=>{
+    benchScopedSafe().forEach(f=>{
       const name=faInfo(f).name;
       (f.reminders||[]).forEach(r=>{
         const s=benchDue(f,r);
@@ -6782,9 +7070,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
          Nothing may look functional and do nothing. */
       const stored=[];
       if(totMags) stored.push(`${totMags} mag${totMags===1?"":"s"}`);
-      const zn=safe.reduce((a,f)=>a+(f.zeros||[]).length,0);
+      const zn=benchScopedSafe().reduce((a,f)=>a+(f.zeros||[]).length,0);
       if(zn) stored.push(`${zn} zero${zn===1?"":"s"}`);
-      const rn=safe.reduce((a,f)=>a+(f.reminders||[]).length,0);
+      const rn=benchScopedSafe().reduce((a,f)=>a+(f.reminders||[]).length,0);
       if(rn) stored.push(`${rn} reminder${rn===1?"":"s"}`);
       const lockRow=(title, val, bodyHtml)=>`
         <div class="lifebox benchlocked"><div class="lrow"><span class="lt">🔒 ${title}</span><span><span class="lv" style="margin-right:8px">${val}</span><span class="protag">PRO</span></span></div>
@@ -6823,7 +7111,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       return;
     }
     body.onclick=null;
-    let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>`;
+    let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">${benchScopeId&&byId(benchScopeId)?esc(faInfo(byId(benchScopeId)).name)+" \u2014 this item only.":"Your whole inventory, without going through a firearm."}</div></div>`;
     if(c.overdue.length){
       h+=`<div class="lifebox warn"><div class="lrow"><span class="lt">Needs attention</span><span class="lv" style="color:var(--safe-red)">${c.overdue.length} item${c.overdue.length===1?"":"s"}</span></div>`;
       c.overdue.slice(0,6).forEach(o=>{
@@ -6906,7 +7194,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* v15 item 5: the Bench left the home screen — the hero card's The Bench
      action (v8 block) is the way in. Guarded so the retired button's absence
      can never kill the boot. */
-  (function(){ const b=document.getElementById("benchBtn"); if(b) b.addEventListener("click",()=>{ renderBench(); show("scr-bench"); }); })();
+  (function(){ const b=document.getElementById("benchBtn"); if(b) b.addEventListener("click",()=>{ renderBench(null); show("scr-bench"); });   /* null = the whole safe */ })();
   /* ============ BENCH UI (full build) — ends ============ */
 
   /* ============ TEXT GUIDES + SUPPRESSOR SECTION — begins ============ */
@@ -8790,7 +9078,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     for(let d=0; d<10; d++){
       const a=d*36;
-      h+=`<text x="100" y="48" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-size="13" font-weight="600" fill="#78828F" transform="rotate(${a} 100 100)">${d}</text>`;
+      h+=`<text x="100" y="48" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-size="13" font-weight="600" fill="#DCE2EA" transform="rotate(${a} 100 100)">${d}</text>`;
     }
     g.innerHTML=h;
   })();
@@ -8814,20 +9102,25 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function sdFinish(){
     const doorEl=document.getElementById("safeDoor");
     if(doorEl){ doorEl.style.display="none"; doorEl.classList.remove("opening","fadeout","brand-open"); }
-    document.getElementById("sdDoor").classList.remove("open","unbolted");
+    document.getElementById("sdDoor").classList.remove("open","unbolted","spin");
     sdState.open=false;
   }
   function sdOpenSequence(fast){
     const overlay=document.getElementById("safeDoor");
     const door=document.getElementById("sdDoor");
     sdState.open=true;
-    overlay.classList.add("opening");
-    if(fast){ sdFinish(); return; }
-    /* dial settle beat -> bolts retract -> door swings -> fade */
-    setTimeout(()=>door.classList.add("unbolted"), 160);
-    setTimeout(()=>door.classList.add("open"), 560);
-    setTimeout(()=>overlay.classList.add("fadeout"), 560);
-    setTimeout(sdFinish, 1180);
+    if(fast){ overlay.classList.add("opening"); sdFinish(); return; }
+    /* "opening" fades the jamb (.sd-frame -> opacity .55). Held back until the
+       BOLTS pull: adding it at t=0 made the door translucent for the whole spin,
+       so you watched the wheel turn through a see-through slab. The door stays
+       solid while the combination takes, then gives way. */
+    /* ITEM 3: handle SPINS -> bolts retract -> door swings -> fade. The spin is
+       the beat that says the combination took, so it leads. */
+    door.classList.add("spin");
+    setTimeout(()=>{ overlay.classList.add("opening"); door.classList.add("unbolted"); }, 900);
+    setTimeout(()=>door.classList.add("open"), 1240);
+    setTimeout(()=>overlay.classList.add("fadeout"), 1240);
+    setTimeout(sdFinish, 1900);
     overlay.addEventListener("click",()=>sdFinish(),{once:true});
   }
   function sdWrong(){
@@ -9162,7 +9455,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(gb) row.appendChild(gb);
     const hbb=document.createElement("button");
     hbb.className="btn"; hbb.id="heroBenchBtn"; hbb.textContent="The Bench";
-    hbb.addEventListener("click",()=>{ renderBench(); show("scr-bench"); });
+    /* the hero opens the Bench SCOPED TO THIS ITEM (scope-leak root fix) */
+    hbb.addEventListener("click",()=>{ renderBench(activeId); show("scr-bench"); });
     row.appendChild(hbb);
     const oldActs=document.querySelector("#scr-detail .actions:not(.heroacts-row)");
     if(oldActs && !oldActs.children.length) oldActs.style.display="none";
@@ -9870,7 +10164,17 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(!closed && i>=0) o.collapsed.splice(i,1);
     benchLayoutSave(o);
   }
-  let benchCareTargetId=null, benchSvcTargetId=null;
+  /* V21: ONE Bench selection. These four move together — see benchSelect(). */
+  let benchCareTargetId=null, benchSvcTargetId=null, benchNfaTargetId=null, benchMagTargetId=null;
+  /* Picking an item in the Bench points EVERY seated card at it and syncs
+     activeId, because the handlers inside those cards resolve their firearm
+     through byId(activeId). One selection keeps read and WRITE on the same
+     record; independent per-card selectors left the write path pointing at
+     whatever was last opened. */
+  function benchSelect(id){
+    benchCareTargetId=benchSvcTargetId=benchNfaTargetId=benchMagTargetId=id||null;
+    if(id && byId(id)) activeId=id;
+  }
 
   /* the two cards leave the firearm page ENTIRELY: parked in a hidden pen until
      the Bench claims them. They are the same DOM nodes — same look, same wiring. */
@@ -9878,12 +10182,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const d=document.createElement("div");
     d.id="benchHoldPen"; d.style.display="none";
     document.body.appendChild(d);
-    ["careBox","svcBox"].forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.display=""; d.appendChild(el); } });
+    ["careBox","svcBox","nfaBox","magBox"].forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.display=""; d.appendChild(el); } });
     return d;
   })();
   /* the detail card system forgets them (no corner-x slots on a moved card) */
   (function(){
-    ["careBox","svcBox"].forEach(id=>{
+    ["careBox","svcBox","nfaBox","magBox"].forEach(id=>{
       const i=BENCH_BOXES.findIndex(b=>b.id===id);
       if(i>=0) BENCH_BOXES.splice(i,1);
     });
@@ -9956,7 +10260,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       }
       const type=document.getElementById("careType").value;
       const label = type==="Custom" ? document.getElementById("careLabel").value.trim() : type;
-      if(!label) return;
+      if(!label){
+        const mm=document.getElementById("careMsg");
+        if(mm){ mm.textContent="Name the reminder before adding it."; mm.style.color="var(--amber)"; }
+        return;
+      }
       const fields={label,
         component:document.getElementById("careComp").value.trim(),
         battery:document.getElementById("careBatt").value.trim(),
@@ -9966,11 +10274,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       let clock;
       if(benchCareClock==="rounds"){
         const every=Math.floor(+document.getElementById("careRounds").value||0);
-        if(!(every>0)) return;
+        if(!(every>0)){
+          const mm=document.getElementById("careMsg");
+          if(mm){ mm.textContent="Set how many rounds between checks."; mm.style.color="var(--amber)"; }
+          return;
+        }
         clock={type:"rounds", every};
       } else {
         const every=Math.floor(+document.getElementById("careEvery").value||0);
-        if(!(every>0)) return;
+        if(!(every>0)){
+          const mm=document.getElementById("careMsg");
+          if(mm){ mm.textContent="Set how often this check repeats."; mm.style.color="var(--amber)"; }
+          return;
+        }
         clock={type:"time", every, unit:document.getElementById("careUnit").value};
       }
       try{
@@ -9991,7 +10307,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     svc.addEventListener("click",()=>{
       const f=benchSvcF(); if(!f) return;
       if(!Array.isArray(f.service)) f.service=[];
-      const work=document.getElementById("svcDesc").value.trim(); if(!work) return;
+      /* ITEM 9 (Darren 2026-08-16): SILENT return — tapping Add with an empty
+         description did nothing and said nothing, which is what "Service & Mods
+         is broken" looks like in the hand. Same class as the magazine bug. */
+      const work=document.getElementById("svcDesc").value.trim();
+      if(!work){
+        const mm=document.getElementById("svcMsg");
+        if(mm){ mm.textContent="Describe the work before adding — what was done, in your words."; mm.style.color="var(--amber)"; }
+        const d=document.getElementById("svcDesc"); if(d) d.focus();
+        return;
+      }
       const type=document.getElementById("svcType").value;
       let vendor=document.getElementById("svcVendor").value.trim();
       if(vendor==="__add") vendor="Self";
@@ -10055,18 +10380,41 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       <div class="bcbody"><div class="bcin">${bodyHtml}</div></div></div>`;
   }
   const BENCH_CARD_LABELS={bcStats:"Round Counts",bcNfa:"NFA Items",bcMags:"Magazines",bcZeros:"Zero Records",bcCare:"Care Reminders",bcSvc:"Service & Mods",bcAtt:"Attachments",bcBackup:"Backup & CSV"};
-  renderBench=function(){
+  renderBench=function(scopeId){
+    /* An EXPLICIT argument sets the scope: the hero passes activeId, the global
+       Bench button passes null. A bare renderBench() from an internal re-render
+       PRESERVES the current scope rather than silently reverting to global. */
+    if(arguments.length) benchScopeId = scopeId || null;
     const body=document.getElementById("benchBody");
     if(!isPro()){
       /* the locked Bench keeps its shipped preview (bench_ui) + ammo chips (v8) */
       benchPrevRenderBench_v16locked();
       return;
     }
+    /* ⛔ ITEM 0 FORWARD FIX (Darren 2026-08-16, "ZERO cards under the Bench open").
+       DIAGNOSED ON DEVICE, NOT GUESSED: there is no exception — cards render,
+       wire and toggle correctly. The cause is "Collapse all", whose state
+       PERSISTS in fs_bench_layout.collapsed and survives leaving and re-entering
+       the Bench. One tap therefore leaves every card shut, for good, and the
+       Bench reads as broken. My own change made it worse: NFA and Magazines now
+       live ONLY in these cards, so a collapsed card hides working UI that has no
+       other home. Fix forward, not revert: a fully-collapsed Bench is treated as
+       a transient view, never a saved state — partial collapse still persists. */
+    (function(){
+      const hidden=benchBHidden();
+      const live=Object.keys(BENCH_CARD_LABELS).filter(id=>hidden.indexOf(id)<0);
+      const col=benchBCollapsed();
+      if(live.length && live.every(id=>col.indexOf(id)>=0)){
+        const o=benchLayoutGet(); o.collapsed=[]; benchLayoutSave(o);
+      }
+    })();
     benchHoldPen.appendChild(document.getElementById("careBox"));   /* reclaim before innerHTML wipe */
     benchHoldPen.appendChild(document.getElementById("svcBox"));
+    benchHoldPen.appendChild(document.getElementById("nfaBox"));
+    benchHoldPen.appendChild(document.getElementById("magBox"));
     const c=benchCollect();
     const totMags=c.fleets.reduce((a,g)=>a+g.mags.length,0);
-    let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">Your whole inventory, without going through a firearm.</div></div>`;
+    let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">${benchScopeId&&byId(benchScopeId)?esc(faInfo(byId(benchScopeId)).name)+" \u2014 this item only.":"Your whole inventory, without going through a firearm."}</div></div>`;
     h+=`<div class="benchbar"><button id="benchToggleAll" type="button">${benchBCollapsed().length?"Expand all":"Collapse all"}</button></div>`;
     if(c.overdue.length){
       h+=`<div class="lifebox warn"><div class="lrow"><span class="lt">Needs attention</span><span class="lv" style="color:var(--safe-red)">${c.overdue.length} item${c.overdue.length===1?"":"s"}</span></div>`;
@@ -10081,17 +10429,21 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        stock actually drawn down. */
     (function(){
       const now=Date.now(), YR=31557600000;
-      const totalAll=safe.reduce((a,f)=>a+(f.totalRounds||0),0);
+      const totalAll=benchScopedSafe().reduce((a,f)=>a+(f.totalRounds||0),0);
       const firstTs=f=>{ const l=(f.log||[]); return l.length?l[l.length-1].ts:now; };
-      const oldest=safe.length?Math.min.apply(null,safe.map(firstTs)):now;
+      const scopedSafe=benchScopedSafe();
+      const oldest=scopedSafe.length?Math.min.apply(null,scopedSafe.map(firstTs)):now;
       const yearsAll=Math.max((now-oldest)/YR, 1/12);
       const rpyAll=totalAll?Math.round(totalAll/yearsAll):0;
       let consumed=0, costConsumed=0;
       ammoInv.forEach(a=>{ if(a.bought>0 && a.paid>0){ const c2=Math.max(0,a.bought-a.qty); consumed+=c2; costConsumed+=c2*(a.paid/a.bought); } });
       const cpr=consumed>0?(costConsumed/consumed):null;
-      let stb=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">Safe-wide rounds</div><div class="bs">${fmtN(totalAll)} lifetime · ~${fmtN(rpyAll)}/year since your first entry</div></div><span class="lv">${fmtN(totalAll)}</span></div>`;
-      stb+=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">Cost per round fired</div><div class="bs">${cpr!=null?`Blended from ${fmtN(consumed)} priced rounds drawn from the locker`:"Shows once priced locker stock has been shot"}</div></div><span class="lv">${cpr!=null?"$"+cpr.toFixed(cpr<1?3:2):"—"}</span></div>`;
-      safe.forEach(f=>{
+      let stb=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">${benchScopeId?"Rounds on this item":"Safe-wide rounds"}</div><div class="bs">${fmtN(totalAll)} lifetime · ~${fmtN(rpyAll)}/year since your first entry</div></div><span class="lv">${fmtN(totalAll)}</span></div>`;
+      /* cost-per-round is blended across the whole LOCKER — it cannot be
+         attributed to one firearm, so it is withheld in a scoped view rather
+         than shown against the wrong base. */
+      if(!benchScopeId) stb+=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">Cost per round fired</div><div class="bs">${cpr!=null?`Blended from ${fmtN(consumed)} priced rounds drawn from the locker`:"Shows once priced locker stock has been shot"}</div></div><span class="lv">${cpr!=null?"$"+cpr.toFixed(cpr<1?3:2):"—"}</span></div>`;
+      benchScopedSafe().forEach(f=>{
         const yrs=Math.max((now-firstTs(f))/YR, 1/12);
         const rpy=(f.totalRounds||0)?Math.round((f.totalRounds||0)/yrs):0;
         stb+=`<div class="benchrow" data-nav="${f.id}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${fmtN(f.totalRounds||0)} lifetime${(f.totalRounds||0)?` · ~${fmtN(rpy)}/year`:""}</div></div><span class="lv">${fmtN(f.totalRounds||0)}</span></div>`;
@@ -10105,6 +10457,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const s=benchNfaSummary(x.f); const first=s.fls[0];
       nb+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.name)}</div><div class="bs">${esc(x.f.nfaItemType||"type unset")}${first?` · ${esc(benchFilingLabel(first))} · ${esc(first.entity)}`:""}${x.f.stamp?" · stamp photo attached":""}</div></div>${first?`<span class="statuschip ${first.status==="Approved"?"active":(first.status==="Denied"?"problem":"due")}">${esc(first.status.toUpperCase())}</span>`:""}</div>`;
     });
+    /* V21: the real NFA card (with its stamp photo UI) now lives here */
+    nb+=`<div class="lmsg" style="margin-top:10px">Pick an item — its NFA card opens below, exactly as it lived on the firearm page.</div>`;
+    benchScopedSafe().forEach(f=>{
+      const fl=(f.nfaFilings||[]).length;
+      nb+=`<div class="benchrow${benchNfaTargetId===f.id?" on":""}" data-nfasel="${f.id}" style="${benchNfaTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${f.nfaItemType?esc(f.nfaItemType):"type unset"}${fl?` · ${fl} filing${fl===1?"":"s"}`:""}</div></div></div>`;
+    });
+    nb+=`<div id="benchNfaHost"></div>`;
     const nfaPend=c.nfa.reduce((a,x)=>a+((x.f.nfaFilings||[]).filter(fl=>fl.status==="Pending"||fl.status==="Submitted").length),0);
     h+=benchCard("bcNfa","NFA Items", c.nfa.length?`${c.nfa.length} item${c.nfa.length===1?"":"s"}`:"none", nb,
       nfaPend?[{label:nfaPend+" PENDING",cls:"due"}]:[]);
@@ -10118,6 +10477,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const nums=g.mags.map(m=>m.num).sort((a,b)=>a-b);
       mb+=`<div class="benchrow" data-nav="${g.f.id}"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}${g.brand?` · ${esc(g.brand)}`:""}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · #${nums[0]}–#${nums[nums.length-1]} · ${esc(g.name)} · ${act} active${prob?`, ${prob} problem`:""}${ret?`, ${ret} retired`:""}</div></div><span class="statuschip ${prob?"problem":"active"}">${prob?"CHECK":"FLEET"}</span></div>`;
     });
+    /* V21: the real Magazines card (spec fields + batch add) now lives here */
+    const magGuns=benchScopedSafe().filter(f=>typeof hasMags!=="function" || hasMags(f));
+    mb+=`<div class="lmsg" style="margin-top:10px">Pick a firearm — its Magazines card opens below, with batch add.</div>`;
+    magGuns.forEach(f=>{
+      const mn=(f.mags||[]).length;
+      mb+=`<div class="benchrow${benchMagTargetId===f.id?" on":""}" data-magsel="${f.id}" style="${benchMagTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${mn?`${mn} mag${mn===1?"":"s"}`:"no mags yet"}</div></div></div>`;
+    });
+    if(!magGuns.length) mb+=`<div class="lmsg">No item in view takes a detachable magazine.</div>`;
+    mb+=`<div id="benchMagHost"></div>`;
     const magProb=c.fleets.reduce((a,g)=>a+g.mags.filter(m=>m.status==="problem").length,0);
     h+=benchCard("bcMags","Magazines", totMags?`${totMags} mag${totMags===1?"":"s"}`:"none", mb,
       magProb?[{label:magProb+" PROBLEM",cls:"problem"}]:[]);
@@ -10131,7 +10499,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     /* Care Reminders — the moved card lives here (item 5) */
     const careDue=c.care.filter(x=>x.s.due).length;
     let cb=`<div class="lmsg">Pick a firearm — its care card opens below, exactly as it lived on the firearm page.</div>`;
-    safe.forEach(f=>{
+    benchScopedSafe().forEach(f=>{
       const n=(f.reminders||[]).length;
       const due=(f.reminders||[]).filter(r=>benchDue(f,r).due).length;
       cb+=`<div class="benchrow${benchCareTargetId===f.id?" on":""}" data-caresel="${f.id}" style="${benchCareTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${n?`${n} clock${n===1?"":"s"}${due?` · ${due} due`:""}`:"no clocks yet"}</div></div><span class="statuschip ${due?"due":(n?"active":"")}">${due?"DUE":(n?"OK":"—")}</span></div>`;
@@ -10141,7 +10509,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       careDue?[{label:careDue+" OVERDUE",cls:"due"}]:[]);
     /* Service & Mods — FIREARMS ONLY here (V17 item 6: a can's Service & Mods
        lives on the can's own page; one home per card, per item) */
-    const svcGuns=safe.filter(f=>!(typeof benchIsSuppressor==="function" && benchIsSuppressor(f)));
+    const svcGuns=benchScopedSafe().filter(f=>!(typeof benchIsSuppressor==="function" && benchIsSuppressor(f)));
     let sb=`<div class="lmsg">Pick a firearm — its Service &amp; Mods card opens below, exactly as it lived on the firearm page. A suppressor's Service &amp; Mods lives on its own page.</div>`;
     svcGuns.forEach(f=>{
       const n=(f.service||[]).length;
@@ -10162,20 +10530,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
          <button class="btn sm" id="benchRestore">Restore from Backup</button>
        </div>
        <div class="lmsg" id="benchExpMsg"></div>
-       <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--edge)">
-         <div class="lrow"><span class="lt">CSV — a copy for the outside world</span></div>
-         <div class="lmsg">Spreadsheet-ready files. The app keeps everything and never needs the file back — and the file isn't live-linked: spreadsheet edits don't exist in the app until you import them.</div>
-         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-           <button class="btn sm" id="csvInv">Inventory CSV</button>
-           <button class="btn sm" id="csvHist">History CSV</button>
-           <button class="btn sm" id="csvLocker">Locker CSV</button>
-         </div>
-         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-           <button class="btn sm" id="csvTemplate">Blank Template</button>
-           <button class="btn sm primary" id="csvImport">Import Filled Template</button>
-         </div>
-         <div class="lmsg" id="csvMsg"></div>
-       </div>`);
+       <div class="lmsg" style="margin-top:10px">CSV lives on My Safe now — <b>Data &amp; CSV</b>, under Owner profile.</div>`);
     /* restore row for hidden cards */
     const hidden=benchBHidden();
     if(hidden.length){
@@ -10221,31 +10576,45 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       row.addEventListener("click",()=>{ activeId=row.dataset.nav; show("scr-detail"); });
     });
     body.querySelectorAll("[data-caresel]").forEach(row=>row.addEventListener("click",()=>{
-      benchCareTargetId=row.dataset.caresel;
+      benchSelect(row.dataset.caresel);
       renderBench();
     }));
     body.querySelectorAll("[data-svcsel]").forEach(row=>row.addEventListener("click",()=>{
-      benchSvcTargetId=row.dataset.svcsel;
+      benchSelect(row.dataset.svcsel);
+      renderBench();
+    }));
+    body.querySelectorAll("[data-nfasel]").forEach(row=>row.addEventListener("click",()=>{
+      benchSelect(row.dataset.nfasel);
+      renderBench();
+    }));
+    body.querySelectorAll("[data-magsel]").forEach(row=>row.addEventListener("click",()=>{
+      benchSelect(row.dataset.magsel);
       renderBench();
     }));
     /* seat the moved cards for the selected items (svc: firearms only — a can's
        card lives on the can's page) */
-    if(!byId(benchCareTargetId)) benchCareTargetId=safe.length?safe[0].id:null;
+    const careGuns=benchScopedSafe();
+    if(!careGuns.some(f=>f.id===benchCareTargetId)) benchCareTargetId=careGuns.length?careGuns[0].id:null;
     if(!svcGuns.some(f=>f.id===benchSvcTargetId)) benchSvcTargetId=svcGuns.length?svcGuns[0].id:null;
     const ch=document.getElementById("benchCareHost"), svh=document.getElementById("benchSvcHost");
     const cbx=document.getElementById("careBox"), sbx=document.getElementById("svcBox");
     if(ch && cbx && benchCareTargetId){ ch.appendChild(cbx); cbx.style.display="block"; renderCare(byId(benchCareTargetId)); }
     if(svh && sbx && benchSvcTargetId){ svh.appendChild(sbx); sbx.style.display="block"; renderSvc(byId(benchSvcTargetId)); benchFillVendorSelect(document.getElementById("svcVendor"),"Self"); }
+    /* V21: seat the two cards that moved off the firearm page */
+    const nfaGuns=benchScopedSafe();
+    if(!nfaGuns.some(f=>f.id===benchNfaTargetId)) benchNfaTargetId=nfaGuns.length?nfaGuns[0].id:null;
+    const magSeatGuns=benchScopedSafe().filter(f=>typeof hasMags!=="function" || hasMags(f));
+    if(!magSeatGuns.some(f=>f.id===benchMagTargetId)) benchMagTargetId=magSeatGuns.length?magSeatGuns[0].id:null;
+    /* the handlers inside these cards read byId(activeId) — keep it on the
+       record the Bench is actually showing, or an add writes to the wrong gun */
+    if(benchNfaTargetId && byId(benchNfaTargetId)) activeId=benchNfaTargetId;
+    const nh=document.getElementById("benchNfaHost"), nbx=document.getElementById("nfaBox");
+    if(nh && nbx && benchNfaTargetId){ nh.appendChild(nbx); nbx.style.display="block"; renderNfa(byId(benchNfaTargetId)); }
+    const mh=document.getElementById("benchMagHost"), mbx=document.getElementById("magBox");
+    if(mh && mbx && benchMagTargetId){ mh.appendChild(mbx); mbx.style.display="block"; renderMags(byId(benchMagTargetId)); }
     const be=document.getElementById("benchExport"), br=document.getElementById("benchRestore");
     if(be) be.onclick=benchDoExport;
     if(br) br.onclick=()=>benchRestoreFlow();
-    /* V18 CSV wiring */
-    const csvBtn=(id,fn)=>{ const b=document.getElementById(id); if(b) b.onclick=fn; };
-    csvBtn("csvInv",   ()=>benchCsvShare("fieldstrip-inventory", BenchCsv.buildInventoryCsv(BenchEnv.store, CATALOG)));
-    csvBtn("csvHist",  ()=>benchCsvShare("fieldstrip-history",   BenchCsv.buildHistoryCsv(BenchEnv.store, CATALOG)));
-    csvBtn("csvLocker",()=>benchCsvShare("fieldstrip-locker",    BenchCsv.buildLockerCsv(BenchEnv.store)));
-    csvBtn("csvTemplate",()=>benchCsvShare("fieldstrip-template", BenchCsv.buildInventoryTemplate()));
-    csvBtn("csvImport",()=>benchCsvImportFlow());
     benchAmmoChips();
   };
   /* the locked preview: the pre-V16 chain (bench_ui locked branch + v8 chips) */
@@ -10709,7 +11078,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("specNotes").value=sp.notes||"";
     if(typeof benchAttGrid==="function")
       benchAttGrid(document.getElementById("specAttWrap"), {kind:"spec", id:f.id},
-        {kind:"photo", addLabel:"PHOTO / RECEIPT / FILE", onchange:()=>renderDetail()});
+        {kind:"photo", addLabel:"PHOTO / RECEIPT / FILE", onchange:()=>benchAfterCardEdit()});
   }
 
   /* ---------- item 4: OWNER PROFILE — local, no accounts, ever ---------- */
@@ -10774,8 +11143,286 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
   }
   benchOwnerRow();
+  /* V21 (Darren ruling 2026-08-16): DATA / CSV BELONGS ON THE HOME SCREEN.
+     It shipped buried in the Bench's Backup card. Same prorow + prosheet
+     pattern as Owner profile, so it looks and behaves like its neighbours.
+     Backup/Restore deliberately stays in the Bench — only CSV moved. */
+  function benchDataSheet(){
+    let sh=document.getElementById("dataSheet");
+    if(!sh){
+      sh=document.createElement("div"); sh.id="dataSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="dataSheet") sh.classList.remove("open"); });
+    }
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="dsX">×</button>
+      <h3>DATA &amp; CSV</h3>
+      <p class="pp">Spreadsheet-ready copies for the outside world. The app keeps everything and never needs the file back — and the file isn't live-linked: spreadsheet edits don't exist in the app until you import them.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn sm" id="csvInv">Inventory CSV</button>
+        <button class="btn sm" id="csvHist">History CSV</button>
+        <button class="btn sm" id="csvLocker">Locker CSV</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn sm" id="csvTemplate">Blank Template</button>
+        <button class="btn sm primary" id="csvImport">Import Filled Template</button>
+      </div>
+      <div class="lmsg" id="csvMsg"></div></div>`;
+    const x=document.getElementById("dsX"); if(x) x.onclick=()=>sh.classList.remove("open");
+    const csvBtn=(id,fn)=>{ const b=document.getElementById(id); if(b) b.onclick=fn; };
+    csvBtn("csvInv",   ()=>benchCsvShare("fieldstrip-inventory", BenchCsv.buildInventoryCsv(BenchEnv.store, CATALOG)));
+    csvBtn("csvHist",  ()=>benchCsvShare("fieldstrip-history",   BenchCsv.buildHistoryCsv(BenchEnv.store, CATALOG)));
+    csvBtn("csvLocker",()=>benchCsvShare("fieldstrip-locker",    BenchCsv.buildLockerCsv(BenchEnv.store)));
+    csvBtn("csvTemplate",()=>benchCsvShare("fieldstrip-template", BenchCsv.buildInventoryTemplate()));
+    csvBtn("csvImport",()=>benchCsvImportFlow());
+    sh.classList.add("open");
+  }
+  function benchDataRow(){
+    let row=document.getElementById("dataRow");
+    const anchor=document.getElementById("ownerRow")||document.getElementById("lockRow");
+    if(!row && anchor && anchor.parentNode){
+      row=document.createElement("button");
+      row.id="dataRow"; row.className="prorow";
+      anchor.parentNode.insertBefore(row, anchor.nextSibling);
+      row.addEventListener("click",()=>benchDataSheet());
+    }
+    if(row) row.innerHTML="<b>Data &amp; CSV</b> — inventory, history and locker exports · template import";
+  }
   const benchPrevLockRow_v18=benchLockRow;
-  benchLockRow=function(){ benchPrevLockRow_v18(); benchOwnerRow(); };
+  benchLockRow=function(){ benchPrevLockRow_v18(); benchOwnerRow(); benchDataRow(); kegHomeRows(); };
+
+  /* ================================================================
+     ITEM 2 — THE KEG (Darren ruling 2026-08-16)
+     ================================================================
+     RECORDS ONLY, NEVER PRESCRIBES. The Keg logs what the user loaded and what
+     it did. It does not suggest a charge weight, does not ship load data, and
+     every figure it shows is derived from the user's own entries.
+     ⛔ NO SECOND INVENTORY. Components — powder, primers, brass, bullets — stay
+     in the AMMO LOCKER's existing rows (stock, lots, price, drawdown). The Keg
+     owns the LOAD (the recipe and its results) and REFERENCES a locker row for
+     cost. The flagship report reads Locker prices and Bench round counts only.
+     TIERING: logging loads and results is FREE — hobbyist bench work is
+     first-class. Analysis (the cost report) and export are PRO. */
+  const KEG_KEY="fs_keg";
+  const kegGet=()=>{ const v=store.get(KEG_KEY,null); return Array.isArray(v)?v:[]; };
+  const kegSave=l=>store.set(KEG_KEY,l);
+  const kegId=()=>"keg_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const kegNum=v=>{ const n=parseFloat(v); return isFinite(n)?n:null; };
+
+  /* price per round of a locker row, or null when the user has not priced it */
+  function kegPPR(a){ return (a && a.paid>0 && a.bought>0) ? (a.paid/a.bought) : null; }
+
+  /* THE FLAGSHIP REPORT — handload vs factory, from LOCKER prices and BENCH
+     round counts. Nothing here is invented: a load with no priced locker row
+     simply does not contribute, and that is stated rather than guessed at. */
+  function kegCostReport(){
+    const rows=Array.isArray(ammoInv)?ammoInv:[];
+    const side=h=>{
+      const rs=rows.filter(a=>!!a.hand===h && kegPPR(a)!=null);
+      if(!rs.length) return {n:0, ppr:null, rounds:0};
+      let paid=0, bought=0;
+      rs.forEach(a=>{ paid+=a.paid; bought+=a.bought; });
+      return {n:rs.length, ppr: bought>0?paid/bought:null, rounds:bought};
+    };
+    const hand=side(true), fact=side(false);
+    const fired=(safe||[]).reduce((a,f)=>a+(f.totalRounds||0),0);
+    let delta=null, saved=null;
+    if(hand.ppr!=null && fact.ppr!=null){
+      delta=fact.ppr-hand.ppr;
+      saved=delta*fired;
+    }
+    return {hand, fact, delta, saved, fired, unpriced: rows.filter(a=>kegPPR(a)==null).length};
+  }
+
+  function kegScreen(){
+    let scr=document.getElementById("scr-keg");
+    if(scr) return scr;
+    const host=document.getElementById("scr-bench").parentNode;
+    scr=document.createElement("section");
+    scr.className="screen"; scr.id="scr-keg";
+    scr.innerHTML='<div class="detail" id="kegBody"></div>';
+    host.appendChild(scr);
+    return scr;
+  }
+
+  function kegRender(){
+    kegScreen();
+    const body=document.getElementById("kegBody");
+    const loads=kegGet();
+    const pro=isPro();
+    let h='<div class="d-head"><div class="dname">The Keg</div>'
+      +'<div class="dsub">Your loads and what they did. The app records — it never tells you what to load.</div></div>';
+
+    /* ---- the honesty line, on screen, not just in a comment ---- */
+    h+='<div class="lifebox"><div class="lmsg">Everything here is what <b>you</b> entered. Fieldstrip supplies no load data and suggests no charge weight — your manual and published load data are the authority.</div></div>';
+
+    /* ---- log a load (FREE) ---- */
+    h+='<div class="lifebox"><div class="lrow"><span class="lt">Log a load</span></div>'
+      +'<div class="nfagrid">'
+      +'<div class="nf wide"><label for="kgName">Load name</label><input type="text" id="kgName" maxlength="40" placeholder="what you call it"></div>'
+      +'<div class="nf"><label for="kgPowder">Powder</label><input type="text" id="kgPowder" maxlength="30"></div>'
+      +'<div class="nf"><label for="kgCharge">Charge (gr)</label><input type="number" step="0.1" id="kgCharge" inputmode="decimal"></div>'
+      +'<div class="nf"><label for="kgPrimer">Primer</label><input type="text" id="kgPrimer" maxlength="30"></div>'
+      +'<div class="nf"><label for="kgBrass">Brass</label><input type="text" id="kgBrass" maxlength="30"></div>'
+      +'<div class="nf"><label for="kgBullet">Bullet</label><input type="text" id="kgBullet" maxlength="40"></div>'
+      +'<div class="nf"><label for="kgCoal">COAL (in)</label><input type="number" step="0.001" id="kgCoal" inputmode="decimal"></div>'
+      +'<div class="nf wide"><label for="kgLots">Lot numbers</label><input type="text" id="kgLots" maxlength="60" placeholder="powder / primer / brass / bullet"></div>'
+      +'</div>'
+      +'<div class="lmsg" id="kgMsg"></div>'
+      +'<button class="btn sm primary" id="kgAdd">Add load</button></div>';
+
+    /* ---- the loads ---- */
+    if(!loads.length){
+      h+='<div class="lifebox"><div class="lmsg">No loads yet. Log one above, then record what it did at the range.</div></div>';
+    }
+    loads.forEach((L,li)=>{
+      const res=Array.isArray(L.results)?L.results:[];
+      const grp=res.filter(r=>r.groupIn!=null).map(r=>r.groupIn);
+      const vel=res.filter(r=>r.velFps!=null).map(r=>r.velFps);
+      const avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length):null;
+      const best=grp.length?Math.min.apply(null,grp):null;
+      const flags=res.filter(r=>r.pressure||r.malfunction).length;
+      h+='<div class="lifebox"><div class="lrow"><span class="lt">'+esc(L.name||"Untitled load")+'</span>'
+        +'<span class="lv">'+(res.length?res.length+" result"+(res.length===1?"":"s"):"no results yet")+'</span></div>';
+      h+='<div class="lmsg">'+[L.powder?esc(L.powder):null, (L.charge!=null?L.charge+" gr":null), L.primer?esc(L.primer):null,
+            L.brass?esc(L.brass):null, L.bullet?esc(L.bullet):null, (L.coal!=null?L.coal+'" COAL':null)]
+            .filter(Boolean).join(" · ")+'</div>';
+      if(L.lots) h+='<div class="lmsg">Lots: '+esc(L.lots)+'</div>';
+      if(res.length){
+        h+='<div class="lmsg">'
+          +(best!=null?'Best group <b>'+best+'"</b>':'')
+          +(avg(grp)!=null?' · avg '+avg(grp).toFixed(2)+'"':'')
+          +(avg(vel)!=null?' · avg '+Math.round(avg(vel))+' fps':'')
+          +(flags?' · <span style="color:var(--safe-red)">'+flags+' flagged</span>':'')
+          +'</div>';
+        res.slice(-4).forEach(r=>{
+          h+='<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">'
+            +(r.groupIn!=null?r.groupIn+'" group':'result')
+            +(r.velFps!=null?' · '+r.velFps+' fps':'')+'</div><div class="bs">'
+            +fmtDate(r.ts)+(r.rounds?' · '+fmtN(r.rounds)+' rds':'')
+            +(r.pressure?' · PRESSURE SIGNS':'')+(r.malfunction?' · '+esc(r.malfunction):'')
+            +(r.note?' · '+esc(r.note):'')+'</div></div></div>';
+        });
+      }
+      h+='<div class="nfagrid" style="margin-top:8px">'
+        +'<div class="nf"><label>Group (in)</label><input type="number" step="0.01" class="kgR" data-k="groupIn" data-l="'+li+'" inputmode="decimal"></div>'
+        +'<div class="nf"><label>Velocity (fps)</label><input type="number" step="1" class="kgR" data-k="velFps" data-l="'+li+'" inputmode="numeric"></div>'
+        +'<div class="nf"><label>Rounds fired</label><input type="number" step="1" class="kgR" data-k="rounds" data-l="'+li+'" inputmode="numeric"></div>'
+        +'<div class="nf"><label>Malfunction</label><input type="text" class="kgR" data-k="malfunction" data-l="'+li+'" maxlength="40"></div>'
+        +'<div class="nf wide"><label>Note</label><input type="text" class="kgR" data-k="note" data-l="'+li+'" maxlength="80"></div>'
+        +'</div>'
+        +'<label class="lmsg" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" class="kgR" data-k="pressure" data-l="'+li+'" style="width:auto;margin:0"> Pressure signs seen</label>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" data-kgres="'+li+'">Record result</button>'
+        +'<button class="btn sm" data-kgdel="'+li+'">Delete load</button></div>';
+      h+='</div>';
+    });
+
+    /* ---- the flagship report (PRO) ---- */
+    const R=kegCostReport();
+    if(pro){
+      h+='<div class="lifebox"><div class="lrow"><span class="lt">Cost per round — handload vs factory</span></div>';
+      h+='<div class="lmsg">Blended from the <b>Ammo Locker</b> rows you have priced, against lifetime rounds on the Bench. Unpriced rows are excluded rather than guessed at.</div>';
+      const line=(lbl,s)=>'<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">'+lbl+'</div><div class="bs">'
+        +(s.n?s.n+' priced row'+(s.n===1?'':'s')+' · '+fmtN(s.rounds)+' rounds bought':'nothing priced yet')
+        +'</div></div><span class="lv">'+(s.ppr!=null?'$'+s.ppr.toFixed(s.ppr<1?3:2):'—')+'</span></div>';
+      h+=line("Handload", R.hand)+line("Factory", R.fact);
+      if(R.delta!=null){
+        const cheaper=R.delta>0;
+        h+='<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">'
+          +(cheaper?'Handloading is cheaper by':'Factory is cheaper by')+'</div>'
+          +'<div class="bs">per round, on your own prices</div></div>'
+          +'<span class="lv">$'+Math.abs(R.delta).toFixed(3)+'</span></div>';
+        h+='<div class="lmsg">Across '+fmtN(R.fired)+' lifetime rounds on the Bench that is <b>$'
+          +Math.abs(R.saved).toFixed(2)+'</b> '+(cheaper?'kept':'extra')+'. Component and equipment outlay is not counted — only what you paid per round.</div>';
+      } else {
+        h+='<div class="lmsg">Price both a handload row and a factory row in the Ammo Locker and the comparison appears here.</div>';
+      }
+      if(R.unpriced) h+='<div class="lmsg">'+R.unpriced+' locker row'+(R.unpriced===1?'':'s')+' carry no price and are excluded.</div>';
+      h+='<button class="btn sm" id="kgExport">Export loads CSV</button></div>';
+    } else {
+      h+='<div class="lifebox benchlocked"><div class="lrow"><span class="lt">🔒 Cost per round — handload vs factory</span><span class="protag">PRO</span></div>'
+        +'<div class="lockdim"><div class="lmsg">What a round actually costs you, handload against factory, from your own Locker prices and Bench round counts — plus CSV export of every load.</div></div>'
+        +'<button class="btn sm primary" id="kgPro">Unlock Pro</button></div>';
+    }
+
+    body.innerHTML=h;
+
+    const msg=t=>{ const m=document.getElementById("kgMsg"); if(m){ m.textContent=t; m.style.color="var(--amber)"; } };
+    const addBtn=document.getElementById("kgAdd");
+    if(addBtn) addBtn.addEventListener("click",()=>{
+      const name=(document.getElementById("kgName").value||"").trim();
+      const powder=(document.getElementById("kgPowder").value||"").trim();
+      const charge=kegNum(document.getElementById("kgCharge").value);
+      if(!name && !powder){ msg("Give the load a name, or at least the powder, before adding."); return; }
+      const L={id:kegId(), ts:Date.now(), name, powder, charge,
+        primer:(document.getElementById("kgPrimer").value||"").trim(),
+        brass:(document.getElementById("kgBrass").value||"").trim(),
+        bullet:(document.getElementById("kgBullet").value||"").trim(),
+        coal:kegNum(document.getElementById("kgCoal").value),
+        lots:(document.getElementById("kgLots").value||"").trim(),
+        results:[]};
+      const l=kegGet(); l.unshift(L); kegSave(l);
+      kegRender();
+      const m=document.getElementById("kgMsg");
+      if(m){ m.textContent="Load added. Record what it does at the range below."; m.style.color="var(--amber)"; }
+    });
+    body.querySelectorAll("[data-kgres]").forEach(b=>b.addEventListener("click",()=>{
+      const li=+b.dataset.kgres, l=kegGet(), L=l[li]; if(!L) return;
+      const val=k=>{ const el=body.querySelector('.kgR[data-k="'+k+'"][data-l="'+li+'"]'); return el?(el.type==="checkbox"?el.checked:el.value):""; };
+      const r={ts:Date.now(), groupIn:kegNum(val("groupIn")), velFps:kegNum(val("velFps")),
+        rounds:kegNum(val("rounds")), pressure:!!val("pressure"),
+        malfunction:String(val("malfunction")||"").trim(), note:String(val("note")||"").trim()};
+      if(r.groupIn==null && r.velFps==null && !r.pressure && !r.malfunction && !r.note){
+        const m=document.getElementById("kgMsg");
+        if(m){ m.textContent="Record something — a group, a velocity, a malfunction or a note."; m.style.color="var(--amber)"; }
+        return;
+      }
+      if(!Array.isArray(L.results)) L.results=[];
+      L.results.push(r); kegSave(l); kegRender();
+    }));
+    body.querySelectorAll("[data-kgdel]").forEach(b=>b.addEventListener("click",()=>{
+      const li=+b.dataset.kgdel, l=kegGet(), L=l[li]; if(!L) return;
+      const n=(L.results||[]).length;
+      if(!window.confirm('Delete "'+(L.name||"this load")+'"?'+(n?"\n\n"+n+" recorded result"+(n===1?"":"s")+" go with it.":"")+"\n\nThis cannot be undone.")) return;
+      l.splice(li,1); kegSave(l); kegRender();
+    }));
+    const pb=document.getElementById("kgPro"); if(pb) pb.addEventListener("click",()=>openProSheet("The Keg's cost analysis and exports are part of Fieldstrip Pro. Logging loads stays free."));
+    const ex=document.getElementById("kgExport");
+    if(ex) ex.addEventListener("click",()=>{
+      const rows=[["name","powder","charge_gr","primer","brass","bullet","coal_in","lots","result_ts","group_in","velocity_fps","rounds","pressure_signs","malfunction","note"]];
+      kegGet().forEach(L=>{
+        const base=[L.name||"",L.powder||"",L.charge==null?"":L.charge,L.primer||"",L.brass||"",L.bullet||"",L.coal==null?"":L.coal,L.lots||""];
+        if(!(L.results||[]).length) rows.push(base.concat(["","","","","",""]));
+        (L.results||[]).forEach(r=>rows.push(base.concat([new Date(r.ts).toISOString().slice(0,10),
+          r.groupIn==null?"":r.groupIn, r.velFps==null?"":r.velFps, r.rounds==null?"":r.rounds,
+          r.pressure?"yes":"", r.malfunction||"", r.note||""])));
+      });
+      benchCsvShare("fieldstrip-keg", BenchCsv.buildCsv ? BenchCsv.buildCsv(rows) : rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\r\n"));
+    });
+  }
+
+  /* home-screen section entries: the Keg sits where the Bench entry was, and
+     the Ammo Locker joins it — the Locker was only reachable through a firearm,
+     the same trap the Bench had. */
+  function kegHomeRows(){
+    const anchor=document.getElementById("ownerRow")||document.getElementById("lockRow");
+    if(!anchor || !anchor.parentNode) return;
+    let lk=document.getElementById("lockerHomeRow");
+    if(!lk){
+      lk=document.createElement("button"); lk.id="lockerHomeRow"; lk.className="prorow";
+      anchor.parentNode.insertBefore(lk, anchor);
+      lk.addEventListener("click",()=>{ if(typeof openLocker==="function") openLocker(); else show("scr-ammoinv"); });
+    }
+    lk.innerHTML="<b>Ammo Locker</b> — what you have on hand: lots, prices, stock";
+    let kg=document.getElementById("kegRow");
+    if(!kg){
+      kg=document.createElement("button"); kg.id="kegRow"; kg.className="prorow";
+      lk.parentNode.insertBefore(kg, lk.nextSibling);
+      kg.addEventListener("click",()=>{ kegRender(); show("scr-keg"); });
+    }
+    kg.innerHTML="<b>The Keg</b> — your loads and what they did";
+  }
+  kegHomeRows();
+
 
   /* auto-fill: the zero form takes the profile's units + first default distance */
   const benchPrevRenderZero_v18=renderZero;
@@ -10868,7 +11515,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         sw.appendChild(host);
       }
       if(typeof benchAttGrid==="function")
-        benchAttGrid(host, {kind:"stamp", id:f.id}, {kind:"document", addLabel:"PHOTO / FILE", onchange:()=>renderDetail()});
+        benchAttGrid(host, {kind:"stamp", id:f.id}, {kind:"document", addLabel:"PHOTO / FILE", onchange:()=>benchAfterCardEdit()});
     }
   };
   const benchPrevOpenCleanForm_v19=openCleanForm;
