@@ -615,7 +615,10 @@
   .sd-bolts i:nth-child(2){transition-delay:.05s}.sd-bolts i:nth-child(3){transition-delay:.1s}.sd-bolts i:nth-child(4){transition-delay:.15s}
   .sd-door.unbolted .sd-bolts i{transform:translateX(calc(-1 * clamp(26px,4vmin,48px)))}
   /* THE DIAL — the dominant physical object, mounted on a machined backplate */
-  .sd-plate{position:absolute;left:50%;top:33%;width:min(44vw,33vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  /* Dial group rides at 28%, not 33%: the handle below it needed room to grow to
+     its reference size, and the band above the dial was the only dead space on
+     the door. Plate and dial share the mount and must move together. */
+  .sd-plate{position:absolute;left:50%;top:28%;width:min(44vw,33vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
     background:linear-gradient(155deg,#333a45,#20252d 60%,#2a313b);border:1px solid #444d5a;
     box-shadow:0 1vmin 2vmin rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.09),inset 0 -1vmin 2.4vmin rgba(0,0,0,.4)}
   /* ITEM 3: the brass handle — its OWN object, mounted BELOW the dial, the way a
@@ -628,13 +631,13 @@
      Sized and placed to sit in the clear band between the dial's lower edge and
      the PIN dots at BOTH viewports. Spins three full turns on a correct PIN,
      then the bolts retract and the door swings (see sdOpenSequence). */
-  .sd-handle{position:absolute;left:50%;top:59.7%;width:min(37vw,28vh);aspect-ratio:1;
+  .sd-handle{position:absolute;left:50%;top:57.2%;width:min(45vw,28vh);aspect-ratio:1;
     transform:translate(-50%,-50%);pointer-events:none;z-index:0;
     filter:drop-shadow(0 1.2vmin 2vmin rgba(0,0,0,.65))}
   .sd-handle svg{width:100%;height:100%;display:block;transform:rotate(0deg)}
   #sdDoor.spin .sd-handle svg{transform:rotate(1080deg);
     transition:transform .95s cubic-bezier(.25,.7,.2,1)}
-  .sd-dial{position:absolute;left:50%;top:33%;width:min(40vw,30vh);transform:translate(-50%,-50%);
+  .sd-dial{position:absolute;left:50%;top:28%;width:min(40vw,30vh);transform:translate(-50%,-50%);
     filter:drop-shadow(0 1.6vmin 2.4vmin rgba(0,0,0,.6))}
   .sd-dial.shudder{animation:sdshake .34s linear}
   @keyframes sdshake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 4px),-50%) rotate(-1.2deg)}40%{transform:translate(calc(-50% + 4px),-50%) rotate(1.2deg)}60%{transform:translate(calc(-50% - 3px),-50%)}80%{transform:translate(calc(-50% + 2px),-50%)}}
