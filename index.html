@@ -666,6 +666,13 @@
   .benchbar{display:flex;justify-content:flex-end;margin:-4px 0 2px}
   .benchbar button{background:none;border:1px solid var(--edge);border-radius:8px;color:var(--muted);font-family:var(--display);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;padding:6px 10px;cursor:pointer}
   .benchbar button:active{color:var(--text)}
+  /* V17 item 2: the in-app select picker's rows carry the panel palette (a raw
+     <button> falls back to the UA gray without this) */
+  #selSheet .selrow{background:var(--panel2);border:none;border-bottom:1px solid var(--edge);border-radius:0;color:var(--text);font-family:var(--body);font-size:14.5px;padding:14px 12px;cursor:pointer;display:flex;align-items:center}
+  #selSheet .selrow:last-child{border-bottom:none}
+  #selSheet .selrow:active{background:var(--panel)}
+  #selSheet .selrow[disabled]{opacity:.4}
+  #selSheet .sheet>div{border:1px solid var(--edge);border-radius:12px;overflow:hidden;margin-top:6px}
   /* V17 item 8: a safe card shows EVERY flag — the row wraps, nothing truncates */
   .fa-card .dots{flex-wrap:wrap;justify-content:flex-end;row-gap:5px;max-width:60%}
   /* ---------- V16 items 1+3: first-open page + security page ---------- */
@@ -2537,6 +2544,190 @@
   }
 
   return {FORMAT, EXCLUDE, deviceIsFresh, validate, ammoIdentity, mergeById, runImport};
+});
+/* BENCH V18 — CSV SYSTEM (ruling-build-order-v18-20260816 item 3).
+   Export: inventory (spec sheets), history (cleaning/service/mods logs), locker.
+   Import: the INVENTORY TEMPLATE only — preview first, additive/update only,
+   matched by id, NEVER deletes, blank cells never clear stored values.
+   Pure data logic: no DOM, no plugins — the same module runs in node tests and
+   the webview. Commit-side snapshot gating happens in the UI wiring (device),
+   exactly like the backup import path.
+   Adapters: store {getRaw(k), setRaw(k,v)} (the shared BenchEnv shape). */
+(function(root, factory){
+  if(typeof module!=="undefined" && module.exports) module.exports = factory();
+  else root.BenchCsv = factory();
+})(typeof self!=="undefined" ? self : this, function(){
+  "use strict";
+
+  /* ---------- RFC-4180-ish plumbing ---------- */
+  function esc(v){
+    const s = (v===null||v===undefined) ? "" : String(v);
+    return /[",\r\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }
+  function buildCsv(rows){
+    return rows.map(r=>r.map(esc).join(",")).join("\r\n")+"\r\n";
+  }
+  function parseCsv(text){
+    const rows=[]; let row=[], cell="", inQ=false;
+    const s=String(text||"");
+    for(let i=0;i<s.length;i++){
+      const c=s[i];
+      if(inQ){
+        if(c==='"'){ if(s[i+1]==='"'){ cell+='"'; i++; } else inQ=false; }
+        else cell+=c;
+      } else if(c==='"' && cell===""){ inQ=true; }   /* lenient: a quote only OPENS at cell start — spreadsheets emit 18.5" mid-cell */
+      else if(c==='"'){ cell+=c; }
+      else if(c===","){ row.push(cell); cell=""; }
+      else if(c==="\n"){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else if(c==="\r"){ /* swallow; \n closes the row */ }
+      else cell+=c;
+    }
+    if(cell!=="" || row.length){ row.push(cell); rows.push(row); }
+    /* drop fully-empty trailing rows */
+    return rows.filter(r=>r.some(c=>String(c).trim()!==""));
+  }
+
+  function parse(store, key, fb){ try{ const v=store.getRaw(key); return v==null?fb:JSON.parse(v); }catch(e){ return fb; } }
+
+  /* ---------- shared naming (mirror of faInfo's identity, data-side) ---------- */
+  function fName(f, catalog){
+    if(f.custom) return ((f.cmk||"")+" "+(f.cmd||"")).trim()||"Custom entry";
+    const c=(catalog||[]).find(x=>x.i===f.model);
+    return c ? (c.mk+" "+c.md) : (f.model||"Unknown");
+  }
+  function fCat(f, catalog){ return (catalog||[]).find(x=>x.i===f.model)||null; }
+
+  /* ---------- EXPORTS ---------- */
+  const INV_HEADERS=["id","make","model","caliber","group","serial","purchase_price",
+    "purchase_date","barrel_length","overall_length","weight","caliber_finish",
+    "notes","total_rounds","nfa_item_type"];
+  function buildInventoryCsv(store, catalog){
+    const safe=parse(store,"fs_safe",[]);
+    const rows=[INV_HEADERS.slice()];
+    safe.forEach(f=>{
+      const c=fCat(f,catalog); const sp=f.spec||{};
+      rows.push([f.id,
+        f.custom?(f.cmk||""):(c?c.mk:""), f.custom?(f.cmd||""):(c?c.md:""),
+        f.custom?(f.cch||""):(c?c.ch:""), f.custom?"Custom":(c?c.gp:""),
+        sp.serial||"", sp.price||"", sp.pdate||"", sp.bbl||"", sp.oal||"",
+        sp.weight||"", sp.calfin||"", sp.notes||"",
+        f.totalRounds||0, f.nfaItemType||""]);
+    });
+    return buildCsv(rows);
+  }
+  function buildHistoryCsv(store, catalog){
+    const safe=parse(store,"fs_safe",[]);
+    const rows=[["firearm_id","firearm","date","kind","entry","chemicals","condition_note","performed_by","cost"]];
+    safe.forEach(f=>{
+      (f.log||[]).slice().reverse().forEach(e=>{
+        rows.push([f.id, fName(f,catalog),
+          e.ts?new Date(e.ts).toISOString().slice(0,10):"",
+          e.type||"", e.msg||"", e.chems||"", e.note||"", e.by||e.vendor||"", e.cost||""]);
+      });
+      (f.service||[]).slice().sort((a,b)=>a.ts-b.ts).forEach(sv=>{
+        rows.push([f.id, fName(f,catalog),
+          sv.ts?new Date(sv.ts).toISOString().slice(0,10):"",
+          "service", (sv.type?sv.type+" — ":"")+(sv.work||""), "", "", sv.vendor||"", sv.cost||""]);
+      });
+    });
+    return buildCsv(rows);
+  }
+  function buildLockerCsv(store){
+    const inv=parse(store,"fs_ammo",[]);
+    const rows=[["id","maker","caliber","grain","bullet","rounds_on_hand","lot","container",
+      "total_paid","rounds_bought","handload","powder","charge_gr","primer","projectile","oal_in"]];
+    inv.forEach(a=>{
+      const r=a.recipe||{};
+      rows.push([a.id||"", a.mk||"", a.cal||"", a.gr||"", a.bt||"", a.qty||0, a.lot||"", a.loc||"",
+        a.paid||"", a.bought||"", a.hand?"yes":"", r.powder||"", r.charge||"", r.primer||"", r.proj||"", r.oal||""]);
+    });
+    return buildCsv(rows);
+  }
+  function buildInventoryTemplate(){
+    /* headers-only, plus one commented example row a spreadsheet will show and
+       an importer will warn-and-skip (no make/model? no — give it a real shape
+       so the first import isn't a guess; users delete it) */
+    return buildCsv([INV_HEADERS.slice(),
+      ["","Example Make","Example Model","9mm","","SN-000000","499.99","2026-01-31",
+       '4.0"','7.3"',"21 oz","Nitride","Delete this example row","",""]]);
+  }
+
+  /* ---------- TEMPLATE IMPORT (inventory) ---------- */
+  /* preview: parse + validate, commit nothing. Warnings carry 1-based DATA row
+     numbers (header = row 1, first data row = row 2 — spreadsheet numbering). */
+  function previewInventoryCsv(store, catalog, text){
+    const raw=parseCsv(text);
+    if(!raw.length) return {ok:false, error:"That file is empty."};
+    const head=raw[0].map(h=>String(h).trim().toLowerCase());
+    if(head.indexOf("make")<0 && head.indexOf("model")<0 && head.indexOf("id")<0)
+      return {ok:false, error:"That doesn't look like the inventory template — no id/make/model columns."};
+    const col={}; INV_HEADERS.forEach(h=>{ col[h]=head.indexOf(h); });
+    const unknown=head.filter(h=>h && INV_HEADERS.indexOf(h)<0);
+    const safe=parse(store,"fs_safe",[]);
+    const warnings=[], out=[];
+    let adds=0, updates=0;
+    for(let i=1;i<raw.length;i++){
+      const rowNum=i+1;
+      const get=h=>{ const ix=col[h]; return ix>=0 ? String(raw[i][ix]!==undefined?raw[i][ix]:"").trim() : ""; };
+      const rec={ id:get("id"), make:get("make"), model:get("model"), caliber:get("caliber"),
+        serial:get("serial"), price:get("purchase_price"), pdate:get("purchase_date"),
+        bbl:get("barrel_length"), oal:get("overall_length"), weight:get("weight"),
+        calfin:get("caliber_finish"), notes:get("notes"), nfa:get("nfa_item_type"), row:rowNum };
+      if(/^Example Make$/i.test(rec.make)){ warnings.push({row:rowNum, msg:"example row skipped"}); continue; }
+      if(rec.id){
+        const f=safe.find(x=>x.id===rec.id);
+        if(!f){ warnings.push({row:rowNum, msg:"id \""+rec.id.slice(0,12)+"\" not in the safe — row skipped (imports never create by id)"}); continue; }
+        rec.mode="update"; updates++;
+      } else {
+        if(!rec.make && !rec.model){ warnings.push({row:rowNum, msg:"no id and no make/model — row skipped"}); continue; }
+        rec.mode="add"; adds++;
+      }
+      if(!rec.caliber && rec.mode==="add") warnings.push({row:rowNum, msg:"missing caliber"});
+      if(rec.price && isNaN(+rec.price.replace(/[$,]/g,""))) warnings.push({row:rowNum, msg:"purchase price isn't a number"});
+      out.push(rec);
+    }
+    unknown.forEach(h=>warnings.push({row:1, msg:"unknown column \""+h+"\" ignored"}));
+    return {ok:true, rows:out, adds, updates, warnings, total:out.length};
+  }
+  /* commit: ADDITIVE / UPDATE ONLY. Blank cells never clear stored values; no
+     code path here removes anything. New rows enter as CUSTOM tracker entries. */
+  function runInventoryImport(store, preview, now){
+    const safe=parse(store,"fs_safe",[]);
+    let added=0, updated=0;
+    const put=(f,rec)=>{
+      if(!f.spec) f.spec={};
+      const sp=f.spec;
+      if(rec.serial) sp.serial=rec.serial;
+      if(rec.price)  sp.price=rec.price.replace(/[$,]/g,"");
+      if(rec.pdate)  sp.pdate=rec.pdate;
+      if(rec.bbl)    sp.bbl=rec.bbl;
+      if(rec.oal)    sp.oal=rec.oal;
+      if(rec.weight) sp.weight=rec.weight;
+      if(rec.calfin) sp.calfin=rec.calfin;
+      if(rec.notes)  sp.notes=rec.notes;
+      if(rec.nfa)    f.nfaItemType=rec.nfa;
+    };
+    (preview.rows||[]).forEach((rec,k)=>{
+      if(rec.mode==="update"){
+        const f=safe.find(x=>x.id===rec.id); if(!f) return;
+        put(f,rec); updated++;
+      } else {
+        const f={ id:(now||0).toString(36)+"_csv"+k, custom:true, model:null,
+          cmk:rec.make, cmd:rec.model, cch:rec.caliber, cct:"", ccap:null, cfam:null,
+          totalRounds:0, roundsSinceClean:0, roundsSinceSpring:0, lastClean:null, lastChems:"",
+          cleanInterval:500, log:[{ts:(now||0), type:"note", msg:"Imported from inventory CSV"}],
+          mags:[], magRotDays:90, reminders:[], service:[], zeros:[] };
+        put(f,rec);
+        safe.push(f); added++;
+      }
+    });
+    store.setRaw("fs_safe", JSON.stringify(safe));
+    return {ok:true, added, updated};
+  }
+
+  return {buildCsv, parseCsv, INV_HEADERS,
+          buildInventoryCsv, buildHistoryCsv, buildLockerCsv, buildInventoryTemplate,
+          previewInventoryCsv, runInventoryImport};
 });
   /* =================== END BENCH DATA LAYER (Stage 3 slice 1) =================== */
 
@@ -9803,7 +9994,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       <div class="lrow bc-h" data-bch="${id}"><span class="lt"><span class="bcchev">▾</span>${title}</span><span class="bcvitals"><span class="lv">${val}</span>${chipHtml}</span></div>
       <div class="bcbody"><div class="bcin">${bodyHtml}</div></div></div>`;
   }
-  const BENCH_CARD_LABELS={bcNfa:"NFA Items",bcMags:"Magazines",bcZeros:"Zero Records",bcCare:"Care Reminders",bcSvc:"Service & Mods",bcAtt:"Attachments",bcBackup:"Backup"};
+  const BENCH_CARD_LABELS={bcStats:"Round Counts",bcNfa:"NFA Items",bcMags:"Magazines",bcZeros:"Zero Records",bcCare:"Care Reminders",bcSvc:"Service & Mods",bcAtt:"Attachments",bcBackup:"Backup & CSV"};
   renderBench=function(){
     const body=document.getElementById("benchBody");
     if(!isPro()){
@@ -9824,6 +10015,29 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       });
       h+=`</div>`;
     }
+    /* V18 item 1: ROUND-COUNT ROLL-UPS — in the Bench's own chrome. Bases are
+       stated in the copy so no number lies: per-year runs from each firearm's
+       first log entry; cost-per-round is the blended price of PRICED locker
+       stock actually drawn down. */
+    (function(){
+      const now=Date.now(), YR=31557600000;
+      const totalAll=safe.reduce((a,f)=>a+(f.totalRounds||0),0);
+      const firstTs=f=>{ const l=(f.log||[]); return l.length?l[l.length-1].ts:now; };
+      const oldest=safe.length?Math.min.apply(null,safe.map(firstTs)):now;
+      const yearsAll=Math.max((now-oldest)/YR, 1/12);
+      const rpyAll=totalAll?Math.round(totalAll/yearsAll):0;
+      let consumed=0, costConsumed=0;
+      ammoInv.forEach(a=>{ if(a.bought>0 && a.paid>0){ const c2=Math.max(0,a.bought-a.qty); consumed+=c2; costConsumed+=c2*(a.paid/a.bought); } });
+      const cpr=consumed>0?(costConsumed/consumed):null;
+      let stb=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">Safe-wide rounds</div><div class="bs">${fmtN(totalAll)} lifetime · ~${fmtN(rpyAll)}/year since your first entry</div></div><span class="lv">${fmtN(totalAll)}</span></div>`;
+      stb+=`<div class="benchrow" style="cursor:default"><div class="bi"><div class="bn">Cost per round fired</div><div class="bs">${cpr!=null?`Blended from ${fmtN(consumed)} priced rounds drawn from the locker`:"Shows once priced locker stock has been shot"}</div></div><span class="lv">${cpr!=null?"$"+cpr.toFixed(cpr<1?3:2):"—"}</span></div>`;
+      safe.forEach(f=>{
+        const yrs=Math.max((now-firstTs(f))/YR, 1/12);
+        const rpy=(f.totalRounds||0)?Math.round((f.totalRounds||0)/yrs):0;
+        stb+=`<div class="benchrow" data-nav="${f.id}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${fmtN(f.totalRounds||0)} lifetime${(f.totalRounds||0)?` · ~${fmtN(rpy)}/year`:""}</div></div><span class="lv">${fmtN(f.totalRounds||0)}</span></div>`;
+      });
+      h+=benchCard("bcStats","Round Counts", fmtN(totalAll)+" rds", stb);
+    })();
     /* NFA */
     let nb="";
     if(!c.nfa.length) nb=`<div class="lmsg">Set an item type on any firearm or can and its filings gather here.</div>`;
@@ -9879,15 +10093,29 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     /* Attachments */
     h+=benchCard("bcAtt","Attachments", c.attCount?`${c.attCount} files`:"none",
       `<div class="lmsg">Receipts, work photos, stamp photos and targets across the safe — attached on each record's own card, stored on this phone only.</div>`);
-    /* Backup */
-    h+=benchCard("bcBackup","Backup","",
+    /* Backup + the V18 CSV system (one feature: export + template import) */
+    h+=benchCard("bcBackup","Backup & CSV","",
       `<div class="lmsg">One local file with everything the Bench knows. You choose where it goes — nothing leaves this phone on its own.</div>
        ${BenchEnv.hasFS()?`<div class="ivrow" style="margin-top:8px"><label for="benchExpPhotos">Include photos</label><input type="checkbox" id="benchExpPhotos" style="width:auto"></div>`:""}
        <div style="display:flex;gap:8px;flex-wrap:wrap">
          <button class="btn sm primary" id="benchExport">Export Backup</button>
          <button class="btn sm" id="benchRestore">Restore from Backup</button>
        </div>
-       <div class="lmsg" id="benchExpMsg"></div>`);
+       <div class="lmsg" id="benchExpMsg"></div>
+       <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--edge)">
+         <div class="lrow"><span class="lt">CSV — a copy for the outside world</span></div>
+         <div class="lmsg">Spreadsheet-ready files. The app keeps everything and never needs the file back — and the file isn't live-linked: spreadsheet edits don't exist in the app until you import them.</div>
+         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+           <button class="btn sm" id="csvInv">Inventory CSV</button>
+           <button class="btn sm" id="csvHist">History CSV</button>
+           <button class="btn sm" id="csvLocker">Locker CSV</button>
+         </div>
+         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+           <button class="btn sm" id="csvTemplate">Blank Template</button>
+           <button class="btn sm primary" id="csvImport">Import Filled Template</button>
+         </div>
+         <div class="lmsg" id="csvMsg"></div>
+       </div>`);
     /* restore row for hidden cards */
     const hidden=benchBHidden();
     if(hidden.length){
@@ -9951,6 +10179,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const be=document.getElementById("benchExport"), br=document.getElementById("benchRestore");
     if(be) be.onclick=benchDoExport;
     if(br) br.onclick=()=>benchRestoreFlow();
+    /* V18 CSV wiring */
+    const csvBtn=(id,fn)=>{ const b=document.getElementById(id); if(b) b.onclick=fn; };
+    csvBtn("csvInv",   ()=>benchCsvShare("fieldstrip-inventory", BenchCsv.buildInventoryCsv(BenchEnv.store, CATALOG)));
+    csvBtn("csvHist",  ()=>benchCsvShare("fieldstrip-history",   BenchCsv.buildHistoryCsv(BenchEnv.store, CATALOG)));
+    csvBtn("csvLocker",()=>benchCsvShare("fieldstrip-locker",    BenchCsv.buildLockerCsv(BenchEnv.store)));
+    csvBtn("csvTemplate",()=>benchCsvShare("fieldstrip-template", BenchCsv.buildInventoryTemplate()));
+    csvBtn("csvImport",()=>benchCsvImportFlow());
     benchAmmoChips();
   };
   /* the locked preview: the pre-V16 chain (bench_ui locked branch + v8 chips) */
@@ -10244,6 +10479,263 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       e.preventDefault(); benchSelectSheet(e.target);
     }
   }, true);
+
+  /* ================================================================
+     V18 FEATURE ROUND (ruling-build-order-v18-20260816)
+     item 2 SPEC SHEET · item 3 CSV flows · item 4 OWNER PROFILE
+     ================================================================ */
+
+  /* ---------- item 3: share a CSV out (same path as the backup export) ---------- */
+  async function benchCsvShare(base, text){
+    const msg=document.getElementById("csvMsg");
+    try{
+      const fname=base+"-"+new Date().toISOString().slice(0,10)+".csv";
+      const FSp=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
+      const SHp=BenchEnv.share();
+      if(FSp && SHp){
+        await FSp.writeFile({path:fname, data:text, directory:"CACHE", encoding:"utf8", recursive:true});
+        const u=await FSp.getUri({path:fname, directory:"CACHE"});
+        await SHp.share({title:fname, url:u.uri, dialogTitle:"Save "+fname});
+      } else {
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(new Blob([text],{type:"text/csv"}));
+        a.download=fname; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+      }
+      if(msg) msg.textContent=fname+" built ✓ — a copy for the outside world; the app keeps everything.";
+    }catch(e){
+      if(msg && String(e&&e.message||e).indexOf("canceled")<0) msg.textContent="CSV failed: "+(e&&e.message||e);
+    }
+  }
+  /* ---------- item 3: template import — preview, then the snapshot-gated commit ---------- */
+  function benchCsvImportFlow(){
+    let inp=document.getElementById("benchCsvFile");
+    if(!inp){
+      inp=document.createElement("input");
+      inp.type="file"; inp.id="benchCsvFile"; inp.accept=".csv,text/csv"; inp.hidden=true;
+      document.body.appendChild(inp);
+    }
+    inp.onchange=async ()=>{
+      const file=inp.files && inp.files[0]; inp.value="";
+      if(!file) return;
+      const text=await file.text();
+      const pv=BenchCsv.previewInventoryCsv(BenchEnv.store, CATALOG, text);
+      benchCsvPreviewSheet(pv);
+    };
+    inp.click();
+  }
+  function benchCsvPreviewSheet(pv){
+    let sh=document.getElementById("csvSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="csvSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="csvSheet") sh.classList.remove("open"); });
+    }
+    if(!pv.ok){
+      sh.innerHTML=`<div class="sheet"><h3>Import preview</h3><p class="pp">${esc(pv.error||"That file couldn't be read.")} Nothing was changed.</p><button class="btn primary full" id="cvClose">Close</button></div>`;
+      sh.querySelector("#cvClose").onclick=()=>sh.classList.remove("open");
+      sh.classList.add("open"); return;
+    }
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="cvX">×</button>
+      <h3>Import preview</h3>
+      <p class="pp" style="color:var(--text)">${pv.total} row${pv.total===1?"":"s"} ready — ${pv.adds} new, ${pv.updates} update${pv.updates===1?"":"s"} · ${pv.warnings.length} warning${pv.warnings.length===1?"":"s"}.</p>
+      <p class="pp">Imports add and update only — nothing is ever deleted by a file, and blank cells never clear what's stored. Removals happen only in the app.</p>
+      ${pv.warnings.length?`<div class="proreason" style="max-height:30vh;overflow-y:auto">${pv.warnings.map(w=>`<div style="font-size:12.5px;line-height:1.5">Row ${w.row}: ${esc(w.msg)}</div>`).join("")}</div>`:""}
+      <button class="btn primary full" id="cvGo" ${pv.total?"":"disabled"}>Import ${pv.total} row${pv.total===1?"":"s"}</button>
+      <button class="btn full" id="cvNo" style="margin-top:8px">Cancel — nothing changes</button></div>`;
+    sh.querySelector("#cvX").onclick=()=>sh.classList.remove("open");
+    sh.querySelector("#cvNo").onclick=()=>sh.classList.remove("open");
+    sh.querySelector("#cvGo").onclick=async ()=>{
+      /* the snapshot gate rides EVERY import (same bridge as the backup restore) */
+      if(BenchEnv.hasFS()){
+        try{
+          const fA=BenchEnv.files();
+          const textFiles={
+            write:async (p,t)=>fA.writeB64(p, btoa(unescape(encodeURIComponent(String(t))))),
+            read:async p=>decodeURIComponent(escape(atob(await fA.readB64(p))))
+          };
+          const snap=await BenchSnapshot.snapshotAndVerify(BenchEnv.store, textFiles, Date.now());
+          if(!snap.ok){ alert("Couldn't take the safety snapshot — nothing was imported."); return; }
+        }catch(e){ alert("Couldn't take the safety snapshot — nothing was imported."); return; }
+      }
+      const r=BenchCsv.runInventoryImport(BenchEnv.store, pv, Date.now());
+      safe=JSON.parse(BenchEnv.store.getRaw("fs_safe")||"[]");     /* re-seat in-memory state */
+      sh.classList.remove("open");
+      if(document.getElementById("scr-bench").classList.contains("active")) renderBench();
+      renderSafe();
+      const msg=document.getElementById("csvMsg");                 /* AFTER the re-render, or the toast is wiped */
+      if(msg) msg.textContent="Imported ✓ — "+r.added+" added, "+r.updated+" updated. Nothing removed, ever.";
+    };
+    sh.classList.add("open");
+  }
+
+  /* ---------- item 2: SPEC SHEET — the insurance record, standard card system ---------- */
+  (function(){
+    const det=document.querySelector("#scr-detail .detail"); if(!det) return;
+    const box=document.createElement("div");
+    box.className="lifebox"; box.id="specBox";
+    box.innerHTML=`<div class="lrow"><span class="lt">Spec Sheet</span><span class="lv" id="specSummary"></span></div>
+      <div class="lmsg" id="specMsg">Serial, purchase, and measurements — the record an insurance inventory wants. Stays on this phone like everything else.</div>
+      <div class="nfagrid" style="margin-top:11px">
+        <div class="nf wide"><label for="specSerial">Serial number (masked — tap the eye)</label>
+          <div style="display:flex;gap:8px"><input type="password" id="specSerial" maxlength="40" autocomplete="off" style="flex:1"><button class="magbtn" id="specEye" type="button" title="Reveal">👁</button></div></div>
+        <div class="nf"><label for="specPrice">Purchase price ($)</label><input type="text" id="specPrice" maxlength="12" inputmode="decimal"></div>
+        <div class="nf"><label for="specPdate">Purchase date</label><input type="date" id="specPdate"></div>
+        <div class="nf"><label for="specBbl">Barrel length</label><input type="text" id="specBbl" maxlength="15"></div>
+        <div class="nf"><label for="specOal">Overall length</label><input type="text" id="specOal" maxlength="15"></div>
+        <div class="nf"><label for="specWeight">Weight</label><input type="text" id="specWeight" maxlength="15"></div>
+        <div class="nf"><label for="specCalfin">Caliber / finish</label><input type="text" id="specCalfin" maxlength="40"></div>
+        <div class="nf wide"><label for="specNotes">Notes</label><input type="text" id="specNotes" maxlength="200"></div>
+      </div>
+      <button class="btn sm primary" id="specSave" style="margin-top:10px">Save Spec</button>
+      <div id="specAttWrap" style="margin-top:10px"></div>`;
+    const anchor=document.getElementById("attBox");
+    anchor.parentNode.insertBefore(box, anchor);
+    BENCH_BOXES.push({id:"specBox", label:"Spec sheet", twins:[],
+      count:f=>((f.spec&&Object.keys(f.spec).some(k=>f.spec[k]))?1:0)});
+    document.getElementById("specEye").addEventListener("click",()=>{
+      const s=document.getElementById("specSerial");
+      s.type = s.type==="password" ? "text" : "password";
+    });
+    document.getElementById("specSave").addEventListener("click",()=>{
+      const f=byId(activeId); if(!f) return;
+      f.spec={
+        serial:document.getElementById("specSerial").value.trim(),
+        price:document.getElementById("specPrice").value.trim().replace(/[$,]/g,""),
+        pdate:document.getElementById("specPdate").value,
+        bbl:document.getElementById("specBbl").value.trim(),
+        oal:document.getElementById("specOal").value.trim(),
+        weight:document.getElementById("specWeight").value.trim(),
+        calfin:document.getElementById("specCalfin").value.trim(),
+        notes:document.getElementById("specNotes").value.trim()
+      };
+      addLog(f,"note","Spec sheet updated");
+      saveSafe(); renderDetail();
+    });
+  })();
+  function renderSpec(f){
+    const sp=f.spec||{};
+    const n=Object.keys(sp).filter(k=>sp[k]).length;
+    document.getElementById("specSummary").textContent = n ? n+" field"+(n===1?"":"s")+" on file" : "Not filled in";
+    const ser=document.getElementById("specSerial");
+    ser.value=sp.serial||""; ser.type="password";              /* MASKED BY DEFAULT, every render */
+    document.getElementById("specPrice").value=sp.price||"";
+    document.getElementById("specPdate").value=sp.pdate||"";
+    document.getElementById("specBbl").value=sp.bbl||"";
+    document.getElementById("specOal").value=sp.oal||"";
+    document.getElementById("specWeight").value=sp.weight||"";
+    document.getElementById("specCalfin").value=sp.calfin||"";
+    document.getElementById("specNotes").value=sp.notes||"";
+    if(typeof benchAttGrid==="function")
+      benchAttGrid(document.getElementById("specAttWrap"), {kind:"spec", id:f.id},
+        {kind:"photo", addLabel:"PHOTO / RECEIPT / FILE", onchange:()=>renderDetail()});
+  }
+
+  /* ---------- item 4: OWNER PROFILE — local, no accounts, ever ---------- */
+  function benchOwnerGet(){ try{ return JSON.parse(BenchEnv.store.getRaw("fs_owner")||"{}"); }catch(e){ return {}; } }
+  function benchOwnerSave(o){ BenchEnv.store.setRaw("fs_owner", JSON.stringify(o)); }
+  function benchOwnerSheet(){
+    let sh=document.getElementById("ownerSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="ownerSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="ownerSheet") sh.classList.remove("open"); });
+    }
+    const o=benchOwnerGet();
+    const ents=(BenchData.OPTIONS&&BenchData.OPTIONS.NFA_ENTITIES)||["Individual","Trust","Corporation"];
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="opX">×</button>
+      <h3>OWNER PROFILE</h3>
+      <p class="pp">Local, on this phone, no accounts — ever. Set it once and the app fills it in wherever it applies.</p>
+      <div class="nfagrid">
+        <div class="nf wide"><label for="opName">Name (optional)</label><input type="text" id="opName" maxlength="60" value="${escAttr(o.name||"")}"></div>
+        <div class="nf"><label for="opUnits">Preferred units</label><select id="opUnits"><option value="yd"${o.units!=="m"?" selected":""}>Yards</option><option value="m"${o.units==="m"?" selected":""}>Meters</option></select></div>
+        <div class="nf"><label for="opZeros">Default zero distances</label><input type="text" id="opZeros" maxlength="40" placeholder="e.g. 50, 100" value="${escAttr(o.zeroDists||"")}"></div>
+      </div>
+      <div class="fo-sect">Trust / entity — filled into every NFA filing</div>
+      <div class="nfagrid">
+        <div class="nf"><label for="opEntity">Filing entity</label><select id="opEntity">${ents.map(e=>`<option${(o.entityType||"Individual")===e?" selected":""}>${e}</option>`).join("")}</select></div>
+        <div class="nf"><label for="opTrust">Trust / entity name</label><input type="text" id="opTrust" maxlength="80" placeholder="e.g. Dezrt Family Trust" value="${escAttr(o.trustName||"")}"></div>
+        <div class="nf wide"><label for="opNote">Note (optional)</label><input type="text" id="opNote" maxlength="120" placeholder="e.g. trust docs in the fire safe" value="${escAttr(o.note||"")}"></div>
+      </div>
+      <button class="btn primary full" id="opSave" style="margin-top:14px">Save Profile</button></div>`;
+    sh.querySelector("#opX").onclick=()=>sh.classList.remove("open");
+    sh.querySelector("#opSave").onclick=()=>{
+      benchOwnerSave({
+        name:document.getElementById("opName").value.trim(),
+        units:document.getElementById("opUnits").value,
+        zeroDists:document.getElementById("opZeros").value.trim(),
+        entityType:document.getElementById("opEntity").value,
+        trustName:document.getElementById("opTrust").value.trim(),
+        note:document.getElementById("opNote").value.trim()
+      });
+      sh.classList.remove("open");
+      benchOwnerRow();
+      if(document.getElementById("scr-detail").classList.contains("active")) renderDetail();
+    };
+    sh.classList.add("open");
+  }
+  /* settings surface: a row on My Safe beside Security */
+  function benchOwnerRow(){
+    let row=document.getElementById("ownerRow");
+    const lr=document.getElementById("lockRow");
+    if(!row && lr){
+      row=document.createElement("button");
+      row.id="ownerRow"; row.className="prorow";
+      lr.parentNode.insertBefore(row, lr);
+      row.addEventListener("click",()=>benchOwnerSheet());
+    }
+    if(row){
+      const o=benchOwnerGet();
+      row.innerHTML = (o.trustName||o.name)
+        ? "<b>Owner profile</b> — "+esc(o.trustName||o.name)+(o.units?" · "+(o.units==="m"?"meters":"yards"):"")
+        : "<b>Owner profile</b> — units, zero defaults, trust details";
+    }
+  }
+  benchOwnerRow();
+  const benchPrevLockRow_v18=benchLockRow;
+  benchLockRow=function(){ benchPrevLockRow_v18(); benchOwnerRow(); };
+
+  /* auto-fill: the zero form takes the profile's units + first default distance */
+  const benchPrevRenderZero_v18=renderZero;
+  renderZero=function(f){
+    benchPrevRenderZero_v18(f);
+    const o=benchOwnerGet();
+    const u=document.getElementById("zeroUnit");
+    if(u && o.units && !((f.zeros||[]).length)) u.value=o.units;
+    const d=document.getElementById("zeroDist");
+    if(d && o.zeroDists){ const first=o.zeroDists.split(/[,\s]+/).filter(Boolean)[0]; if(first) d.placeholder="e.g. "+first; }
+  };
+  /* auto-fill: every NFA filing form opens on the profile's entity, named in
+     the form's own chrome; no profile yet -> the set-it-up-once route */
+  const benchPrevRenderFilings_v18=benchRenderFilings;
+  benchRenderFilings=function(f){
+    benchPrevRenderFilings_v18(f);
+    const form=document.getElementById("nfaFilingForm"); if(!form) return;
+    const o=benchOwnerGet();
+    const ent=document.getElementById("nffEntity");
+    if(benchFilingOpen==="new" && ent && o.entityType) ent.value=o.entityType;
+    const line=document.createElement("div");
+    line.className="nf wide"; line.id="nffProfileLine";
+    line.innerHTML = (o.trustName||o.entityType)
+      ? `<div class="lmsg" style="margin:0">Filing as <b style="color:var(--text)">${esc(o.trustName||o.entityType)}</b>${o.trustName?` (${esc(o.entityType||"Trust")})`:""} — from your Owner Profile · <button class="artadd-line" id="nffProfileEdit" type="button">edit</button></div>`
+      : `<div class="lmsg" style="margin:0"><button class="artadd-line" id="nffProfileEdit" type="button">Use my trust — set it up once</button></div>`;
+    form.appendChild(line);
+    const eb=document.getElementById("nffProfileEdit");
+    if(eb) eb.onclick=()=>benchOwnerSheet();
+  };
+
+  /* spec card rides the detail render; suppressors keep their own variant */
+  const benchPrevRenderDetail_v18=renderDetail;
+  renderDetail=function(){
+    benchPrevRenderDetail_v18();
+    const f=byId(activeId); if(!f) return;
+    const box=document.getElementById("specBox"); if(!box) return;
+    const isSupp=(typeof benchIsSuppressor==="function") && benchIsSuppressor(f);
+    if(isSupp){ box.style.display="none"; return; }
+    if(benchHiddenList(f).indexOf("specBox")<0) box.style.display="block";
+    renderSpec(f);
+  };
 
   /* test surface for the CDP harness — read-only reaches into the closure, the
      same way BenchData already stands exposed for the node suites. No data. */
