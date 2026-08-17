@@ -12198,6 +12198,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      navigates. No half-finished flow can trap the user. ---------- */
   const benchPrevNavBack_v19=navBack;
   navBack=function(){
+    /* ⛔ FOUND ON DEVICE, vC30 pass: the full-screen ATTACHMENT/STAMP VIEWER was
+       not covered here. It is `.stampview`, not `.prosheet`, so back navigated
+       the screen UNDERNEATH it and left a z-index:70 image covering everything —
+       elementFromPoint at any control returned stampViewImg, so every subsequent
+       tap was swallowed and the app looked frozen on a photo Back would not
+       dismiss. Its only exit was its own Close button.
+       It closes FIRST because it sits above the sheets. */
+    const viewer=document.getElementById("stampView");
+    if(viewer && viewer.classList.contains("open")){ viewer.classList.remove("open"); return true; }
     const openSheet=document.querySelector(".prosheet.open");
     if(openSheet){ openSheet.classList.remove("open"); return true; }
     const fo=document.getElementById("firstOpen");
