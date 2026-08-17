@@ -2054,7 +2054,12 @@
     MAG_STATUS: ["active","retired","problem"],
     MAG_ROLES: ["Range","Carry","Storage"],               /* Role blessed by the Stage 1 walk */
     REMINDER_CLOCKS: ["rounds","time"],
-    TIME_UNITS: [{id:"days",ms:DAY},{id:"weeks",ms:7*DAY},{id:"months",ms:30.4375*DAY}]
+    /* B6: HOURS. Black-powder fouling is hygroscopic and starts rusting a bore
+       within hours, so the shortest clock the app had — days — was an order of
+       magnitude too coarse to be useful. reminderState already multiplies
+       every*unitMs(unit), so one unit entry makes the whole clock engine
+       hours-capable; nothing else in the engine changes. */
+    TIME_UNITS: [{id:"hours",ms:3600000},{id:"days",ms:DAY},{id:"weeks",ms:7*DAY},{id:"months",ms:30.4375*DAY}]
   };
 
   let seq = 0;
@@ -2997,7 +3002,15 @@
   function guideKey(k){ if(GUIDE_EXACT[k])return GUIDE_EXACT[k]; const c=catEntry(k); return (c&&GUIDE_FAM[c.fm])||null; }
   /* magazine gating by platform: revolvers/suppressors/most-shotguns/tube-fed & fixed-mag rifles have no detachable mags */
   const MAG_DENY_FM=new Set(["MARLIN60","SA22","LEVER-HENRY","LEVER-HENRY-CF","LEVER-MARLIN","LEVER-WIN94","LEVER-WIN92","LEVER-WIN73","LEVER-BL22","LEVER-SAV99","MOSIN","MAUSER98","BOLT-M70","GARAND","SKS","CRICKETT"]);
-  function hasMags(f){ const c=fcat(f); if(!c) return true; const gp=c.gp, fm=c.fm||""; if(gp==="Revolvers"||gp==="Suppressors") return false; if(gp==="Shotguns") return fm==="SEMI-AR-SG"; if(MAG_DENY_FM.has(fm)) return false; return true; }
+  /* B4: a muzzleloader takes no detachable magazine, suppressed through the SAME
+     group test that already suppresses them for revolvers and suppressors.
+     ⚠ NFA needs NO code here and deliberately gets none: nfaOpts() reads
+     NFA_CLASS_OPTS[c.gp], which has keys only for Rifles/Shotguns/Pistols, so an
+     unlisted group returns [] and the NFA card and its fields never appear.
+     Muzzleloaders are frequently not "firearms" federally and must not be handed
+     NFA fields — that outcome falls out of the existing mechanism rather than a
+     special case, which is the point. */
+  function hasMags(f){ const c=fcat(f); if(!c) return true; const gp=c.gp, fm=c.fm||""; if(gp==="Revolvers"||gp==="Suppressors"||gp==="Muzzleloaders") return false; if(gp==="Shotguns") return fm==="SEMI-AR-SG"; if(MAG_DENY_FM.has(fm)) return false; return true; }
   const modelByKey=k=>{ const c=catEntry(k);
     if(!c) return {key:k,name:"Unknown model",sub:"",cat:"",guide:false,spring:0,springName:null};
     const sp=SPRINGS[c.fm]||[0,null];
@@ -3996,7 +4009,11 @@
   const searchInput=document.getElementById("searchInput");
   const chipsWrap=document.getElementById("catChips");
   const resultNote=document.getElementById("resultNote");
-  const GROUPS=["All","Pistols","Revolvers","Rifles","Shotguns","Suppressors"];
+  /* B2: MUZZLELOADER is a top-level category like any other. The picker builds
+     its chips straight off this list and filters on the catalog's gp, so the
+     category exists the moment models carry gp:"Muzzleloaders" — no parallel
+     path, exactly as B4 requires. */
+  const GROUPS=["All","Pistols","Revolvers","Rifles","Shotguns","Suppressors","Muzzleloaders"];
   let pickGroup="All";
   GROUPS.forEach(gname=>{
     const b=document.createElement("button");
@@ -4344,6 +4361,7 @@
     const f=byId(activeId); if(!f||!(n>0)) return;
     n=Math.floor(n);
     f.totalRounds+=n; f.roundsSinceClean+=n; f.roundsSinceSpring+=n;
+    f.lastShotAt=Date.now();   /* B6: arms the fouling clock. Harmless on any other item. */
     /* v14 item 4c: AUTO-DRAWDOWN — no new per-trip counting anywhere. The
        rounds-only path deducts from the firearm's remembered last load; the
        full session sheet already names its load and deducts there. */
@@ -6461,8 +6479,46 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchDueLabel(f, r){
     const s=benchDue(f, r);
     if(s.type==="rounds") return `${fmtN(s.used)} / ${fmtN(s.every)} rounds${s.due?" — DUE":""}`;
-    const days=Math.round((s.nextDueAt-Date.now())/86400000);
+    /* B6: an hours-scale clock read out in whole days says "due in 0d" for its
+       entire life. Anything under two days reports in hours. */
+    const ms=s.nextDueAt-Date.now();
+    const shortClock = r.clock && r.clock.unit==="hours";
+    if(shortClock || Math.abs(ms)<2*86400000){
+      const hrs=Math.round(ms/3600000);
+      return s.due ? `overdue ${Math.max(1,-hrs)}h` : `due in ${Math.max(0,hrs)}h`;
+    }
+    const days=Math.round(ms/86400000);
     return s.due ? `overdue ${Math.max(1,-days)}d` : `due in ${Math.max(0,days)}d`;
+  }
+
+  /* ================= B6: THE FOULING CLOCK =================
+     Black-powder and substitute fouling draws moisture and starts rusting a
+     bore within HOURS of a session. The app's other clocks are month-scale and
+     cannot express that.
+     It is armed by SHOOTING and silenced by CLEANING, and both of those are
+     read off state the app already keeps: f.lastShotAt (stamped when rounds are
+     logged) and f.roundsSinceClean (already zeroed by a clean). Gating on
+     roundsSinceClean is what stops the clock going urgent on a gun that is
+     sitting clean in the safe — a time-only clock would re-fire every N hours
+     forever whether or not the rifle had been fired. */
+  const FOUL_HOURS=4;
+  function isMuzzleloader(f){ const c=fcat(f); return !!(c && c.gp==="Muzzleloaders"); }
+  function foulState(f){
+    if(!isMuzzleloader(f)) return {applies:false};
+    const shot=f.lastShotAt||0;
+    const dirty=(f.roundsSinceClean||0)>0 && shot>0;
+    if(!dirty) return {applies:true, armed:false, due:false};
+    const dueAt=shot+FOUL_HOURS*3600000;
+    const ms=dueAt-Date.now();
+    return {applies:true, armed:true, due:ms<=0, dueAt,
+            hrs:Math.max(0,Math.round(ms/3600000)),
+            sinceH:Math.floor((Date.now()-shot)/3600000)};
+  }
+  function foulLabel(s){
+    if(!s.armed) return "Clean — nothing fired since the last wipe-down.";
+    return s.due
+      ? `FOULING URGENT — fired ${s.sinceH}h ago and not cleaned. Black-powder fouling pulls moisture and starts rusting the bore. Swab it now.`
+      : `Fouling clock running — swab within ${s.hrs}h of shooting.`;
   }
 
   /* ---------- NFA: filings-based rendering (legacy reads retired) ---------- */
@@ -7156,6 +7212,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       });
       if(f.cleanInterval>0 && f.roundsSinceClean>=f.cleanInterval)
         out.overdue.push({kind:"clean", name, label:"Clean due", detail:`${fmtN(f.roundsSinceClean)} / ${fmtN(f.cleanInterval)} since last clean`});
+      /* B6: the fouling clock outranks a round-count clean interval — it is an
+         hours-scale corrosion risk, not a routine service interval. */
+      const fs=foulState(f);
+      if(fs.applies && fs.due)
+        out.overdue.push({kind:"foul", name, label:"FOULING — swab now", detail:`fired ${fs.sinceH}h ago, not cleaned`});
       (f.mags||[]).forEach(m=>{ if(m.status==="problem") out.overdue.push({kind:"mag", name, label:`Mag #${m.num} flagged`, detail:m.note||"problem"}); });
       if(f.nfaItemType || (f.nfaFilings||[]).length) out.nfa.push({f, name});
       const groups={};
@@ -11489,6 +11550,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
     /* ---- the honesty line, on screen, not just in a comment ---- */
     h+='<div class="lifebox"><div class="lmsg">Everything here is what <b>you</b> entered. Fieldstrip supplies no load data and suggests no charge weight — your manual and published load data are the authority.</div></div>';
+
+    /* ---- B7: THE ONE EXCEPTION TO "RECORDS ONLY, NEVER PRESCRIBES" ----
+       This is a WARNING, not a recommendation, and it is the universal
+       manufacturer label. It says what must never be done; it still names no
+       charge and no load. The failure mode is catastrophic and immediate, which
+       is why it is the single carve-out. Shown unconditionally on the powder
+       domain rather than only on a muzzleloader — a warning that depends on the
+       app having correctly classified the item is a warning that can go
+       missing on the one entry that was classified wrong. */
+    h+='<div class="lifebox warn"><div class="lrow"><span class="lt" style="color:var(--safe-red)">Warning</span></div>'
+      +'<div class="lmsg"><b style="color:var(--safe-red)">NEVER USE SMOKELESS POWDER IN A MUZZLELOADER.</b> '
+      +'Use only black powder or a powder labelled by its maker as a black-powder substitute. '
+      +'Smokeless powder in a muzzleloader can destroy the gun and the shooter.</div></div>';
 
     /* ---- log a load (FREE) ---- */
     h+='<div class="lifebox"><div class="lrow"><span class="lt">Log a load</span></div>'
