@@ -7397,15 +7397,31 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      count, which is what made a suppressor claim 11 files that were not its.
      Ammo receipts are parented to Locker records and belong to no firearm;
      they count on the global Bench and are excluded from a scoped one. */
-  /* every attachment-parent id a single firearm owns. ⛔ ONE DEFINITION, used
-     by BOTH the scoped Bench count AND the delete-on-removal sweep — if those
-     two ever disagree about what a firearm owns, one of them silently strands
-     or silently destroys files. */
+  /* Every attachment-parent id a single firearm owns. ⛔ ONE DEFINITION, used by
+     BOTH the scoped Bench count AND the delete-on-removal sweep — if those two
+     ever disagree about what a firearm owns, one silently strands files and the
+     other silently destroys them.
+
+     ⛔ OWNERSHIP IS TESTED AT THE FIRST HOP: "does this attachment's parent id
+     resolve to an id some live firearm owns?" So this MUST enumerate every id
+     class a firearm owns, and the classes are not uniform:
+       firearm / spec / stamp  -> the parent id IS the firearm id      (1 hop)
+       mag / zero / svc        -> the parent id is a CHILD record id   (2 hops)
+       nfa                     -> the parent id is a FILING id         (2 hops)
+       ammo                    -> a Locker record; owned by NO firearm
+     ⛔ nfaFilings WAS MISSING and that was a real bug in this function. NFA
+     document attachments are parented to the FILING (`makeId("nfaf",…)`,
+     benchAttGrid is seated per filing on `dataset.fid`), not to the firearm. Its
+     absence made a LIVE firearm's tax-stamp paperwork read as orphaned in the
+     scoped count, and — worse — meant removing a firearm left its Form 1/4
+     documents behind, manufacturing exactly the orphans this code exists to
+     prevent. */
   function attOwnedIds(f){
     const ids=[f.id];
     (f.mags||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
     (f.zeros||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
     (f.service||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
+    (f.nfaFilings||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
     return ids;
   }
   function benchAttOwners(list){
@@ -7416,6 +7432,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       (f.mags||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"mag #"+(x.num||"")}); });
       (f.zeros||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"zero"}); });
       (f.service||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"service"}); });
+      (f.nfaFilings||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"NFA filing"}); });
     });
     return m;
   }
@@ -7428,8 +7445,26 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const owned=new Set(attOwnedIds(f));
       const reg=BenchAttach.readReg(BenchEnv.store);
       const mine=reg.filter(a=>a && a.parent && owned.has(a.parent.id));
-      mine.forEach(a=>{
-        try{ BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), a.id); }catch(e){}
+      if(!mine.length) return 0;
+      /* ⛔ ONE ATOMIC REGISTRY WRITE. The obvious implementation — call
+         BenchAttach.deleteAttachment() per row — RACES, and did:
+           deleteAttachment does  readReg -> AWAIT removeFile -> writeReg
+         so it writes back the array it read BEFORE it yielded. Fire it for two
+         rows and both read the registry before either writes; the last write
+         wins and RESURRECTS the row the first one removed.
+         FOUND ON DEVICE, not in the harness: deleting a firearm with 2
+         attachments left 1 behind, dangling. The harness had passed because its
+         fake deleteAttachment was SYNCHRONOUS — a fake more forgiving than the
+         real thing, which is the whole reason this had to be proven in-app.
+         Remove every row in a single write, then unlink files separately: file
+         deletion is order-independent and a failed unlink must not resurrect a
+         registry row. */
+      const keep=reg.filter(a=>!(a && a.parent && owned.has(a.parent.id)));
+      BenchEnv.store.setRaw(BenchAttach.KEY, JSON.stringify(keep));
+      const fA=BenchEnv.files();
+      if(fA) mine.forEach(a=>{
+        if(a.file){ try{ fA.removeFile(a.file); }catch(e){} }
+        if(a.thumb){ try{ fA.removeFile(a.thumb); }catch(e){} }
       });
       return mine.length;
     }catch(e){ return 0; }
@@ -12141,6 +12176,36 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       + `<div class="lmsg" style="margin-top:8px">Source: ${esc(d.src)}</div>`;
   }
 
+  /* ⛔ B6 FOULING CLOCK — THE CARD. foulState/foulLabel existed since vC28 but
+     foulLabel was NEVER CALLED: the clock drove only the Bench's overdue list,
+     so on the item's own page — where an owner actually looks — it did not
+     exist. Found when the device pass asked for a screenshot of it.
+     It reads in HOURS, and an unfired entry says so in words rather than
+     rendering a month-scale "due in 0d", which is the failure mode a
+     day-resolution clock produces on an hours-resolution problem. */
+  function renderFoulClock(f){
+    const det=document.querySelector("#scr-detail .detail"); if(!det) return;
+    let box=document.getElementById("foulBox");
+    const s=foulState(f);
+    if(!s.applies){ if(box) box.remove(); return; }
+    if(!box){
+      box=document.createElement("div");
+      box.id="foulBox"; box.className="lifebox";
+      const anchor=document.getElementById("mzDeepBox")||document.getElementById("logBox");
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(box, anchor);
+      else det.appendChild(box);
+    }
+    box.classList.toggle("warn", !!s.due);
+    box.style.borderColor = s.due ? "var(--safe-red)" : "";
+    const head = s.due
+      ? `<span class="lv" style="color:var(--safe-red)">URGENT</span>`
+      : (s.armed ? `<span class="lv" style="color:var(--amber)">${s.hrs}h left</span>`
+                 : `<span class="lv" style="color:var(--green)">clean</span>`);
+    box.innerHTML=`<div class="lrow"><span class="lt">Fouling clock</span>${head}</div>`
+      +`<div class="lmsg" style="color:var(--text)">${esc(foulLabel(s))}</div>`
+      +`<div class="lmsg" style="margin-top:6px">Black-powder residue is hygroscopic — this clock runs in hours from the last shot, not months.</div>`;
+  }
+
   /* spec card rides the detail render; suppressors keep their own variant */
   const benchPrevRenderDetail_v18=renderDetail;
   renderDetail=function(){
@@ -12148,6 +12213,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const f=byId(activeId); if(!f) return;
     renderRecallBanner(f);
     renderDeepOutcome(f);
+    renderFoulClock(f);
     const box=document.getElementById("specBox"); if(!box) return;
     const isSupp=(typeof benchIsSuppressor==="function") && benchIsSuppressor(f);
     if(isSupp){ box.style.display="none"; return; }
