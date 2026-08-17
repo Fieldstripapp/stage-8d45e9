@@ -3096,9 +3096,27 @@
     "ML-REV-STARR":{o:DEEP_DOCUMENTED, src:"Pietta Manual for Muzzleloading — Starr procedure"},
     "ML-WBY-MOD":{o:DEEP_NONE, src:"Weatherby publishes no Model 307 MZY manual (only the centerfire 307)",
       note:"Weatherby has not published a written procedure for this rifle."},
-    "ML-LYMAN-HOOK":{o:DEEP_GUNSMITH, src:"Investarm Manuale Avancarica ed. 01.2021, 'Pulitura dell'arma' pp.10–12; Lyman User's Guide for Black Powder Products p.13",
-      quote:"With a suitable tool the plug can be removed from the barrel; consult a gunsmith for this work.",
-      note:"Barrel removal is documented. The nipple, clean-out plug and touch-hole liner appear only in the parts list — no procedure is published for them."},
+    /* ⛔ RE-SOURCED AND RE-CLASSIFIED 2026-08-16, on Darren's translation ruling.
+       THREE THINGS WERE WRONG HERE, all mine:
+       1. The quote shown was an ENGLISH TRANSLATION I PRODUCED from Investarm's
+          Italian. The ruling is absolute: never quote a translation we made.
+          Removed.
+       2. The SOURCE was the OEM's manual. Investarm manufactures for Lyman, but
+          the Lyman-branded gun ships LYMAN'S OWN manual — verified: ©2003 Lyman
+          Products Corporation, Middletown CT, in English, naming the Great
+          Plains Rifle, Trade Rifle, Deerstalker and Plains Pistol together in
+          one procedure. That is the source.
+       3. The OUTCOME was GUNSMITH, and that rested entirely on the Investarm
+          line. LYMAN'S OWN MANUAL DOES NOT DEFER THE BREECH PLUG TO A GUNSMITH.
+          It documents the disassembly and cleaning in full, and its only word on
+          the breech plug is to clean the powder channel IN PLACE. Its gunsmith
+          referral is for a STUCK CHARGE, a different job entirely.
+       So the honest outcome is DOCUMENTED, and the quote below is Lyman's own
+       published English, verbatim. */
+    "ML-LYMAN-HOOK":{o:DEEP_DOCUMENTED,
+      src:"Lyman Black Powder Handbook / owner's manual, ©2003 Lyman Products Corporation — 'Disassembly and Cleaning of Rifles and Plains Pistol', p.13",
+      quote:"The hooked breech will slip right out of the tang unit with no further disassembly needed.",
+      note:"Lyman documents removing the barrel (ramrod out, drive out the barrel wedge, hammer to full cock, lift the barrel muzzle-first) and two cleaning methods. It publishes NO breech-plug removal: its only instruction there is that the powder channel inside the plug is narrower than the bore, so reach it with a .35 cal brush or a slotted tip — cleaned in place, not removed."},
     "ML-TRAD-SIDE":{o:DEEP_PROHIBITED, src:"Traditions Safety & Instruction Manual for Sidelock Muzzleloaders p.39",
       quote:"Never remove the bolster/drum or breech plug from the barrel. They have been installed at the factory such that they interlock… The removal or alteration of these key parts will void your warranty, and can create an unsafe situation."},
     "ML-MUSKET":{o:DEEP_PROHIBITED, src:"Traditions Musket Reproduction Muzzleloaders Manual §14 pp.36–41",
@@ -12206,6 +12224,165 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       +`<div class="lmsg" style="margin-top:6px">Black-powder residue is hygroscopic — this clock runs in hours from the last shot, not months.</div>`;
   }
 
+  /* ================= B5 — THE KEG (muzzleloader powder domain) =================
+     Darren ruling, built as a DEFECT (ruled behaviour that was not on device):
+     on a muzzleloader, "Ammo Performance" BECOMES "The Keg". It is not a home
+     destination — B1 removed that row and this does not put it back.
+
+     ⛔ RECORDS ONLY, NEVER PRESCRIBES. No load data, no suggested charges, no
+     defaults that could read as a recommendation. Every field starts empty.
+     ⛔ ONE EXCEPTION, a WARNING and not a recommendation: never use smokeless
+     powder in a muzzleloader. It is the universal manufacturer label and the
+     failure mode is catastrophic. (Savage 10ML-II is permanently excluded from
+     the catalog precisely because it is smokeless-rated and this warning would
+     be wrong on it — see the note beside CATALOG.)
+     ⛔ THE MEASURE FIELD IS REQUIRED. Black powder is measured by VOLUME and
+     substitutes do not match by weight, so a charge recorded without its
+     measure is meaningless read back later. The save refuses without it. */
+  const MZKEG_KEY="fs_mzkeg";
+  const mzKegGet=()=>{ const v=store.get(MZKEG_KEY,null); return Array.isArray(v)?v:[]; };
+  const mzKegSave=l=>store.set(MZKEG_KEY,l);
+  const MZ_POWDER=["Goex Fg","Goex FFg","Goex FFFg","Goex FFFFg",
+                   "Swiss Fg","Swiss FFg","Swiss FFFg","Swiss FFFFg",
+                   "Schuetzen Fg","Schuetzen FFg","Schuetzen FFFg","Schuetzen FFFFg",
+                   "Pyrodex RS","Pyrodex P","Pyrodex Select",
+                   "Triple Seven FFg","Triple Seven FFFg",
+                   "Blackhorn 209","American Pioneer","Other (write it in)"];
+  const MZ_PROJ=["Patched round ball","Conical","Minié","Sabot + bullet"];
+  const MZ_IGN=["Flintlock","Percussion #11","Musket cap","209 primer"];
+  const MZ_MEASURE=["Volume (grains-equivalent)","Weight (grains, scale)"];
+  function mzKegScreen(){
+    let scr=document.getElementById("scr-mzkeg");
+    if(scr) return scr;
+    scr=document.createElement("section");
+    scr.className="screen"; scr.id="scr-mzkeg";
+    scr.innerHTML='<div class="detail" id="mzKegBody"></div>';
+    document.body.appendChild(scr);
+    if(typeof parents!=="undefined") try{ parents["scr-mzkeg"]="scr-detail"; }catch(e){}
+    return scr;
+  }
+  function mzKegOpts(list,sel){ return '<option value=""></option>'+list.map(function(x){
+    return '<option'+(sel===x?' selected':'')+'>'+esc(x)+'</option>'; }).join(""); }
+  function mzKegRender(f){
+    mzKegScreen();
+    const body=document.getElementById("mzKegBody"); if(!body) return;
+    const all=mzKegGet().filter(l=>l.fid===f.id);
+    let h='<div class="d-head"><div class="dname">The Keg</div>'
+      +'<div class="dsub">'+esc(faInfo(f).name)+' — powder, projectile, ignition and what each string did.</div></div>';
+    /* the honesty line and THE warning, both on screen */
+    h+='<div class="lifebox"><div class="lmsg">Everything here is what <b>you</b> loaded and what <b>you</b> measured. '
+      +'Fieldstrip supplies no load data and suggests no charge — your manual and published load data are the authority.</div></div>';
+    h+='<div class="lifebox warn"><div class="lrow"><span class="lt" style="color:var(--safe-red)">Warning</span></div>'
+      +'<div class="lmsg"><b style="color:var(--safe-red)">NEVER USE SMOKELESS POWDER IN A MUZZLELOADER.</b> '
+      +'Use only black powder, or a powder its maker labels as a black-powder substitute. '
+      +'Smokeless powder in a muzzleloader can destroy the gun and the shooter.</div></div>';
+    /* ---- the load form ---- */
+    h+='<div class="lifebox"><div class="lrow"><span class="lt">Record a load</span></div><div class="nfagrid">'
+      +'<div class="nf wide"><label for="mzName">Name this load</label><input type="text" id="mzName" maxlength="40"></div>'
+      +'<div class="nf wide"><label for="mzPowder">Powder</label><select id="mzPowder">'+mzKegOpts(MZ_POWDER)+'</select></div>'
+      +'<div class="nf"><label for="mzCharge">Charge</label><input type="number" id="mzCharge" min="0" step="0.1" inputmode="decimal"></div>'
+      +'<div class="nf"><label for="mzMeasure">Measured by <b style="color:var(--amber)">(required)</b></label>'
+      +'<select id="mzMeasure">'+mzKegOpts(MZ_MEASURE)+'</select></div>'
+      +'<div class="nf"><label for="mzProj">Projectile</label><select id="mzProj">'+mzKegOpts(MZ_PROJ)+'</select></div>'
+      +'<div class="nf"><label for="mzDia">Diameter</label><input type="text" id="mzDia" maxlength="12"></div>'
+      +'<div class="nf"><label for="mzWt">Projectile weight (gr)</label><input type="number" id="mzWt" min="0" inputmode="numeric"></div>'
+      +'<div class="nf"><label for="mzPatch">Patch material</label><input type="text" id="mzPatch" maxlength="24"></div>'
+      +'<div class="nf"><label for="mzPatchT">Patch thickness</label><input type="text" id="mzPatchT" maxlength="12"></div>'
+      +'<div class="nf"><label for="mzLube">Lube</label><input type="text" id="mzLube" maxlength="24"></div>'
+      +'<div class="nf wide"><label for="mzWads">Wads / over-powder card / cushion wad</label><input type="text" id="mzWads" maxlength="60"></div>'
+      +'<div class="nf"><label for="mzIgn">Ignition</label><select id="mzIgn">'+mzKegOpts(MZ_IGN)+'</select></div>'
+      +'<div class="nf"><label for="mzNipple">Nipple / vent liner</label><input type="text" id="mzNipple" maxlength="40" ></div>'
+      +'</div>'
+      +'<div class="lmsg" id="mzMsg"></div>'
+      +'<button class="btn sm primary" id="mzSave" style="margin-top:9px">Save load</button></div>';
+    /* ---- nipple / vent service, tracked separately from a load ---- */
+    const svc=all.filter(l=>l.kind==="service");
+    h+='<div class="lifebox"><div class="lrow"><span class="lt">Nipple / vent service</span>'
+      +'<span class="lv">'+(svc.length?svc.length+' record'+(svc.length===1?'':'s'):'none')+'</span></div>'
+      +'<div class="lmsg">Condition and replacement, tracked over time — the part that decides whether it fires at all.</div>'
+      +'<div class="nfagrid"><div class="nf wide"><label for="mzSvcNote">What was done</label>'
+      +'<input type="text" id="mzSvcNote" maxlength="80"></div></div>'
+      +'<button class="btn sm" id="mzSvcAdd" style="margin-top:8px">Record service</button>';
+    svc.slice(0,6).forEach(function(s){
+      h+='<div class="benchrow"><div class="bi"><div class="bn">'+esc(s.note||"service")+'</div>'
+        +'<div class="bs">'+fmtDate(s.ts)+'</div></div></div>';
+    });
+    h+='</div>';
+    /* ---- the loads, each with its per-string results ---- */
+    const loads=all.filter(l=>l.kind!=="service");
+    h+='<div class="lifebox"><div class="lrow"><span class="lt">Loads</span><span class="lv">'
+      +(loads.length?loads.length:'none')+'</span></div>';
+    if(!loads.length) h+='<div class="lmsg">Nothing recorded yet.</div>';
+    loads.forEach(function(L,i){
+      h+='<div class="benchrow"><div class="bi"><div class="bn">'+esc(L.name||"Load")+'</div>'
+        +'<div class="bs">'+esc(L.powder||"—")+' · '+(L.charge!=null?esc(String(L.charge)):"—")
+        +' <b>'+esc(L.measure||"NO MEASURE")+'</b>'
+        +(L.proj?' · '+esc(L.proj):'')+(L.dia?' · '+esc(L.dia):'')+(L.wt?' · '+esc(String(L.wt))+' gr':'')
+        +(L.ign?' · '+esc(L.ign):'')+'</div>'
+        +(L.results&&L.results.length?'<div class="bs">'+L.results.length+' string'+(L.results.length===1?'':'s')+' recorded</div>':'')
+        +'</div><button class="magbtn" data-mzres="'+i+'">Log string</button></div>';
+      (L.results||[]).slice(0,4).forEach(function(r){
+        h+='<div class="lmsg" style="padding-left:10px">'+fmtDate(r.ts)
+          +(r.group?' · group '+esc(String(r.group)):'')
+          +(r.vel?' · '+esc(String(r.vel))+' fps':'')
+          +(r.misfires?' · '+esc(String(r.misfires))+' misfire(s)':'')
+          +(r.hang?' · '+esc(String(r.hang))+' hangfire(s)':'')
+          +(r.capfail?' · '+esc(String(r.capfail))+' cap failure(s)':'')
+          +(r.fouling?' · fouling: '+esc(r.fouling):'')+'</div>';
+      });
+    });
+    h+='</div>';
+    body.innerHTML=h;
+    const val=id=>{ const e=document.getElementById(id); return e?e.value.trim():""; };
+    const num=id=>{ const v=parseFloat(val(id)); return isFinite(v)?v:null; };
+    document.getElementById("mzSave").onclick=function(){
+      const msg=document.getElementById("mzMsg");
+      const charge=num("mzCharge"), measure=val("mzMeasure");
+      /* ⛔ THE RULED REFUSAL: a charge without its measure is meaningless. */
+      if(charge!=null && !measure){
+        msg.textContent="Charge needs its measure — black powder is measured by volume and substitutes do not match by weight. A charge with no measure cannot be read back.";
+        msg.style.color="var(--safe-red)";
+        return;
+      }
+      const rec={id:"mz_"+Date.now().toString(36), fid:f.id, ts:Date.now(), kind:"load",
+        name:val("mzName"), powder:val("mzPowder"), charge:charge, measure:measure,
+        proj:val("mzProj"), dia:val("mzDia"), wt:num("mzWt"),
+        patch:val("mzPatch"), patchT:val("mzPatchT"), lube:val("mzLube"),
+        wads:val("mzWads"), ign:val("mzIgn"), nipple:val("mzNipple"), results:[]};
+      const l=mzKegGet(); l.unshift(rec); mzKegSave(l);
+      mzKegRender(f);
+    };
+    document.getElementById("mzSvcAdd").onclick=function(){
+      const note=val("mzSvcNote"); if(!note) return;
+      const l=mzKegGet();
+      l.unshift({id:"mzs_"+Date.now().toString(36), fid:f.id, ts:Date.now(), kind:"service", note:note});
+      mzKegSave(l); mzKegRender(f);
+    };
+    body.querySelectorAll("[data-mzres]").forEach(function(b){
+      b.onclick=function(){
+        const idx=+b.dataset.mzres;
+        const mine=mzKegGet().filter(x=>x.fid===f.id && x.kind!=="service");
+        const target=mine[idx]; if(!target) return;
+        const all2=mzKegGet();
+        const rec=all2.filter(x=>x.id===target.id)[0]; if(!rec) return;
+        if(!Array.isArray(rec.results)) rec.results=[];
+        rec.results.unshift({ts:Date.now(), group:null, vel:null, misfires:0, hang:0, capfail:0, fouling:""});
+        mzKegSave(all2); mzKegRender(f);
+      };
+    });
+  }
+  /* relabel + reroute the Ammo Performance button on a muzzleloader */
+  function mzKegWireButton(f){
+    const b=document.getElementById("ammoBtn"); if(!b) return;
+    if(isMuzzleloader(f)){
+      b.textContent="The Keg";
+      b.onclick=function(){ const f2=byId(activeId); if(f2){ mzKegRender(f2); show("scr-mzkeg"); } };
+    } else {
+      b.textContent="Ammo Performance";
+      b.onclick=null;   /* the original delegated listener still applies */
+    }
+  }
+
   /* spec card rides the detail render; suppressors keep their own variant */
   const benchPrevRenderDetail_v18=renderDetail;
   renderDetail=function(){
@@ -12214,6 +12391,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     renderRecallBanner(f);
     renderDeepOutcome(f);
     renderFoulClock(f);
+    mzKegWireButton(f);
     const box=document.getElementById("specBox"); if(!box) return;
     const isSupp=(typeof benchIsSuppressor==="function") && benchIsSuppressor(f);
     if(isSupp){ box.style.display="none"; return; }
