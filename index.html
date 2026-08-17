@@ -5132,7 +5132,20 @@
     const btn=document.getElementById("removeBtn");
     if(removeArmed){
       clearTimeout(removeArmed); removeArmed=null;
-      const gone=byId(activeId); if(gone) deleteStampStorage(gone);   /* no orphaned stamp files */
+      const gone=byId(activeId);
+      if(gone) deleteStampStorage(gone);   /* no orphaned stamp files */
+      /* ⛔ ORPHANED ATTACHMENTS (Darren item 2026-08-16). This handler used to
+         delete the STAMP only — its own comment said "no orphaned stamp files",
+         and that was the whole of it. Everything else the firearm owned (its
+         hero art, work photos, spec and NFA documents, and anything parented to
+         its mags, zeros or service records) stayed in fs_attachments with its
+         files still on disk, pointing at a record that no longer existed.
+         Measured on the tablet: 11 registry rows for a safe holding ONE firearm
+         with 3 — 8 orphans, spanning three deleted firearms.
+         This is a PRIVACY defect before it is a storage one: a user who deletes
+         a firearm expects its photos gone. Deleting the record while keeping
+         the pictures is the opposite of what the action promises. */
+      if(gone) deleteAttachmentsFor(gone);
       safe=safe.filter(x=>x.id!==activeId); saveSafe(); activeId=null;
       btn.textContent="Remove from safe"; btn.style.color="";
       renderSafe(); show("scr-safe");
@@ -7384,6 +7397,17 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      count, which is what made a suppressor claim 11 files that were not its.
      Ammo receipts are parented to Locker records and belong to no firearm;
      they count on the global Bench and are excluded from a scoped one. */
+  /* every attachment-parent id a single firearm owns. ⛔ ONE DEFINITION, used
+     by BOTH the scoped Bench count AND the delete-on-removal sweep — if those
+     two ever disagree about what a firearm owns, one of them silently strands
+     or silently destroys files. */
+  function attOwnedIds(f){
+    const ids=[f.id];
+    (f.mags||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
+    (f.zeros||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
+    (f.service||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
+    return ids;
+  }
   function benchAttOwners(list){
     const m=new Map();
     (list||safe).forEach(f=>{
@@ -7394,6 +7418,21 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       (f.service||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"service"}); });
     });
     return m;
+  }
+  /* delete every attachment a firearm owns, files and registry rows alike.
+     Fire-and-forget by design: removal must not block on the filesystem, and a
+     file that fails to unlink still loses its registry row rather than leaving
+     a half-deleted record visible in the UI. */
+  function deleteAttachmentsFor(f){
+    try{
+      const owned=new Set(attOwnedIds(f));
+      const reg=BenchAttach.readReg(BenchEnv.store);
+      const mine=reg.filter(a=>a && a.parent && owned.has(a.parent.id));
+      mine.forEach(a=>{
+        try{ BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), a.id); }catch(e){}
+      });
+      return mine.length;
+    }catch(e){ return 0; }
   }
   function benchScopedAtt(){
     const reg=BenchAttach.readReg(BenchEnv.store);
