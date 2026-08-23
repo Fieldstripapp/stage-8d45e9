@@ -997,15 +997,25 @@
            they moved under the Bench and ONE row replaces them — and that row
            NAMES what is inside it, because a thing that disappears must say
            where it went. -->
-      <button class="btn primary full" id="addBtn">+ Add Firearm</button>
+      <!-- ⛔ WALK ITEMS 2, 3 AND 4 (Darren, 2026-08-23), and item 2 REVERSES what
+           vC34 built from his earlier words. He said the collection comes first
+           and Add Firearm / Add Suppressor go to the BOTTOM; vC34 read that as
+           priority and left the add buttons on top. He looked at the built
+           version and ruled the literal reading: THE COLLECTION IS THE SCREEN,
+           and the two ways to grow it sit under it.
+           ⛔ ITEM 3: The Bench row is GONE from this screen. "It is firearm
+           specific only" — the Bench is reached from a firearm, never from the
+           safe. Removing it, not hiding it: a hidden row is a row someone
+           re-enables by accident.
+           ⛔ ITEM 4: Ammo Locker takes the same `primary` class as the buttons
+           around it. It was the only plain `btn` on the screen, which is why it
+           read grey against three amber neighbours. Shared token, not a
+           hand-painted one-off. -->
+      <div id="safeList"></div>
+      <button class="btn primary full" id="addBtn" style="margin-top:14px">+ Add Firearm</button>
       <button class="btn primary full" id="addSupBtn" style="margin-top:8px">+ Add Suppressor</button>
-      <button class="btn full" id="lockerSafeBtn" style="margin-top:8px">Ammo Locker</button>
-      <div id="safeList" style="margin-top:14px"></div>
+      <button class="btn primary full" id="lockerSafeBtn" style="margin-top:8px">Ammo Locker</button>
       <div class="spacer"></div>
-      <!-- the row's contents line is DERIVED from the Bench's own card labels at
-           render time (benchSafeRow), never typed — a typed list is the thing
-           that goes stale the first time a card is added or renamed. -->
-      <button class="prorow" id="safeBenchRow" style="margin-top:12px"><b>The Bench</b></button>
       <button class="prorow" id="proRow" hidden></button>
     </div>
   </section>
@@ -4490,7 +4500,12 @@
        everything else the row stays with a lock tag and the stored record count.
        f.zeros is never trimmed, so a lapsed Pro gets its zeros back on re-upgrade. */
     const zeroLocked = !isNFA && !isPro();
-    document.getElementById("zeroBox").style.display=(isNFA||zeroLocked)?"none":"block";
+    /* ⛔ WALK ITEM 7: the Zero Record card moved to the Bench. This render must
+       not reach across and set display on a node the Bench now owns — that is a
+       last-writer-wins race with the Bench's own seating, the same class V17
+       item 7 closed for care/svc. Touch it only while it is still ours. */
+    const zbxDet=document.getElementById("zeroBox");
+    if(zbxDet && zbxDet.closest("#scr-detail")) zbxDet.style.display=(isNFA||zeroLocked)?"none":"block";
     document.getElementById("proZeroLock").style.display=zeroLocked?"block":"none";
     if(zeroLocked){
       const n=(f.zeros||[]).length;
@@ -4498,7 +4513,7 @@
         (n ? `${n} ${n===1?"zero":"zeros"} already recorded and still stored — unlock to view and log more. ` : "")
         + "Where this firearm is zeroed, with what ammo — so a re-zero after optic work starts from facts, not memory. Part of Fieldstrip Pro.";
     }
-    if(!isNFA && !zeroLocked) renderZero(f);
+    if(!isNFA && !zeroLocked && zbxDet && zbxDet.closest("#scr-detail")) renderZero(f);
 
     const g=document.getElementById("guideBtn");
     const gk=fkey(f);
@@ -6495,7 +6510,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const gun=activeGuide();
     document.getElementById("cleanIntro").textContent=gun.cleanIntro;
     cleanList.innerHTML="";
-    gun.cleaning.forEach((comp,ci)=>{
+    /* ⛔ THREE GUIDES HAVE NO CLEANING ARRAY AND THIS LINE USED TO THROW.
+       Ruger Security-9, Ruger Security-380 and Rock Island VR80 publish a
+       field strip and no cleaning procedure, so nothing could be cited and
+       nothing was authored — which is correct. What was NOT correct is that
+       `gun.cleaning.forEach` then threw TypeError inside a click handler, so
+       START CLEANING silently did nothing and the walk dead-ended on its last
+       step. Found by CASE E of repro_clean_nothing.js, 2026-08-23.
+       Absence renders as absence: no groups, no card, no apology. */
+    (gun.cleaning||[]).forEach((comp,ci)=>{
       const wrap=document.createElement("div");
       wrap.className="comp"+(ci===0?" open":"");
       const doneCount=()=>wrap.querySelectorAll(".task.done").length;
@@ -57903,18 +57926,25 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchShowBox(f, id){
     const h=benchHiddenList(f);
     const i=h.indexOf(id);
-    if(i>=0){ h.splice(i,1); if(!h.length && !benchCollapsedList(f).length) delete f.layout; saveSafe(); }
+    if(i>=0){ h.splice(i,1); if(!h.length && !benchExpandedList(f).length) delete f.layout; saveSafe(); }
     renderDetail();
   }
   /* A2: collapse state, per firearm, alongside hidden in f.layout. Collapsing is
      a VIEW state and never touches records — same contract as hiding. */
-  function benchCollapsedList(f){ return (f.layout && Array.isArray(f.layout.collapsed)) ? f.layout.collapsed : []; }
+  /* ⛔ WALK ITEM 6, the firearm-page half. Same inversion, same reasoning, and
+     deliberately the same shape as the Bench's: the stored array is what the
+     owner has EXPANDED, on a new key, so no saved preference is reinterpreted.
+     Two systems and no per-card list anywhere — BENCH_BOXES drives one and
+     BENCH_CARD_LABELS the other, which is what makes this derived rather than a
+     list of card names somebody has to remember to extend. */
+  function benchExpandedList(f){ return (f.layout && Array.isArray(f.layout.expanded)) ? f.layout.expanded : []; }
   function benchToggleCollapsed(f, id){
     if(!f.layout) f.layout={hidden:[]};
-    if(!Array.isArray(f.layout.collapsed)) f.layout.collapsed=[];
-    const c=f.layout.collapsed, i=c.indexOf(id);
+    if(!Array.isArray(f.layout.expanded)) f.layout.expanded=[];
+    const c=f.layout.expanded, i=c.indexOf(id);
     if(i>=0) c.splice(i,1); else c.push(id);
-    if(!c.length && !benchHiddenList(f).length) delete f.layout;
+    if(!c.length) delete f.layout.expanded;      /* all shut is the default */
+    if(!benchExpandedList(f).length && !benchHiddenList(f).length && !(f.layout&&f.layout.order)) delete f.layout;
     saveSafe(); renderDetail();
   }
   let benchHiddenOpen=false;
@@ -57999,7 +58029,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           chev.className="bcchev"; chev.textContent="▾";
           head.insertBefore(chev, head.firstChild);
         }
-        el.classList.toggle("bcclosed", benchCollapsedList(f).indexOf(def.id)>=0);
+        el.classList.toggle("bcclosed", benchExpandedList(f).indexOf(def.id)<0);
         head.onclick=e=>{
           if(e.target.closest(".boxhide")) return;
           const f2=byId(activeId); if(!f2) return;
@@ -58204,7 +58234,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        turn each time so the motion reads mechanical */
     const target=-digit*36;
     const cur=((sdState.rot%360)+360)%360;
-    let delta=((target - -cur)%360+360)%360;   /* cw delta to land digit at 12 o'clock */
+    /* ⛔ WALK ITEM 1 (Darren, 2026-08-23): "press 1 and the dial travels to 5".
+       This line read `target - -cur` — a double negative, so it ADDED the
+       current rotation instead of subtracting it. The error is 2×cur, which is
+       zero on the very first press and wrong on every press after it: the dial
+       agreed with the first digit and then drifted further away with each one.
+       Correct cw delta from where the disc IS to where the digit must land. */
+    let delta=((target - cur)%360+360)%360;   /* cw delta to land digit at 12 o'clock */
     if(idx%2===0){ sdState.rot+=delta+ (delta<180?360:0); }
     else { sdState.rot-=(360-delta)+((360-delta)<180?360:0); }
     const disc=document.getElementById("sdDisc");
@@ -59300,20 +59336,34 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchBHidden(){ const o=benchLayoutGet(); return Array.isArray(o.hidden)?o.hidden:[]; }
   function benchBHide(id){ const o=benchLayoutGet(); if(!Array.isArray(o.hidden)) o.hidden=[]; if(o.hidden.indexOf(id)<0) o.hidden.push(id); benchLayoutSave(o); renderBench(); }
   function benchBShow(id){ const o=benchLayoutGet(); const h=Array.isArray(o.hidden)?o.hidden:[]; const i=h.indexOf(id); if(i>=0){ h.splice(i,1); o.hidden=h; benchLayoutSave(o); } renderBench(); }
-  /* V17 item 3a: collapse state PERSISTS per card on the existing layout key —
-     first-ever open is all-expanded, then curate once, stays curated. */
+  /* ⛔ WALK ITEM 6 (Darren, 2026-08-23): EVERY OPTION BOX SHIPS COLLAPSED,
+     APP-WIDE. This inverts V17 item 3a, which shipped every card expanded and
+     asked the owner to curate a wall of open cards down to the few he wanted.
+     ⛔ THE STORED LIST NOW HOLDS WHAT IS EXPANDED, NOT WHAT IS COLLAPSED, and
+     it lives on a NEW key. Reusing `collapsed` and flipping its meaning would
+     have silently inverted every preference already saved on a device — the
+     cards a person deliberately shut would have been the only ones open.
+     `collapsed` is left untouched and unread; nothing migrates and nothing is
+     deleted.
+     Two consequences fall out for free, which is why this is the right shape:
+     a card the owner expands is recorded and stays expanded, and
+     FULLY-COLLAPSED IS NOW THE DEFAULT — an empty list — so it is transient and
+     never saved, exactly as ruled. The old guard that had to detect and erase a
+     fully-collapsed state is gone with the state it policed. */
   let benchBOpen={};                     /* session-only extras (the hidden-row disclosure) */
-  function benchBCollapsed(){ const o=benchLayoutGet(); return Array.isArray(o.collapsed)?o.collapsed:[]; }
+  function benchBExpanded(){ const o=benchLayoutGet(); return Array.isArray(o.expanded)?o.expanded:[]; }
   function benchBSetCollapsed(id, closed){
     const o=benchLayoutGet();
-    if(!Array.isArray(o.collapsed)) o.collapsed=[];
-    const i=o.collapsed.indexOf(id);
-    if(closed && i<0) o.collapsed.push(id);
-    if(!closed && i>=0) o.collapsed.splice(i,1);
+    if(!Array.isArray(o.expanded)) o.expanded=[];
+    const i=o.expanded.indexOf(id);
+    if(!closed && i<0) o.expanded.push(id);
+    if(closed && i>=0) o.expanded.splice(i,1);
+    if(!o.expanded.length) delete o.expanded;   /* all shut is the default, not a saved state */
     benchLayoutSave(o);
   }
   /* V21: ONE Bench selection. These four move together — see benchSelect(). */
   let benchCareTargetId=null, benchSvcTargetId=null, benchNfaTargetId=null, benchMagTargetId=null;
+  let benchZeroTargetId=null, benchRoundsTargetId=null;   /* walk items 7 and 8 */
   /* Picking an item in the Bench points EVERY seated card at it and syncs
      activeId, because the handlers inside those cards resolve their firearm
      through byId(activeId). One selection keeps read and WRITE on the same
@@ -59321,6 +59371,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      whatever was last opened. */
   function benchSelect(id){
     benchCareTargetId=benchSvcTargetId=benchNfaTargetId=benchMagTargetId=id||null;
+    benchZeroTargetId=benchRoundsTargetId=id||null;
     if(id && byId(id)) activeId=id;
   }
 
@@ -59330,12 +59381,17 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const d=document.createElement("div");
     d.id="benchHoldPen"; d.style.display="none";
     document.body.appendChild(d);
-    ["careBox","svcBox","nfaBox","magBox"].forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.display=""; d.appendChild(el); } });
+    /* ⛔ WALK ITEMS 7 AND 8 (Darren, 2026-08-23) add zeroBox and roundsBox.
+       ⚠ vC34 measured both as "already true" because it read "home screen" as
+       the SAFE screen. He meant the FIREARM page, and that is where both still
+       were. They move by the same mechanism as the four before them — the same
+       DOM nodes, same wiring, same look — never copies. */
+    ["careBox","svcBox","nfaBox","magBox","zeroBox","roundsBox"].forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.display=""; d.appendChild(el); } });
     return d;
   })();
   /* the detail card system forgets them (no corner-x slots on a moved card) */
   (function(){
-    ["careBox","svcBox","nfaBox","magBox"].forEach(id=>{
+    ["careBox","svcBox","nfaBox","magBox","zeroBox","roundsBox"].forEach(id=>{
       const i=BENCH_BOXES.findIndex(b=>b.id===id);
       if(i>=0) BENCH_BOXES.splice(i,1);
     });
@@ -59576,7 +59632,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         + `<div class="css">nothing deleted</div></div>`
         + `<button class="magbtn" type="button" data-bshow="${id}">Show</button></div>`;
     }
-    const open=benchBCollapsed().indexOf(id)<0;   /* item 3a: expanded until curated */
+    const open=benchBExpanded().indexOf(id)>=0;   /* item 6: shut until the owner opens it */
     const chipHtml=(chips||[]).map(c=>`<span class="statuschip ${c.cls}">${c.label}</span>`).join("");
     return `<div class="lifebox benchcard${open?"":" closed"}" id="${id}" data-bc="1">
       <div class="lrow bc-h" data-bch="${id}"><span class="lt"><span class="bcchev">▾</span>${title}</span><span class="bcvitals"><span class="lv">${val}</span>${chipHtml}</span></div>
@@ -59594,31 +59650,21 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       benchPrevRenderBench_v16locked();
       return;
     }
-    /* ⛔ ITEM 0 FORWARD FIX (Darren 2026-08-16, "ZERO cards under the Bench open").
-       DIAGNOSED ON DEVICE, NOT GUESSED: there is no exception — cards render,
-       wire and toggle correctly. The cause is "Collapse all", whose state
-       PERSISTS in fs_bench_layout.collapsed and survives leaving and re-entering
-       the Bench. One tap therefore leaves every card shut, for good, and the
-       Bench reads as broken. My own change made it worse: NFA and Magazines now
-       live ONLY in these cards, so a collapsed card hides working UI that has no
-       other home. Fix forward, not revert: a fully-collapsed Bench is treated as
-       a transient view, never a saved state — partial collapse still persists. */
-    (function(){
-      const hidden=benchBHidden();
-      const live=Object.keys(BENCH_CARD_LABELS).filter(id=>hidden.indexOf(id)<0);
-      const col=benchBCollapsed();
-      if(live.length && live.every(id=>col.indexOf(id)>=0)){
-        const o=benchLayoutGet(); o.collapsed=[]; benchLayoutSave(o);
-      }
-    })();
+    /* ⛔ THE vC "Collapse all sticks forever" GUARD IS RETIRED WITH ITEM 6.
+       It existed because a fully-collapsed Bench persisted and read as broken.
+       Fully collapsed is now the DEFAULT and stores nothing, so there is no
+       stuck state left to detect. Deleted rather than left inert: a guard that
+       can never fire is furniture, and furniture reads as coverage. */
     benchHoldPen.appendChild(document.getElementById("careBox"));   /* reclaim before innerHTML wipe */
     benchHoldPen.appendChild(document.getElementById("svcBox"));
     benchHoldPen.appendChild(document.getElementById("nfaBox"));
     benchHoldPen.appendChild(document.getElementById("magBox"));
+    benchHoldPen.appendChild(document.getElementById("zeroBox"));    /* item 7 */
+    benchHoldPen.appendChild(document.getElementById("roundsBox"));  /* item 8 */
     const c=benchCollect();
     const totMags=c.fleets.reduce((a,g)=>a+g.mags.length,0);
     let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">${benchScopeId&&byId(benchScopeId)?esc(faInfo(byId(benchScopeId)).name)+" \u2014 this item only.":"Your whole inventory, without going through a firearm."}</div></div>`;
-    h+=`<div class="benchbar"><button id="benchToggleAll" type="button">${benchBCollapsed().length?"Expand all":"Collapse all"}</button></div>`;
+    h+=`<div class="benchbar"><button id="benchToggleAll" type="button">${benchBExpanded().length?"Collapse all":"Expand all"}</button></div>`;
     if(c.overdue.length){
       h+=`<div class="lifebox warn"><div class="lrow"><span class="lt">Needs attention</span><span class="lv" style="color:var(--safe-red)">${c.overdue.length} item${c.overdue.length===1?"":"s"}</span></div>`;
       c.overdue.slice(0,6).forEach(o=>{
@@ -59651,6 +59697,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         const rpy=(f.totalRounds||0)?Math.round((f.totalRounds||0)/yrs):0;
         stb+=`<div class="benchrow" data-nav="${f.id}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${fmtN(f.totalRounds||0)} lifetime${(f.totalRounds||0)?` · ~${fmtN(rpy)}/year`:""}</div></div><span class="lv">${fmtN(f.totalRounds||0)}</span></div>`;
       });
+      /* ⛔ ITEM 8: Log Range Session moves off the firearm page and seats
+         inside Round Counts, which is the card it feeds. Same node, same
+         chips, same custom-count field — moved, not rebuilt. */
+      const roundGuns=benchScopedSafe();
+      stb+=`<div class="lmsg" style="margin-top:10px">Pick a firearm — log a range session against it here.</div>`;
+      roundGuns.forEach(f=>{
+        stb+=`<div class="benchrow${benchRoundsTargetId===f.id?" on":""}" data-roundsel="${f.id}" style="${benchRoundsTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${fmtN(f.totalRounds||0)} lifetime</div></div></div>`;
+      });
+      if(!roundGuns.length) stb+=`<div class="lmsg">Nothing in view to log against.</div>`;
+      stb+=`<div id="benchRoundsHost"></div>`;
       h+=benchCard("bcStats","Round Counts", fmtN(totalAll)+" rds", stb);
     })();
     /* NFA */
@@ -59704,6 +59760,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     c.zeros.slice(0,5).forEach(x=>{
       zb+=`<div class="benchrow" data-nav="${(x.z&&x.z.fid)||""}"><div class="bi"><div class="bn">${esc(x.name)} · ${x.z.dist} ${esc(x.z.unit)}</div><div class="bs">${fmtDate(x.z.ts)} · ${esc(x.z.ammo||"—")}${x.z.lot?` · lot ${esc(x.z.lot)}`:""}${(x.z.photoBefore||x.z.photoAfter)?" · target photos":""}</div></div></div>`;
     });
+    /* ⛔ ITEM 7: the firearm page's own Zero Record card seats here, under the
+       same pick-a-firearm pattern Care Reminders and Magazines already use. */
+    const zeroGuns=benchScopedSafe();
+    zb+=`<div class="lmsg" style="margin-top:10px">Pick a firearm — its zero card opens below, exactly as it lived on the firearm page.</div>`;
+    zeroGuns.forEach(f=>{
+      const zn=(f.zeros||[]).length;
+      zb+=`<div class="benchrow${benchZeroTargetId===f.id?" on":""}" data-zerosel="${f.id}" style="${benchZeroTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${zn?`${zn} zero${zn===1?"":"s"}`:"no zeros yet"}</div></div></div>`;
+    });
+    if(!zeroGuns.length) zb+=`<div class="lmsg">Nothing in view to zero.</div>`;
+    zb+=`<div id="benchZeroHost"></div>`;
     h+=benchCard("bcZeros","Zero Records", c.zeros.length||"none", zb);
     /* Care Reminders — the moved card lives here (item 5) */
     const careDue=c.care.filter(x=>x.s.due).length;
@@ -59762,13 +59828,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       card.classList.toggle("closed", nowClosed);
       benchBSetCollapsed(id, nowClosed);
       const tb=document.getElementById("benchToggleAll");
-      if(tb) tb.textContent=benchBCollapsed().length?"Expand all":"Collapse all";
+      if(tb) tb.textContent=benchBExpanded().length?"Collapse all":"Expand all";
     }));
     (function(){
       const tb=document.getElementById("benchToggleAll"); if(!tb) return;
       tb.addEventListener("click",()=>{
         const ids=Object.keys(BENCH_CARD_LABELS).filter(id=>document.getElementById(id));
-        const collapse=benchBCollapsed().length===0;   /* all open -> collapse all; else expand all */
+        const collapse=benchBExpanded().length>0;   /* anything open -> collapse all; else expand all */
         ids.forEach(id=>{ document.getElementById(id).classList.toggle("closed", collapse); benchBSetCollapsed(id, collapse); });
         tb.textContent=collapse?"Expand all":"Collapse all";
       });
@@ -59803,6 +59869,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       benchSelect(row.dataset.magsel);
       renderBench();
     }));
+    /* ⛔ ITEMS 7 AND 8 use benchSelect(), the same as every selector above it,
+       and that is deliberate rather than lazy. Both moved cards' handlers read
+       byId(activeId) internally — openSession() and the zero form both do — so
+       a target that could disagree with activeId would log the session against
+       a different firearm than the one named on screen. One Bench target keeps
+       the visible card and the record that gets written the same gun. */
+    body.querySelectorAll("[data-zerosel]").forEach(row=>row.addEventListener("click",()=>{
+      benchSelect(row.dataset.zerosel); renderBench();
+    }));
+    body.querySelectorAll("[data-roundsel]").forEach(row=>row.addEventListener("click",()=>{
+      benchSelect(row.dataset.roundsel); renderBench();
+    }));
     /* seat the moved cards for the selected items (svc: firearms only — a can's
        card lives on the can's page) */
     const careGuns=benchScopedSafe();
@@ -59824,6 +59902,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(nh && nbx && benchNfaTargetId){ nh.appendChild(nbx); nbx.style.display="block"; renderNfa(byId(benchNfaTargetId)); }
     const mh=document.getElementById("benchMagHost"), mbx=document.getElementById("magBox");
     if(mh && mbx && benchMagTargetId){ mh.appendChild(mbx); mbx.style.display="block"; renderMags(byId(benchMagTargetId)); }
+    /* ⛔ ITEMS 7 AND 8 — seat the two cards that moved this round. Their
+       handlers read byId(activeId), exactly like NFA above, so activeId follows
+       whichever of the two the owner last picked; both default to the same
+       firearm so a fresh Bench is never pointed at two different guns. */
+    const zeroSeatGuns=benchScopedSafe();
+    if(!zeroSeatGuns.some(f=>f.id===benchZeroTargetId)) benchZeroTargetId=zeroSeatGuns.length?zeroSeatGuns[0].id:null;
+    if(!zeroSeatGuns.some(f=>f.id===benchRoundsTargetId)) benchRoundsTargetId=zeroSeatGuns.length?zeroSeatGuns[0].id:null;
+    /* the renderer is renderZero (singular) — renderZeros does not exist, and a
+       `typeof … === "function"` guard around a misspelling would have seated an
+       empty card silently and looked fine. */
+    const zh=document.getElementById("benchZeroHost"), zbx=document.getElementById("zeroBox");
+    if(zh && zbx && benchZeroTargetId){ zh.appendChild(zbx); zbx.style.display="block"; renderZero(byId(benchZeroTargetId)); }
+    const rh=document.getElementById("benchRoundsHost"), rbx=document.getElementById("roundsBox");
+    if(rh && rbx && benchRoundsTargetId){ rh.appendChild(rbx); rbx.style.display="block"; }
     benchSeatAttCard();
     const be=document.getElementById("benchExport"), br=document.getElementById("benchRestore");
     if(be) be.onclick=benchDoExport;
@@ -60697,6 +60789,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     return host;
   }
   function benchMoveRowsToBench(){ benchAdoptSettingsRows(); }
+  /* ⛔ WALK ITEM 3 (Darren, 2026-08-23): the Bench row is GONE from the safe
+     screen — "it is firearm specific only". These two guards now always return
+     early, and that is deliberate: the derivation (benchSafeRowText) is left
+     intact and working so the row can come back by re-adding the element alone,
+     without anyone having to rebuild a list of card names by hand. */
   function benchSafeRow(){
     const row=document.getElementById("safeBenchRow"); if(!row) return;
     row.innerHTML=benchSafeRowText();
@@ -61291,6 +61388,28 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     show("scr-gate");
   }
 
+  /* ⛔ THE WALK ENDS WHEN THE WALK'S SCREENS ARE LEFT — DERIVED, NOT A LIST OF
+     EXIT BUTTONS. fsStart() sets FS_STRIP.on and, until this, only fsExit()
+     cleared it. curSteps() returns FS_STRIP.steps for as long as the flag is
+     set, so a walk left by the HOME button, the back chevron, or anything else
+     stayed loaded and the NEXT firearm's Guided Clean rendered the PREVIOUS
+     firearm's steps.
+     That is what Darren hit on 2026-08-23: the CZ 75 SP-01's Guided Clean read
+     "Nothing published for this one" — a complete eleven-step guide showing a
+     no-guide AR's placeholder, left behind by an earlier Field Strip walk.
+     Measured and reproduced with controls in
+     scratchpad/clean-rebuild/repro_clean_nothing.js (cases C and D).
+     ⚠ A per-button list would have rotted exactly the way rule 7 says: the
+     home button, the back chevron, the hardware back and every future exit
+     each had to remember. The SCREEN is the fact. Only the gate and the player
+     are the walk; landing anywhere else means the walk is over. */
+  show=(function(inner){
+    return function(id, push){
+      if(FS_STRIP.on && id!=="scr-gate" && id!=="scr-player") fsExit();
+      return inner.apply(this, arguments);
+    };
+  })(show);
+
   /* ---------------------------------------------------------------
      ITEM 15 — PER-STEP NOTES
      Beside the photo slot, on the same key, so a note written on a
@@ -61597,20 +61716,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   })();
 
   /* ---------------------------------------------------------------
-     ITEM 16 — deepAbsentReason RENDERS TO OWNERS
-     MEASURED FIRST: 366 guides carry a deepAbsentReason and NOTHING
-     IN THE APP READ ONE. `grep deepAbsentReason` finds 366 writes and
-     zero reads. It has been authored, gated, quote-verified and
-     shipped as dead data since e98278f1 — the owner has never seen a
-     word of it.
-     It is the answer to the question a deep-clean-less firearm page
-     raises by its silence: WHY is there nothing deeper? Every one of
-     these strings says so in the maker's own terms, with his words in
-     quotation marks where they are his.
-     ⛔ It renders where the question is asked — on the firearm's own
-     page, beside the deep-clean outcome — and only when the guide
-     genuinely has no deeper branch. A guide WITH deep steps must not
-     also explain their absence.
+     ⛔ WALK ITEM 5, 2026-08-23 — THIS REVERSES vC34's ITEM 16.
+     Darren, verbatim: "the user doesn't need to read all that. if
+     there is no deep clean there is no deep clean we don't need to
+     draw attention to it."
+     vC34 measured that 366 guides carried a deepAbsentReason nobody
+     had ever read, and rendered it. The measurement was right and the
+     conclusion was wrong: a paragraph explaining an absence IS drawing
+     attention to it, and it is longer than the thing it explains.
+     ⛔ THE DATA STAYS ON THE ROWS. All 366 strings remain authored,
+     quote-verified and gated — they are the record of WHY a guide
+     stops where it stops, and audit_citations.py still checks them.
+     They simply do not render. Absence shows as absence: no card, no
+     heading, no explanation.
+     fsDeepAbsentFor() is KEPT and still exported on FS_VC34 so the
+     harness can assert the data is intact and so a future ruling can
+     re-render it without re-deriving the rule about deepSteps. Nothing
+     builds DOM from it any more, and any box a previous render left on
+     the page is removed on sight.
      --------------------------------------------------------------- */
   function fsDeepAbsentFor(f){
     const k=(typeof fkey==="function") && fkey(f);
@@ -61619,26 +61742,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(g.deepSteps && g.deepSteps.length) return null;   /* it HAS a deeper path */
     return g.deepAbsentReason;
   }
-  function fsRenderDeepAbsent(f){
-    const det=document.querySelector("#scr-detail .detail");
-    let box=document.getElementById("fsDeepAbsentBox");
-    const why=det?fsDeepAbsentFor(f):null;
-    /* a model-wide stop-use suppresses cleaning content entirely */
-    if(!why || (typeof contentSuppressed==="function" && contentSuppressed(f))){
-      if(box) box.remove();
-      return;
-    }
-    if(!box){
-      box=document.createElement("div");
-      box.id="fsDeepAbsentBox"; box.className="lifebox";
-      const anchor=document.getElementById("logBox")||document.getElementById("removeBtn");
-      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(box, anchor);
-      else det.appendChild(box);
-    }
-    box.innerHTML='<div class="lrow"><span class="lt">Deep clean</span>'
-      + '<span class="lv">NOT PUBLISHED</span></div>'
-      + '<div class="lmsg" style="color:var(--text);white-space:pre-wrap"></div>';
-    box.querySelector(".lmsg").textContent=why;
+  function fsRenderDeepAbsent(){
+    /* ⛔ RULED OFF THE PAGE 2026-08-23. It builds nothing. The only thing it
+       still does is clear a box a previously-installed build may have left in
+       the DOM, so an upgrade in place cannot strand one on screen. */
+    const box=document.getElementById("fsDeepAbsentBox");
+    if(box) box.remove();
   }
   const fsPrevRenderDetail_16=renderDetail;
   renderDetail=function(){
@@ -61660,7 +61769,25 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     montageLabel(k){ return (MONTAGE_SETS[k]||{}).label||null; },
     noteKey(f,i){ return fsNoteKey(f,i); },
     hasMags(f){ return hasMags(f); },
-    fkey(f){ return fkey(f); }
+    fkey(f){ return fkey(f); },
+    /* READ-ONLY EVIDENCE ACCESSORS (2026-08-23, the clean-gap measurement).
+       The app is an IIFE, so a harness cannot see CATALOG or GUNS from
+       outside; a measurement that cannot read the app's OWN resolution ends
+       up measuring the spec files instead, which is not what an owner meets.
+       These copy out shapes and counts only — nothing here is writable and
+       nothing here renders. */
+    catalogIds(){ return CATALOG.map(c=>c.i); },
+    guideShape(k){
+      const g=GUNS[k]; if(!g) return null;
+      const ph={}; (g.steps||[]).forEach(s=>{ ph[s.phase]=(ph[s.phase]||0)+1; });
+      return {steps:(g.steps||[]).length, phases:ph,
+              deep:(g.deepSteps||[]).length,
+              cleaning:(g.cleaning||[]).length,
+              tasks:(g.cleaning||[]).reduce((a,c)=>a+((c.tasks||[]).length),0),
+              reassembly:(g.reassembly||[]).length,
+              cleanIntro:!!g.cleanIntro,
+              layerMode:!!g.layerMode};
+    }
   };
 
   /* boot */
