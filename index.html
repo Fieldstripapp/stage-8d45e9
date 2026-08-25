@@ -196,6 +196,9 @@
      line instead of disappearing. */
   .heroacts-row{flex-wrap:wrap}
   .heroacts-row .btn{flex:1 1 auto;min-width:calc(50% - 5px)}
+  /* vC34.1: THE ONE DOOR sits UNDER the two actions, full width, on its own row. */
+  .heroacts-door{margin-top:10px}
+  .heroacts-door .btn{width:100%}
   /* v12 item 2: the maintenance log is a card like every other card */
   .logbox{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:14px;position:relative}
   .logbox .lt{font-family:var(--display);font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
@@ -434,6 +437,10 @@
      + tighter padding only in this state; 2-button rows are untouched. */
   .controls.three{gap:8px}
   .controls.three .btn{flex:1 1 0;min-width:0;padding:12px 10px;font-size:12px;letter-spacing:1px}
+  /* vC34.1: at the fork there is no "next" — the choice IS the next move, so
+     nextBtn is withdrawn. .btn sets no display of its own, but the rule is that
+     anything toggled by [hidden] says so explicitly rather than relying on it. */
+  .controls .btn[hidden]{display:none!important}
   .controls .primary{flex:1}
 
   /* ---------- CLEANING ---------- */
@@ -838,6 +845,11 @@
   .fsbar .fsStop{color:var(--amber);font-size:12.5px;line-height:1.5;margin-bottom:8px}
   .fsbar .fsYours{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:8px}
   .fsbar .fsActs{display:flex;gap:8px;flex-wrap:wrap}
+  /* vC34.1: THE FORK. Two choices, equal weight, side by side — "Clean it" and
+     "Reassemble". It is rendered ONLY where the maker published a clean; where
+     he did not there is no fork and no card explaining the absence. */
+  .fsbar .fsFork{display:flex;gap:10px;margin:2px 0 12px}
+  .fsbar .fsFork .btn{flex:1 1 0;min-width:0}
   .fsbar .fsAddWrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .fsbar .fsAddIn{flex:1;min-width:150px;background:var(--panel2);color:var(--text);border:1px solid var(--edge);
     border-radius:8px;padding:9px;font-family:var(--body);font-size:14px}
@@ -1265,8 +1277,10 @@
         <div class="lt">Ammo intel — this firearm</div>
         <div id="intelRows"></div>
       </div>
+      <!-- vC34.1 (Darren ruling, THE ONE DOOR): "Clean — Guided" is DELETED, not
+           hidden. Log Cleaning and The Bench are the two actions; FIELDSTRIP is
+           the single full-width door beneath them, mounted by walkMountDoor(). -->
       <div class="actions">
-        <button class="btn primary" id="guideBtn">Clean — Guided</button>
         <button class="btn" id="quickClean">Log Cleaning</button><!-- v15 item 5: renamed everywhere -->
       </div>
       <button class="btn full" id="reqSupportBtn" hidden style="margin-top:8px">Request official support</button>
@@ -4515,20 +4529,10 @@
     }
     if(!isNFA && !zeroLocked && zbxDet && zbxDet.closest("#scr-detail")) renderZero(f);
 
-    const g=document.getElementById("guideBtn");
-    const gk=fkey(f);
-    if(f.custom){
-      /* tracker-only custom (no assigned family / not Pro) hides the guide button entirely */
-      g.style.display = gk ? "" : "none";
-      g.textContent = "Clean — Guided";
-      g.disabled = !gk;
-    } else {
-      /* V16: fkey's universal fallback means gk is always truthy for catalog rows —
-         the old "Coming Soon" branch is dead and its wording is barred anyway. */
-      g.style.display = "";
-      g.textContent = "Clean — Guided";
-      g.disabled = !gk;
-    }
+    /* ⛔ vC34.1: the Clean — Guided button and everything that painted it are
+       DELETED. FIELDSTRIP is present on every firearm, guide or no guide, so
+       there is nothing here to show, hide or disable. PRO #8 is untouched: a
+       free custom still resolves no guide key, so its walk is its own steps. */
 
     const ll=document.getElementById("logList");
     ll.innerHTML="";
@@ -5225,7 +5229,8 @@
       removeArmed=setTimeout(()=>{ removeArmed=null; btn.textContent="Remove from safe"; btn.style.color=""; },4000);
     }
   });
-  document.getElementById("guideBtn").addEventListener("click",()=>{ buildGate(); show("scr-gate"); });
+  /* vC34.1: the guideBtn listener is deleted with the button. The only listener
+     that opens a walk is on FIELDSTRIP, in walkMountDoor(). */
 
   /* =============== AMMO PERFORMANCE =============== */
   const alphaSort=arr=>{
@@ -6365,7 +6370,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* =============== STEP PLAYER =============== */
   const progressEl=document.getElementById("progress");
   const stepInfo=document.getElementById("stepInfo");
-  let stepIndex=0, branched=false;
+  /* ⛔ vC34.1: `branched` IS GONE. It was the SECOND walk's state, living in a
+     different scope from the first walk's state, and no exit ever cleared both.
+     Deep Clean is now WALK.deep — a field of the one state object, blanked by
+     the one factory, so it cannot survive an exit by being forgotten. */
+  let stepIndex=0;
   const activeGuide=()=> GUNS[fkey(byId(activeId))];
   /* v13 ruling 4 (2026-08-14): STEP-1 SAFETY CARRIES INTO DEEP CLEAN — the deep
      branch opens with an engine-synthesized safety re-verify step; safety rides
@@ -6393,19 +6402,35 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      `map` carries each live index back to the guide's OWN step index, so a
      photo or a note taken on the Clean path is the same photo and the same note
      here — benchStepArtKey and the note key both read origStepIndex. */
-  const FS_STRIP={on:false, steps:[], map:[]};
-  function origStepIndex(i){
-    if(FS_STRIP.on) return FS_STRIP.map[i]!=null ? FS_STRIP.map[i] : -1;
-    const g=activeGuide();
-    if(!(branched&&g.deepSteps)) return i;
-    const b=g.steps.length;            /* the synthetic step's live index */
-    return i===b ? -1 : (i>b ? i-1 : i);
-  }
+  /* ⛔⛔ vC34.1 — ONE WALK STATE MACHINE (Darren ruling, THE ONE DOOR).
+     THE WHOLE OF THE WALK'S STATE IS THIS OBJECT, AND WALK_BLANK() IS THE ONLY
+     SHAPE IT EVER HAS. walkEnter() and walkExit() each assign the WHOLE object
+     from that one factory, so a field cannot survive an exit by being left out
+     of a hand-written reset — which is exactly how the CZ-class leak lived:
+     the old exit cleared the four fields it knew about, and the other door's
+     flag was a fifth, in another scope, that it never saw.
+     ⛔ VERIFY BY GREP, NOT BY READING: `WALK.on` is assigned in exactly two
+     places, walkEnter() and walkExit(), and both go through WALK_BLANK(). There
+     is no second entry point to desynchronize, because there is no second door.
+       mode      "strip" until the owner takes the fork, then "clean"
+       deep      the Deep Clean branch was taken (PRO #5, unchanged)
+       published how many steps of the walk are the MAKER'S, not the owner's
+       forkAt    the index the strip ends on — where the fork sits */
+  const WALK_BLANK=()=>({on:false, mode:"strip", deep:false, steps:[], map:[], published:0, forkAt:-1});
+  const WALK=WALK_BLANK();
+  /* every live index maps back to the guide's OWN numbering, so a photo or a
+     note taken anywhere in the walk is the same photo and the same note
+     wherever else that step appears. -1 means "no data row of its own". */
+  function origStepIndex(i){ return WALK.map[i]!=null ? WALK.map[i] : -1; }
   function modelNoteFor(i){
     const oi=origStepIndex(i);
     return oi<0 ? null : (MODEL_NOTES[(byId(activeId)||{}).model]||{})[oi];
   }
-  const curSteps=()=>{ if(FS_STRIP.on) return FS_STRIP.steps; const g=activeGuide(); return (branched&&g.deepSteps)? g.steps.concat([deepSafetyStep(g)],g.deepSteps) : g.steps; };
+  /* ⛔ ONE LIST. The old form had a second, engine-assembled list for the other
+     door (steps + synthetic safety + deepSteps) which the strip walk's list had
+     to stay in step with. Two lists is how they drift; there is now one, built
+     by walkBuild() and read here. */
+  const curSteps=()=> WALK.steps;
   function buildProgress(){ progressEl.innerHTML=""; curSteps().forEach(()=>progressEl.appendChild(document.createElement("i"))); }
 
   function startGuide(){
@@ -6417,7 +6442,6 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     for(const key in gun.origins){
       document.getElementById(gun.parts[key]).style.transformOrigin=gun.origins[key];
     }
-    branched=false;
     buildProgress();
     const eb=document.getElementById("explodedBtn");
     eb.hidden=!gun.exploded;
@@ -6456,7 +6480,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        complete step with a PRO tag and opens the upsell on tap. The standard guide
        itself is free; only the deeper branch is gated. */
     const bb=document.getElementById("branchBtn");
-    bb.hidden=!(s.branch && !branched && gun.deepSteps);
+    bb.hidden=!(s.branch && !WALK.deep && gun.deepSteps);
     bb.innerHTML = "Deep Clean ▸" + (isPro() ? "" : ' <span class="protag">PRO</span>');
     bb.parentElement.classList.toggle("three",!bb.hidden);
     document.getElementById("stepPhase").textContent=s.phase;
@@ -6483,22 +6507,43 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     [...progressEl.children].forEach((dot,i)=>{dot.className=i<stepIndex?"done":(i===stepIndex?"cur":"");});
     document.getElementById("prevBtn").disabled=false;   /* v13 walk fix 1: Back is never dead — step 1 exits */
-    document.getElementById("nextBtn").textContent=stepIndex===steps.length-1?"Start Cleaning":"Next Step";
+    walkPaintNext(steps);
   }
 
+  /* ⛔ ONE IMPLEMENTATION, CALLED FROM BOTH RENDERERS. There are TWO live copies
+     of the step renderer — this one and the bench layer's slot path — and the
+     next-button label was written out in each. Two copies of a rule is how one
+     of them goes wrong; this is the rule, and both call it.
+     At the fork the choice IS the next move, so Next is withdrawn and the two
+     fork buttons carry it. Everywhere else Next reads what it actually does. */
+  function walkPaintNext(steps){
+    const nb=document.getElementById("nextBtn");
+    const atEnd=stepIndex===steps.length-1;
+    nb.hidden = WALK.mode==="strip" && atEnd && walkHasClean();
+    nb.textContent = !atEnd ? "Next Step" : (WALK.mode==="clean" ? "Start Cleaning" : "Reassemble");
+  }
+
+  /* ⛔ vC34.1 — ONE HANDLER PER BUTTON. These used to be shipped listeners with
+     a capture-phase interceptor bolted on top that meant something different in
+     strip mode; two handlers on one button, deciding by a flag, is the same
+     defect class as two doors deciding by a flag. There is one of each now. */
   document.getElementById("nextBtn").addEventListener("click",()=>{
-    const gun=activeGuide();
-    if(stepIndex<curSteps().length-1){stepIndex++;renderStep();}
-    else {buildCleaning();show("scr-clean");}
+    if(stepIndex<curSteps().length-1){ stepIndex++; renderStep(); return; }
+    if(WALK.mode==="clean"){ buildCleaning(); show("scr-clean"); return; }
+    walkReassemble();
   });
   document.getElementById("prevBtn").addEventListener("click",()=>{
     if(stepIndex>0){stepIndex--;renderStep();}
     else show("scr-detail");   /* v13 walk fix 1: from step 1, Back exits the guide to the firearm page */
   });
+  /* Deep Clean — PRO #5, LOCKED-VISIBLE, unchanged. It extends the STRIP, so
+     the deeper steps join the strip section and the fork moves to the end of
+     them: the fork is always at the maker's last published stopping point. */
   document.getElementById("branchBtn").addEventListener("click",()=>{
-    if(branched) return;
+    if(WALK.deep) return;
     if(!isPro()){ openProSheet(); return; }
-    branched=true;
+    WALK.deep=true;
+    walkBuild(byId(activeId));
     buildProgress();
     stepIndex++;
     renderStep();
@@ -6533,7 +6578,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       cleanList.appendChild(wrap);
     });
   }
-  document.getElementById("cleanGo").addEventListener("click",()=>{
+  document.getElementById("cleanGo").addEventListener("click",()=>{ buildDone(); show("scr-done"); });
+  /* vC34.1: this was the cleanGo listener's body. It is a named function now
+     because the fork's "Reassemble" ends here too, and reaching it by
+     synthesising a click on a button that lives on a screen the owner never
+     opened is exactly the kind of indirection that rots. It BUILDS the screen
+     and does not navigate — its two callers decide that. */
+  function buildDone(){
     /* v15 correction pass item 7: REASSEMBLY + FUNCTION CHECK on every guide.
        Text guides author fncheck directly; illustrated guides' existing inline
        "Function check:" reassembly entry MOVES into the section unreworded.
@@ -6556,8 +6607,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         +`<div class="st-aside">${g.fnNoTrigger?"A mount that fails here gets found at the bench, not the range.":"A gun that fails here gets found at the bench, not the range."}</div>`;
     } else { wrap.hidden=true; body.innerHTML=""; }
     document.getElementById("guideFoot").textContent=GUIDE_FOOT;   /* v15 item 3: the FOOT rides every guide's end */
-    show("scr-done");
-  });
+  }
 
   /* =============== DONE → LOG FORM =============== */
   document.getElementById("finishBtn").addEventListener("click",()=> openCleanForm(true));
@@ -7743,7 +7793,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     msg.textContent="Building backup…";
     try{
       const inc=!!(document.getElementById("benchExpPhotos")&&document.getElementById("benchExpPhotos").checked);
-      const r=await BenchExport.buildExport(BenchEnv.store, BenchEnv.files(), {now:Date.now(), includePhotos:inc, appVersion:"vC34"});
+      const r=await BenchExport.buildExport(BenchEnv.store, BenchEnv.files(), {now:Date.now(), includePhotos:inc, appVersion:"vC34.1"});
       const json=JSON.stringify(r.export);
       const fname=BenchExport.exportFileName(Date.now());
       const where=await benchDeliverBackup(json, fname, mode);
@@ -7876,7 +7926,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   Object.assign(GUNS, MZ_GUIDES);
 
   /* ===== BEGIN SOURCED GUIDES — GENERATED by scratchpad/clean-rebuild/splice_authored.js — DO NOT EDIT BY HAND ===== */
-  /* 718 listing(s): 715 authored from a named document, 3 from researched best practice.
+  /* 720 listing(s): 717 authored from a named document, 3 from researched best practice.
      A documented listing carries the publisher's verbatim, contiguous words and the
      manual/edition/section they came from; a best-practices listing carries no quote,
      no citation and no document line, because it has no document. Regenerate with:
@@ -10011,6 +10061,97 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       cleaning:[{"name":"BOLT CARRIER GROUP","tasks":["Clean all parts with a quality CLP, rinse, dry and inspect","Lightly lubricate the bolt and wipe away any excess","Clean carbon from the gas key and the carrier's interior"]},{"name":"BORE & UPPER","tasks":["Clean the barrel bore and chamber with a quality bore solvent, following the solvent maker's instructions","Use a quality powder solvent to clean the carrier way (tunnel) of the upper receiver, then lightly lubricate","Lubricate the inside of the upper receiver and the long thin section of the charging handle"]},{"name":"LOWER RECEIVER","tasks":["Brush or wipe away excessive fouling — an aerosol cleaning product is a simple way to do it","Do not remove the trigger action components to clean; the manual says it is neither necessary nor recommended","Lubricate the takedown pins"]}],
       reassembly:["Insert the bolt into the carrier with the extractor located on the right side of the carrier.","Insert the cam pin and rotate 90 degrees and reinstall the firing pin.","Install the firing pin retaining pin from the left side of the carrier, then confirm the firing pin is retained.","Reinstall the BCG and charging handle, push the BCG fully forward, close the receiver and press the take-down pin back in."],
       fncheck:"With the rifle confirmed empty, cycle the charging handle and confirm the bolt runs and locks, check the takedown and pivot pins are fully home, and confirm the selector moves between SAFE and FIRE."
+    },
+    "sg_benelli828usport": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture (2020)",
+      sourceSha256:"d9781457ef602bc9b74df9961956d7a886d0ebcd153b211f3628091f7ae1c463",
+      cleanIntro:"The 828U is a break-action over-under with a REMOVABLE TRIGGER GUARD ASSEMBLY, and that is what makes its strip different from most O/Us — and more dangerous to get wrong. ⛔ Benelli's rule is absolute: the STRIKERS MUST STAY COCKED while the trigger guard comes out, so the trigger must not be touched at any point in that sequence. ⚠ And the Sport is the variant with Progressive Balancing and an adjustable trigger POSITION, both of which Benelli documents separately from the rest of the 828U line.",
+      steps:[
+        tgStep("Clear","⛔ SAFETY CATCH ENGAGED for the whole job — Benelli's words, not ours",
+          stA("Engage the safety and leave it engaged. Benelli states that ALL assembly, disassembly and maintenance operations are carried out with the safety catch engaged — and in the same breath that the safety is a mechanical device that does not replace your responsibility.")
+          +"A maker who tells you his safety is only a device is telling you where the real one is."
+          +stAs("Engage the safety catch (see section “SAFETY CATCH”).")
+          +stSrc("ATTENTION: both the manual and automatic safety catch are mechanical devices and they do not replace the responsibility of the shotgun user. All assembly/disassembly and maintenance operations must be carried out with the SAFETY CATCH ENGAGED. 12","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Safety catch, printed p.42"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Safety catch, printed p.42"}),
+        tgStep("Clear","Open it, look in both chambers, and note the RED DOT",
+          stA("Rotate the top lever, drop the barrels and visually inspect BOTH bores. ⚠ While it is open, note the barrel selector: this is a single selective trigger and a RED DOT shows which barrel fires first — right for the lower, left for the upper.")
+          +"Two chambers means two things to look at. The dot tells you which one the trigger is pointed at."
+          +stSrc("The shotgun is equipped with a “single selective trigger”; the selector position highlights through a RED DOT the first barrel that will fire when pulling the trigger:","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Firing selector, printed p.42"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Firing selector, printed p.42"}),
+        tgStep("Strip","Fore-end: press it against the barrels, then the release button",
+          stA("Press the fore-end against the barrels and AT THE SAME TIME work the fore-end release button, then rotate it slightly and draw it off the receiver. ⚠ The two actions are simultaneous; pressing the button alone will not free it.")
+          +"Squeeze first, then press. That order is the whole step."
+          +stAs("Slightly rotate and extract the fore-end from the receiver (fig. 25).")
+          +stSrc("Press the fore-end against the barrels and simultaneously activate the release button of the fore-end (fig. 24).","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Shotgun disassembly, step 2, printed p.47"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Shotgun disassembly, step 2, printed p.47"}),
+        tgStep("Strip","⛔ HOLD THE BARRELS — they will slide off their pins",
+          stA("Rotate the top lever to the right and move the barrels downward, HOLDING THEM TIGHTLY — Benelli's own warning is that they will otherwise slide completely off their pins and fall. Then lift them slightly and take them off the receiver.")
+          +"With the fore-end off there is nothing retaining the barrels but your hand."
+          +stC("Slightly lift the barrels and remove them from the receiver (fig.")
+          +stAs("Rotate the top lever to the right (fig. 26).")
+          +stSrc("Move the barrels downward, holding them tightly to avoid that they slide out completely from their pins and fall down.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Shotgun disassembly, step 5, printed p.47"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Shotgun disassembly, step 5, printed p.47"}),
+        tgStep("Strip","⚠ The firing-pin saving blanks come out",
+          stA("If the snap caps Benelli calls “firing pin saving” blank cartridges are still in the chambers, take them out now. ⚠ They are easy to leave in and easy to confuse with live ammunition at the next session.")
+          +"A blank in a chamber looks exactly like the thing you spent the last three steps making sure was not there."
+          +stSrc("WARNING: extract the “firing pin saving” blank cartridges, if they are still in.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Shotgun disassembly, printed p.47"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Shotgun disassembly, printed p.47"}),
+        tgStep("Strip","⛔ TRIGGER GUARD — only with the gun apart, and NEVER touch the trigger",
+          stA("Two absolute rules before anything moves: the trigger guard comes out ONLY with the shotgun already disassembled, and the STRIKERS MUST REMAIN COCKED, which means not touching the trigger at any point. ⚠ Benelli gives the recovery too: if the trigger IS activated, do not force the guard out — put it back in its seat and re-cock the strikers with the top lever.")
+          +"The recovery is printed because it happens. Forcing a guard against released strikers is how the receiver gets damaged."
+          +stSrc("WARNING: For all the following operations, be sure NOT TO ACTIVATE THE TRIGGER. The strikers must remain in cocked position to disassemble the trigger guard. If the trigger is accidentally activated during disassembly, it is recommended not to force the extraction of the trigger guard, but to bring it back into position by inserting it in its seat, and reload again the strikers by using the top lever.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Trigger guard disassembly, printed p.47"),
+          {"warn":"If the trigger is accidentally activated during disassembly, it is\nrecommended not to force the extraction of the trigger guard, but\nto bring it back into position by inserting it in its seat, and reload\nagain the strikers by using the top lever.","src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Trigger guard disassembly, printed p.47"}),
+        tgStep("Strip","Top lever CLOSED, then the supplied tool — and rotate it only slightly",
+          stA("Press the pin on the receiver inward to close the top lever, insert the supplied tool into its hole with the curve of the stem following the rear profile of the trigger plate, and press to release the guard. Then rotate it just enough that its back stands about half a centimetre proud, pull it toward the stock, and lift it out perpendicular to its seat. ⛔ Over-rotating it is the one thing that will stop it coming out at all.")
+          +"Half a centimetre. Benelli gives the number because more does not help and actively blocks the extraction."
+          +stSrc("WARNING: An excessive rotation of the trigger guard in the disassembly stage prevents its subsequent extraction from the receiver.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Trigger guard disassembly, step 4, printed p.48"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Trigger guard disassembly, step 4, printed p.48"}),
+        tgStep("Strip","That is the strip — and Benelli stops here",
+          stA("Fore-end, barrels, trigger guard, receiver-and-stock. Nothing beyond that is published for the owner. ⚠ Before the gun goes in its case, Benelli wants both strikers let down: pull the trigger on the first barrel, move the selector, pull again.")
+          +"Letting the strikers down is part of putting it away, not part of taking it apart."
+          +stSrc("1) Unload both strikers by activating the trigger of the first barrel.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Before placing the shotgun into its case, printed p.49"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Before placing the shotgun into its case, printed p.49"})
+      ],
+      deepSteps:[
+        tgStep("Clean","⛔ Chokes stay IN to clean the barrel — and go back FULLY BOTTOMED",
+          stA("Benelli's note is explicit: when cleaning a barrel with an internal choke fitted, leave the choke in place, because taking it out lets powder residue foul the threads inside the muzzle. When chokes ARE changed, they screw in clockwise by hand and then tighten with the supplied wrench until fully bottomed.")
+          +"The opposite of the habit most owners bring from other guns, and the reason is printed."
+          +stAs("8) Manually screw the chokes clockwise and tighten them using the provided wrench until they are fully bottomed into their housings inside the barrels (fig. 36).")
+          +stSrc("NOTE: when cleaning a barrel with an internal choke fitted, leave the choke in place to prevent powder residues from fouling the threads inside the muzzle.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.50"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.50"}),
+        tgStep("Clean","⚠ An “Ampliator” choke changes the maintenance interval",
+          stA("If the gun is running an Ampliator choke, Benelli advises carrying out the whole maintenance sequence after EVERY session, to prevent the clamping its ammunition causes. ⚠ That is a shorter interval than the book's general advice and it is attached to one accessory.")
+          +"A per-accessory interval is worth knowing before it seizes."
+          +stAs("NB: all barrels are internally chromium plated.")
+          +stSrc("WARNING: in case of use of an \"Ampliator\" choke, it is advisable to carry out the maintenance operations listed above after each hunting session to prevent clamps caused by the ammunition fired.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.50"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.50"}),
+        tgStep("Clean","⛔ The barrel locking pin holes are where this action fouls",
+          stA("Benelli names two places for periodic cleaning and lubrication: the trigger guard assembly, and the HOUSING HOLES OF THE BARREL LOCKING PINS. ⚠ The second is specific to this design and is not somewhere a general clean would take you.")
+          +"A maker naming a hole by name is a maker telling you where his gun actually gums up."
+          +stAs("Thanks to its extreme simplicity and excellent materials, the Benelli over-and-under requires no special maintenance.")
+          +stSrc("2) Remove by periodical cleaning and lubrication any powder residuals (or foreign matters) from trigger guard assembly and from the housing holes of barrel locking pins (fig. 35).","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.50"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.50"}),
+        tgStep("Clean","⛔ Never a case longer than the chamber",
+          stA("Benelli's caution is unqualified and states the stake: serious consequences for both the shotgun and the shooter. ⚠ The gauge and chambering are marked ON THE BARRELS — read those rather than the box. Lead or steel shot are both fine with rolled-turnover or crimped cases.")
+          +"The chamber length is stamped where it is for exactly this reason."
+          +stAs("Shotgun functioning is guaranteed with cartridges featuring rolled turnover or crimped closures, and with lead or steel shot.")
+          +stSrc("Non-compliance to this rule would have serious consequences for both the shotgun and the shooter.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Choice of ammunition, printed p.44"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Choice of ammunition, printed p.44"}),
+        tgStep("Clean","⚠ Solvent-bearing oils will damage the stock and fore-end",
+          stA("Benelli oil for the mechanical parts, and specific products for the wooden, technopolymer or painted stock and fore-end. ⛔ Keep those surfaces away from oils containing solvents or chemicals in general.")
+          +"The oil that protects the action is the one that lifts a painted fore-end."
+          +stSrc("Avoid that parts get in contact with oils containing solvents or chemical substances in general, which could alter or damage their surfaces.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.51"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Maintenance, printed p.51"}),
+        tgStep("Clean","⚠ Check the chokes BEFORE the session, not after",
+          stA("Benelli asks for the shotgun to be disassembled before each hunting or shooting session, to confirm the chokes are present, clean, fully tightened and suitable for the ammunition. ⛔ A missing or loose choke is a barrel-damage event, and it is checked at the start.")
+          +"The one maintenance instruction in this book that belongs to the beginning of a day rather than the end."
+          +stSrc("Before each hunting or shooting session, disassemble the shotgun and make sure that the chokes are present, clean, fully tightened and suitable for the ammunitions.","BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Loading, printed p.43"),
+          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Loading, printed p.43"})
+      ],
+      cleaning:[{"name":"BARRELS AND CHAMBERS","tasks":["Bores and firing chambers cleaned after use — Benelli's first control","⛔ Internal chokes LEFT IN while cleaning the barrel","⚠ Bores are chromium plated; no abrasive is wanted"]},{"name":"RECEIVER AND TRIGGER GUARD","tasks":["Powder residue cleaned from the trigger guard assembly","⛔ And from the HOUSING HOLES OF THE BARREL LOCKING PINS — the place residue actually binds this action","Parts exposed to weather lightly oiled against corrosion"]},{"name":"CHOKES","tasks":["Choke housings and barrel threads cleaned with a proper thread tool","Bronze brush and Benelli oil on the choke threads","Chokes screwed back FULLY BOTTOMED with the supplied wrench"]}],
+      reassembly:["⛔ Top lever CLOSED before the trigger guard goes anywhere near its seat.","⚠ If the trigger was activated while the guard was out, the strikers are re-cocked by pushing them inward FIRST.","Trigger guard in perpendicular to its seat, front disconnector into its seat in the receiver — no gap between the guard's front profile and the receiver.","Guard rotated and pressed until it snaps in; its outer profile then sits flush.","Barrels onto the receiver pins, then the fore-end pressed on until it latches.","Chokes checked present, clean and fully tightened before the gun is called ready."],
+      fncheck:"With the gun confirmed unloaded, close it and feel the top lever snap home. Work the safety both ways and the barrel selector both ways, watching the RED DOT change sides. ⛔ Check the trigger guard sits FLUSH — Benelli's own test is that there is no gap between its front profile and the receiver, and a guard that is not properly seated is one that was over-rotated going in. ⚠ Then do the thing Benelli asks before every session rather than after: take it apart far enough to confirm the chokes are present, clean, fully tightened and right for the ammunition you are about to shoot."
     },
     "sg_benellim2": {
       textMode:true, parts:{}, origins:{},
@@ -15984,6 +16125,90 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       cleaning:[{"name":"BARREL","tasks":["Open the cylinder first, then attach a cotton flannel patch to the cleaning rod, insert it at the muzzle and pass rod and patch down through the barrel; repeat, changing patches, until the last comes out clean","Avoid contact between the cleaning rod and the muzzle — resultant wear reduces accuracy","Take care not to strike the rear frame of the revolver: Colt warns that burring the metal around the firing pin hole can contribute to firing failures"]},{"name":"CYLINDER AND CHAMBERS","tasks":["Clean each of the six chambers with the same method used on the barrel","If barrel or chambers remain dirty after firing, use a brass wire bristle brush dipped in gun cleaning solution and pass it all the way through before reversing direction — changing direction with the brush inside will jam it","Note that painted and plated surfaces can be damaged or streaked by gun cleaning solution; follow the solution maker's instructions","Clean the front face of the cylinder — that is where the burn ring builds"]},{"name":"FRAME AND EXTERIOR","tasks":["Clean the rear face of the barrel, the revolver frame and the front face of the cylinder with a small toothbrush, then remove all trace of gun cleaning solution","Lightly moisten a flannel patch with gun oil and pass it once through the barrel and similarly oil the six chambers; pass a dry patch through instead if the revolver is going back into use rather than storage","Check no flannel or brush bristles have lodged anywhere in the revolver, then wipe all external surfaces — including between hammer and frame — with a lightly oiled flannel patch","Remove any gun cleaning solution and oil from the grip"]},{"name":"HOW OFTEN","tasks":["Clean as soon after firing as possible — the job is easier and there is less opportunity for corrosion to start","Unfired, clean it once or twice a year in a temperate climate, or as often as once a month in a tropical one","If you carry it loaded, unload it and clean it at least once a month","Below freezing, avoid oil and apply a dry lubricant sparingly instead"]}],
       reassembly:["There is nothing to reassemble: the revolver was never taken apart.","With the hammer not cocked, push the cylinder back into the frame until the cylinder latch springs forward and locks it.","Do not flick the cylinder closed — push it in and let the latch seat itself.","Store the revolver unloaded, with ammunition kept separately and both locked away."],
       fncheck:"With every chamber checked empty and the cylinder closed, cock the hammer through a full rotation and confirm the cylinder indexes and locks on each chamber, then repeat double-action. Check the cylinder latch holds the cylinder firmly closed and that the ejector rod returns fully forward under its own spring."
+    },
+    "sg_coltgoldcupnationalmatch": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document (UNKNOWN — not printed in the document)",
+      sourceSha256:"7a33b65c78d7fc961f6ddfaaa32650a651e563c0379421f5c0bb372fa425890d",
+      cleanIntro:"The Gold Cup National Match is a 1911 built for the target line, and two of its differences from a service 1911 change how you handle it on the bench: a PATENTED BARREL AND BUSHING fitted deliberately tight, and an ADJUSTABLE TRIGGER STOP. ⛔ The tight bushing is why Colt tells you to use the bushing wrench rather than force, and it is why the recoil spring plug is under real pressure when it comes free. ⚠ And the accuracy this pistol is bought for is exactly what a careless cleaning rod destroys — Colt says so in as many words.",
+      steps:[
+        tgStep("Clear","⛔ Prove it empty — magazine out, chamber looked at",
+          stA("Drop the magazine, lock the slide back and LOOK into the chamber, then put a finger in it. Colt's own strip procedure opens with this and its cleaning procedure repeats it as a CAUTION. ⚠ The magazine holds seven rounds; an eighth being absent from the magazine proves nothing about the chamber.")
+          +"A target pistol lives on a line where it is loaded and unloaded all day. That is exactly the habit that puts a round in a chamber nobody checked."
+          +stSrc("The magazine has seven rounds capacity.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Section 2 — Main Features, printed p.4"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Section 2 — Main Features, printed p.4"}),
+        tgStep("Strip","Muzzle UP, resting on the butt and the grip safety",
+          stA("Stand the pistol on the heel of the butt and the grip safety, muzzle pointing upward, on a bench. ⛔ That attitude is not decoration: it puts the recoil spring plug at the top where you can hold it, and it keeps the muzzle off the bench.")
+          +"Everything that follows depends on controlling one spring. This is the grip that lets you."
+          +stSrc("With muzzle pointing upward,\nrest pistol on heel of butt and\n\"grip safety\" on a table or bench.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 2, printed p.26"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 2, printed p.26"}),
+        tgStep("Strip","⛔ HOLD THE PLUG — the recoil spring is under it, and the bushing is TIGHT",
+          stA("Push the slide back about a quarter inch, press DOWN on the recoil spring plug just below the muzzle, and at the same time rotate the barrel bushing clockwise about a quarter turn — using the BARREL BUSHING WRENCH if you need it. ⛔ Keep pressure on the plug so the spring cannot launch it, then let plug and spring extend gradually. ⚠ This pistol's bushing is deliberately tighter than a service 1911's; that is where its accuracy comes from and why the wrench exists.")
+          +"The one moment in a 1911 strip that puts a spring under your thumb, made stiffer here by the match fit."
+          +stC("Glasses on. Let it out slowly rather than releasing it.")
+          +stSrc("Push slide back about one\nquarter inch, press down on recoil\nspring plug (located just below\nmuzzle) and at same time rotate\nbarrel bushing clockwise about 1/4\nturn, using barrel bushing wrench","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 3, printed p.26"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 3, printed p.26"}),
+        tgStep("Strip","Plug off the spring, then cock the hammer",
+          stA("Rotate the plug counterclockwise and take it off the spring. Then cock the hammer by pulling back on the hammer spur — with the pistol already proved empty. ⚠ The hammer must be back before the slide stop will come out.")
+          +"Cocking an empty pistol you have just verified is not the same act as cocking one you have not."
+          +stSrc("Rotate plug counterclockwise\nand remove from spring.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 4, printed p.26"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 4, printed p.26"}),
+        tgStep("Strip","Slide back to the DISASSEMBLY NOTCH, then the slide stop",
+          stA("Pull the slide rearward until the lug on the slide stop lines up with the DISASSEMBLY NOTCH — a different notch from the one the slide locks back on — then push the rounded end of the slide stop pin inward from the RIGHT side of the receiver and lift the slide stop out.")
+          +"Two notches, and only one of them lets the pistol come apart. Lining up the wrong one is why the pin will not move."
+          +stAs("Lift out slide stop (See Figure 9).")
+          +stSrc("Pull slide to rear until lug on slide stop is opposite disassembly\nnotch (See Figure 9) and push rounded end of pin of slide stop\n(on right of receiver) inward and through receiver to disengage\nslide stop from slide.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 6, printed p.27"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 6, printed p.27"}),
+        tgStep("Strip","Receiver off the back, then the recoil spring and guide",
+          stA("Draw the receiver rearward and off the slide. Then lift the recoil spring and its guide and pull them rearward out of the slide.")
+          +"Rearward, both of them. Nothing on a 1911 comes out forward except the barrel."
+          +stSrc("Lift recoil spring and guide and pull them rearward out of slide.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 9, printed p.27"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 9, printed p.27"}),
+        tgStep("Strip","Bushing counterclockwise, then the barrel out the FRONT",
+          stA("Turn the barrel bushing counterclockwise, push the barrel and bushing forward until the bushing is clear of the slide, and take the bushing off the barrel. Then push the LINK forward and draw the barrel out of the front of the slide.")
+          +"The link has to be forward or the barrel will not clear. That is the whole trick of the last step."
+          +stAs("Push link forward and remove barrel from front of slide.")
+          +stSrc("Turn barrel bushing counterclockwise, push barrel and barrel\nbushing forward until bushing is clear of slide, then remove bushing\nfrom barrel.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 10, printed p.27"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, step 10, printed p.27"}),
+        tgStep("Strip","⛔ That is the whole strip — Colt says stop here",
+          stA("Barrel, bushing, recoil spring and guide, plug, slide stop, slide and receiver. ⛔ Colt's own IMPORTANT note bars going further and routes anything deeper to Service and Repair.")
+          +"A match pistol is fitted. Parts that are fitted are parts a bench strip should leave alone."
+          +stSrc("IMPORTANT: Do not strip your\npistol further than previously\ndescribed.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, printed p.27"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, printed p.27"})
+      ],
+      deepSteps:[
+        tgStep("Clean","⛔ The cleaning rod is what kills a match barrel",
+          stA("Colt puts this in the cleaning procedure and it is the single most important sentence in it for THIS pistol: avoid contact between the cleaning rod and the muzzle, because the resulting wear will reduce accuracy. ⚠ Work from the breech, and if you must use the muzzle, use a guide.")
+          +"The crown is the last thing the bullet touches. A rod dragged across it a thousand times is a slow way to lose what you paid for."
+          +stSrc("Note: Avoid contact between cleaning rod and muzzle as resultant\nwear will reduce accuracy.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — How to Clean, printed p.29"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — How to Clean, printed p.29"}),
+        tgStep("Clean","⚠ Brush ALL THE WAY THROUGH before reversing",
+          stA("If the bore is still dirty after patches, a brass bristle brush and cleaning solution. ⛔ Pass the brush ALL THE WAY THROUGH the barrel before you reverse it — Colt's own reason is that a brush reversed inside the bore will stick.")
+          +"A stuck brush in a match barrel is a genuinely bad afternoon."
+          +stSrc("Thoroughly scrub out barrel, passing the brush all the way\nthrough before reversing the movement. If you try to change direction\nwith brush in barrel, the brush will stick.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — How to Clean, step 5, printed p.29"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — How to Clean, step 5, printed p.29"}),
+        tgStep("Clean","How often, when it has NOT been fired",
+          stA("Colt gives an interval for a pistol that is not being shot: once or twice a year in a temperate climate, as often as once a month in a tropical one. ⚠ And if it gets wet, clean it as soon as possible regardless.")
+          +"A safe queen still corrodes. The interval is about humidity, not use."
+          +stAs("If you get your pistol\nwet, clean it as soon as possible.")
+          +stSrc("When your pistol has not been fired, clean it periodically; we\nsuggest once or twice a year in a temperate climate, or as often as\nonce a month in a tropical climate.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — When to Clean, printed p.28"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — When to Clean, printed p.28"}),
+        tgStep("Clean","⛔ Below freezing — a DRY lubricant, not oil",
+          stA("Colt's note on cold weather: avoid oil for lubrication and apply a dry lubricant sparingly instead. ⚠ Oil that thickens in the cold slows a 1911's slide, and a target pistol is often shot in exactly the conditions this warns about.")
+          +"The lubricant that protects it in summer is the one that slows it in January."
+          +stAs("Strip for cleaning as previously described.")
+          +stSrc("avoid the use of oil for\nlubrication; instead, apply a dry lubricant sparingly.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — How to Clean, printed p.29"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — How to Clean, printed p.29"}),
+        tgStep("Clean","⚠ The trigger stop and the Eliason sight — the two adjustables",
+          stA("This pistol carries an ADJUSTABLE TRIGGER STOP that limits finger movement after sear release, and an adjustable square-notch Colt ELIASON rear sight with positive windage and elevation. ⛔ Both are set-and-check items, not clean-every-time items: note where they are before a strip so you can tell if handling has moved them.")
+          +"The two things on this pistol that are adjusted for the shooter are the two things worth checking after it has been apart."
+          +stAs("The adjustable square notch Colt Eliason rear sight features\npositive windage and elevation adjustment.")
+          +stSrc("An adjustable trigger stop limits finger movement after sear release\nso that aim is not disturbed.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Section 2 — Main Features, printed p.4"),
+          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Section 2 — Main Features, printed p.4"})
+      ],
+      cleaning:[{"name":"BARREL","tasks":["Flannel patch on the rod from the BREECH, repeat until a patch comes out clean","⛔ Rod kept OFF the muzzle — that wear costs accuracy","Brass brush and solution only if the bore is still dirty after firing"]},{"name":"SLIDE AND BREECH FACE","tasks":["Rear face of the barrel and the breech face brushed with a small toothbrush","Slide rails and the bushing seat wiped clean","Bushing checked for burrs — it is a fitted part on this pistol"]},{"name":"OIL","tasks":["A patch lightly moistened with gun oil passed once through the bore","That film LEFT IN if the pistol is going into storage","⛔ In freezing conditions a DRY lubricant instead of oil"]}],
+      reassembly:["Colt's own instruction: assemble in reverse order, steps 11 back through 7.","Barrel and bushing into the slide first, then the slide onto the receiver until the link shows through the slide stop hole.","Slide stop through the receiver and the barrel link — ⚠ taking care not to scratch the pistol.","Slide stop snapped home by pressing UP and IN against its detent with the disassembly notch aligned.","Then steps 5 back through 1: hammer down safely, spring and plug in, bushing turned back under pressure."],
+      fncheck:"With the pistol confirmed unloaded, cycle the slide fully several times and feel it run without binding — a match bushing makes this stiffer than a service 1911 and that is normal. Check the slide stop is fully seated and its detent has sprung. Work the thumb safety and the grip safety in turn. ⚠ Then check the ADJUSTABLE TRIGGER STOP has not shifted during handling: Colt fits it so finger movement stops the instant the sear releases, and a stop that has moved either blocks the trigger or stops doing its job."
     },
     "sg_coltgoldcuptrophy": {
       textMode:true, parts:{}, origins:{},
@@ -60830,6 +61055,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "barrettrec10": "sg_barrettrec10",
     "bearcreekarsenalbc10": "sg_bearcreekarsenalbc10",
     "bearcreekarsenalbc15": "sg_bearcreekarsenalbc15",
+    "benelli828usport": "sg_benelli828usport",
     "benellim2": "sg_benellim2",
     "benellim4": "sg_benellim4",
     "benellimontefeltro": "sg_benellimontefeltro",
@@ -60903,6 +61129,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "coltcombatcommander": "sg_coltcombatcommander",
     "coltcombatelite": "sg_coltcombatelite",
     "coltdetectivespecial": "sg_coltdetectivespecial",
+    "coltgoldcupnationalmatch": "sg_coltgoldcupnationalmatch",
     "coltgoldcuptrophy": "sg_coltgoldcuptrophy",
     "coltkingcobra": "sg_coltkingcobra",
     "coltkodiak": "sg_coltkodiak",
@@ -61714,7 +61941,6 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("layerViewport").hidden=true;
     document.querySelectorAll(".gun-svg").forEach(s=>s.classList.remove("active"));
     document.getElementById("textArtPane").hidden=false;
-    branched=false;
     buildProgress();
     document.getElementById("explodedBtn").hidden=true;
     document.getElementById("explodedOverlay").hidden=true;
@@ -61746,7 +61972,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const s=steps[stepIndex];
     document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
     const bb=document.getElementById("branchBtn");
-    bb.hidden=!(s.branch && !branched && gun.deepSteps);
+    bb.hidden=!(s.branch && !WALK.deep && gun.deepSteps);
     bb.innerHTML = "Deep Clean ▸" + (isPro() ? "" : ' <span class="protag">PRO</span>');
     bb.parentElement.classList.toggle("three",!bb.hidden);
     document.getElementById("stepPhase").textContent=s.phase;
@@ -61773,21 +61999,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     [...progressEl.children].forEach((dot,i)=>{dot.className=i<stepIndex?"done":(i===stepIndex?"cur":"");});
     document.getElementById("prevBtn").disabled=false;   /* v13 walk fix 1: Back is never dead — step 1 exits (handler in the core player) */
-    document.getElementById("nextBtn").textContent=stepIndex===steps.length-1?"Start Cleaning":"Next Step";
+    walkPaintNext(steps);
   };
 
-  /* guideBtn: item 1 (2026-08-14) — the Clean button never disappears and never
-     dies; fkey always routes (art → model text → generic universal checklist),
-     so the hide branch below is now the no-entry case only */
+  /* ⛔ vC34.1: THIS WAS A THIRD PLACE THAT PAINTED THE CLEAN BUTTON — a second
+     label ("Guided Clean") and a second show/hide rule, on top of the core
+     render's own. It is deleted with the button. FIELDSTRIP is present on every
+     firearm and needs no per-firearm painting at all, which is the point.
+     The suppressor render this wrapper also carried stays exactly as it was. */
   const benchOrigRenderDetail2 = renderDetail;
   renderDetail = function(){
     benchOrigRenderDetail2();
     const f=byId(activeId); if(!f) return;
-    const g=document.getElementById("guideBtn");
-    const gk=fkey(f);
-    g.style.display = gk ? "" : "none";
-    g.textContent = "Guided Clean";   /* v15 item 5 */
-    g.disabled = !gk;
     benchRenderSupp(f);
   };
 
@@ -62200,14 +62423,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* v14 item 3: an art change refreshes WHEREVER the attach box lives — the
      detail hero, and the guide player pane if the user attached from inside
      the guide. The player re-derives its presentation in place, keeping the
-     user's step and branch state (startGuide resets both; restore after). */
+     user's step.
+     ⛔ vC34.1: IT NO LONGER SAVES AND RESTORES THE BRANCH STATE. It used to,
+     because startGuide() reset the flag out from under it — a second piece of
+     code holding a copy of the walk's state and putting it back by hand, which
+     is the defect class this build exists to remove. startGuide() no longer
+     touches WALK, so there is nothing to save: the one state object simply
+     stays as it is, and only the step index needs restoring. */
   function benchArtChanged(){
     renderDetail();
     const pl=document.getElementById("scr-player");
     if(pl && pl.classList.contains("active")){
-      const si=stepIndex, br=branched;
+      const si=stepIndex;
       startGuide();
-      branched=br; buildProgress();
       stepIndex=Math.min(si, curSteps().length-1);
       renderStep(false);
     }
@@ -62504,7 +62732,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     (async ()=>{
       try{
         msgEl.textContent="Building backup…";
-        const r=await BenchExport.buildExport(BenchEnv.store, BenchEnv.files(), {now:Date.now(), includePhotos:false, appVersion:"vC34"});
+        const r=await BenchExport.buildExport(BenchEnv.store, BenchEnv.files(), {now:Date.now(), includePhotos:false, appVersion:"vC34.1"});
         const json=JSON.stringify(r.export);
         const fname=BenchExport.exportFileName(Date.now());
         const where=await benchDeliverBackup(json, fname, "local");
@@ -62595,8 +62823,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
   /* ================================================================
      V12 — WALK FIXES + ART SYSTEM (Darren consolidated spec, 2026-08-14)
-     item 1 (Clean is universal) routes in the text block: fkey now falls
-       back to the generic checklists, so guideBtn never dies.
+     item 1 (Clean is universal) routes in the text block: fkey falls back to
+       the generic checklists, so every row reaches a procedure. ⚠ vC34.1: the
+       Clean button this item was written about is GONE — FIELDSTRIP is the one
+       door and is present on every firearm. The ROUTING it describes stands.
      item 2 (uniform cards): rounds + maintenance-log join the card
        system; Pro-lock twins get the same corner ×.
      item 3 (hero card): the firearm's face — photo + Clean on one card,
@@ -62740,13 +62970,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        and all. Grab the refs BEFORE the innerHTML wipe: on a re-render the
        buttons are inside this card, and assigning innerHTML would destroy them
        (a detached-but-referenced node survives and re-inserts intact). */
-    const gb=document.getElementById("guideBtn"), qc=document.getElementById("quickClean");
-    hero.innerHTML='<div class="heroartHost"></div><div class="actions heroacts-row" id="heroBtnRow"></div>';
+    const qc=document.getElementById("quickClean");
+    hero.innerHTML='<div class="heroartHost"></div><div class="actions heroacts-row" id="heroBtnRow"></div><div class="heroacts-door" id="heroDoorRow"></div>';
     benchAttachBox(hero.querySelector(".heroartHost"), f);
     const row=hero.querySelector("#heroBtnRow");
-    /* v15 item 5: THREE actions on the hero — Log Cleaning · Guided Clean · The Bench */
+    /* vC34.1 (Darren ruling): TWO actions on the row — Log Cleaning · The Bench
+       — and ONE full-width door under them, mounted into #heroDoorRow. */
     if(qc) row.appendChild(qc);
-    if(gb) row.appendChild(gb);
     const hbb=document.createElement("button");
     hbb.className="btn"; hbb.id="heroBenchBtn"; hbb.textContent="The Bench";
     /* the hero opens the Bench SCOPED TO THIS ITEM (scope-leak root fix) */
@@ -65448,7 +65678,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     return function(f){
       const k=inner(f);
       if(k) return k;
-      return FS_STRIP.on ? "__fsstrip" : null;
+      return WALK.on ? "__fsstrip" : null;
     };
   })(fkey);
 
@@ -65474,10 +65704,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
             t:{}, hl:[], labels:[], arrow:null, userStep:u};
   }
 
-  /* Build the strip walk: Clear, then Strip, then the owner's own steps in the
-     places he put them. Nothing is authored here — every published step is the
-     guide's own object, passed through untouched. */
-  function fsBuildStrip(f){
+  /* ⛔ ONE BUILDER FOR THE WHOLE WALK (vC34.1). Clear, then Strip, then — only
+     if the owner took Deep Clean — the deeper strip, then — only if he took
+     "Clean it" at the fork — the guide's own remaining steps. Nothing is
+     authored here: every published step is the guide's own object, passed
+     through untouched, so the walk and the guide cannot drift. */
+  function walkBuild(f){
     const g=activeGuide();
     const steps=[], map=[];
     const src=(g && Array.isArray(g.steps)) ? g.steps : [];
@@ -65495,8 +65727,38 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
        never renders is a step the owner wrote and cannot find. Anything left
        over lands at the end rather than vanishing. (Caught by smoke_vc34.) */
     const shown=new Set(map.filter(m=>typeof m==="string"&&m.indexOf("u:")===0).map(m=>m.slice(2)));
-    users.filter(u=>!shown.has(u.id)).forEach(u=>push(fsStepFromUser(u), "u:"+u.id));
-    FS_STRIP.published=ordered.length;
+    /* ⛔ AND IT MUST NOT SWEEP UP A STEP THE CLEAN SECTION IS ABOUT TO PLACE.
+       The sweep runs here, before that section is built, so a step anchored to
+       a clean-phase index would be pushed as an orphan AND placed again below —
+       the owner's one step, twice. Ask where the clean section will render
+       before deciding a step has nowhere to go. */
+    const cleanIdx=new Set();
+    if(WALK.mode==="clean") src.forEach((s,i)=>{ if(s.phase!=="Clear" && s.phase!=="Strip") cleanIdx.add(i); });
+    users.filter(u=>!shown.has(u.id) && !cleanIdx.has(u.after)).forEach(u=>push(fsStepFromUser(u), "u:"+u.id));
+    WALK.published=ordered.length;
+    /* the deeper strip, when the owner has taken it. The engine's own safety
+       re-verify step carries -1 (it has no data row of its own) and each deep
+       step keeps the guide's own numbering — base length + j — so no family's
+       lsteps or MODEL_NOTES move. */
+    if(WALK.deep && g && g.deepSteps && g.deepSteps.length){
+      push(deepSafetyStep(g), -1);
+      g.deepSteps.forEach((s,j)=>push(s, src.length+j));
+    }
+    /* THE STRIP ENDS HERE. The fork sits on this step, and it is the maker's
+       published stopping point — deeper if the owner went deeper. */
+    WALK.forkAt=steps.length-1;
+    /* and past it, only if he chose to clean: the guide's own remaining steps,
+       in the order the guide authors them. Same steps the old Guided Clean
+       walked; there is no second copy of them anywhere. */
+    if(WALK.mode==="clean"){
+      /* ⛔ HIS OWN STEPS RIDE THE CLEAN SECTION TOO. Walk item 14 says he adds
+         them "past that point, OR ANYWHERE ALONG IT", and the bar is on these
+         steps now that they are part of the one walk. Without usersAfter here, a
+         step he added on a clean step would be caught by the orphan sweep and
+         land at the END of the walk instead of where he put it — his words, in
+         the wrong place, which is worse than refusing them. */
+      src.forEach((s,i)=>{ if(s.phase!=="Clear" && s.phase!=="Strip"){ push(s, i); usersAfter(i); } });
+    }
     /* ⛔ A GUN WITH NOTHING PUBLISHED AND NOTHING RECORDED STILL HAS TO OPEN.
        The walk cannot be empty — an empty step list renders nothing at all and
        the owner has no way to add his first step. This placeholder STATES A
@@ -65504,30 +65766,87 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(!steps.length){
       push({phase:"Your steps", title:"Nothing published for this one", body:"",
             t:{}, hl:[], labels:[], arrow:null, fsEmpty:true}, -1);
+      WALK.forkAt=0;
     }
-    FS_STRIP.steps=steps; FS_STRIP.map=map;
+    WALK.steps=steps; WALK.map=map;
     return steps.length;
   }
 
-  function fsExit(){
-    FS_STRIP.on=false; FS_STRIP.steps=[]; FS_STRIP.map=[]; FS_STRIP.published=0;
+  /* ⛔ DOES THIS GUN HAVE A PUBLISHED CLEAN AT ALL? Clean-phase steps, or a
+     cleaning checklist. If neither, there is NO FORK and no card explaining the
+     absence — the same ruling as the deep-clean card: if there is no clean,
+     there is no clean. The walk simply goes Clear, Strip, Reassemble. */
+  function walkHasClean(){
+    const g=activeGuide();
+    if(!g) return false;
+    if((g.steps||[]).some(s=>s.phase==="Clean")) return true;
+    return !!(g.cleaning && g.cleaning.length);
+  }
+
+  /* ⛔ TORN DOWN FROM THE FACTORY, NOT FIELD BY FIELD. The old exit listed the
+     fields it knew about; the next field added to the walk would not have been
+     on that list, and that is precisely the defect this build exists to make
+     structurally impossible. */
+  function walkExit(){
+    Object.assign(WALK, WALK_BLANK());
+    stepIndex=0;
     const b=document.getElementById("fsStripBar"); if(b) b.hidden=true;
   }
 
-  function fsStart(){
+  /* ⛔ CREATED FRESH ON ENTRY, FROM THE SAME FACTORY. Nothing about the
+     previous firearm's walk can reach this one: every field is overwritten, not
+     merged, and there is no other function in the app that sets WALK.on. */
+  function walkEnter(){
     const f=byId(activeId); if(!f) return;
-    FS_STRIP.on=true;
-    fsBuildStrip(f);
+    Object.assign(WALK, WALK_BLANK(), {on:true});
+    stepIndex=0;
+    walkBuild(f);
     buildGate();
     show("scr-gate");
   }
 
+  /* THE ONE DOOR's click. The first-clean montage rides in front of it exactly
+     as it rode in front of the Clean card, and montageMaybe() hands straight
+     back when there is nothing to show or it has been seen. */
+  function walkDoor(){
+    const f=byId(activeId); if(!f) return;
+    if(montageSetFor(f)) montageMaybe(f, walkEnter); else walkEnter();
+  }
+
+  /* ⛔ THE FORK — "Clean it". It does not start a second walk; it extends the
+     one that is already running, so every photo, note and owner-written step
+     stays exactly where it was. Deep-clean steps, where the guide publishes
+     them, remain reachable by the Deep Clean button on the stopping-point step
+     — PRO #5, locked-visible, untouched. */
+  function walkCleanIt(){
+    if(WALK.mode==="clean") return;
+    WALK.mode="clean";
+    walkBuild(byId(activeId));
+    buildProgress();
+    if(WALK.forkAt < WALK.steps.length-1){ stepIndex=WALK.forkAt+1; renderStep(); return; }
+    /* a guide whose clean is a checklist and not steps: straight to the list */
+    buildCleaning(); show("scr-clean");
+  }
+
+  /* ⛔ THE FORK — "Reassemble", and the end of the no-clean walk. Both land on
+     the same reassembly + function check the guide already publishes, and both
+     finish at the log. Where the maker publishes NEITHER a reassembly nor a
+     function check there is nothing to draw, so it goes straight to the log
+     rather than putting an empty heading on the screen. */
+  function walkReassemble(){
+    const g=activeGuide();
+    const has=!!(g && (((g.reassembly||[]).length) || g.fncheck));
+    if(walkHasClean()) buildCleaning();   /* so Back from the done screen lands on THIS gun's list */
+    if(!has){ openCleanForm(true); return; }
+    buildDone();
+    show("scr-done");
+  }
+
   /* ⛔ THE WALK ENDS WHEN THE WALK'S SCREENS ARE LEFT — DERIVED, NOT A LIST OF
-     EXIT BUTTONS. fsStart() sets FS_STRIP.on and, until this, only fsExit()
-     cleared it. curSteps() returns FS_STRIP.steps for as long as the flag is
-     set, so a walk left by the HOME button, the back chevron, or anything else
-     stayed loaded and the NEXT firearm's Guided Clean rendered the PREVIOUS
-     firearm's steps.
+     EXIT BUTTONS. This is the SECOND half of the leak cure and it still binds:
+     walkEnter() opens the walk and only walkExit() closes it, so a walk left by
+     the HOME button, the back chevron or anything else would otherwise stay
+     loaded and the NEXT firearm would render the PREVIOUS firearm's steps.
      That is what Darren hit on 2026-08-23: the CZ 75 SP-01's Guided Clean read
      "Nothing published for this one" — a complete eleven-step guide showing a
      no-guide AR's placeholder, left behind by an earlier Field Strip walk.
@@ -65536,10 +65855,16 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      ⚠ A per-button list would have rotted exactly the way rule 7 says: the
      home button, the back chevron, the hardware back and every future exit
      each had to remember. The SCREEN is the fact. Only the gate and the player
-     are the walk; landing anywhere else means the walk is over. */
+     are the walk; landing anywhere else means the walk is over.
+     ⛔ vC34.1 CLOSES THE FIRST HALF TOO. The derived exit was always right and
+     was never enough on its own: it called an exit that cleared the fields it
+     happened to know about, and the OTHER door's state — a separate flag, in a
+     separate scope — was not one of them. There is one state object now and one
+     factory that blanks the whole of it, so this rule and that reset cannot
+     disagree, and a field added to the walk tomorrow is cleared by both. */
   show=(function(inner){
     return function(id, push){
-      if(FS_STRIP.on && id!=="scr-gate" && id!=="scr-player") fsExit();
+      if(WALK.on && id!=="scr-gate" && id!=="scr-player") walkExit();
       return inner.apply(this, arguments);
     };
   })(show);
@@ -65641,7 +65966,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       list.push(fsMakeUserStep(nm, after));
       fsUserStepsSave(f, list);
       const at=stepIndex;
-      fsBuildStrip(f);
+      walkBuild(f);
       buildProgress();
       stepIndex=Math.min(at+1, curSteps().length-1);
       renderStep(false);
@@ -65650,36 +65975,52 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     inp.onkeydown=e=>{ if(e.key==="Enter") go(); };
     bar.querySelector(".fsAddNo").onclick=()=>renderStep(false);
   }
-  function fsRenderStripChrome(){
+  function walkRenderChrome(){
     const f=byId(activeId); if(!f) return;
     const steps=curSteps(), last=stepIndex===steps.length-1;
     const s=steps[stepIndex]||{};
-    const bb=document.getElementById("branchBtn");
-    if(bb) bb.hidden=true;                       /* a strip is not a deep clean */
-    const nb=document.getElementById("nextBtn");
-    if(nb) nb.textContent = last ? "Reassemble" : "Next Step";
+    /* ⛔ DEEP CLEAN IS NO LONGER FORCE-HIDDEN HERE. The old line read "a strip
+       is not a deep clean" and was true when the strip was a second, separate
+       walk. There is one walk now, and the deeper branch belongs on the
+       stopping-point step where it has always been — renderStep decides it
+       from the step's own `branch` flag, with its PRO tag intact. */
     const bar=fsStripBar(); if(!bar) return;
     bar.hidden=false;
     const isUser=!!s.userStep;
     /* the stopping point is stated on the LAST PUBLISHED step, in the maker's
        own words — his words are already in the step body and its citation. The
        app adds only the fact that this is where he stops. */
-    const atStop = !isUser && stepIndex===FS_STRIP.published-1 && FS_STRIP.published>0;
+    const atStop = !isUser && WALK.mode==="strip" && stepIndex===WALK.published-1 && WALK.published>0;
+    /* THE FORK, and it exists only where the maker published a clean. "Clean it"
+       and "Reassemble" are OUR prose, not a quotation of anybody. */
+    const fork = WALK.mode==="strip" && last && walkHasClean();
     bar.innerHTML=
       (atStop?'<div class="fsStop">This is as far as the maker publishes. Anything past this is yours to record.</div>':"")
       + (isUser?'<div class="fsYours">Your own step &mdash; the app records it, it does not instruct it.</div>':"")
-      + (!FS_STRIP.published?'<div class="fsStop">No published strip for this one. Record your own, step by step &mdash; that is what gets it back together.</div>':"")
+      + (!WALK.published?'<div class="fsStop">No published strip for this one. Record your own, step by step &mdash; that is what gets it back together.</div>':"")
+      + (fork?'<div class="fsFork">'
+             +'<button class="btn primary fsClean" type="button">Clean it</button>'
+             +'<button class="btn fsReasm" type="button">Reassemble</button>'
+             +'</div>':"")
       + '<div class="fsActs">'
       + '<button class="btn sm fsAdd" type="button">&#65291; Add your own step here</button>'
       + (isUser?'<button class="btn sm fsDel" type="button">Remove this step</button>':"")
-      + (last?'<button class="btn sm fsLog" type="button">Log it</button>':"")
+      /* ⛔ LOG IT BELONGS TO THE STRIP, AND ONLY TO IT. "A strip for mods IS a
+         service event" is why it exists, and it used to be unreachable from the
+         clean path because the clean was a different walk. One walk put it at the
+         end of the clean steps too — a second exit, meaning something else, at the
+         same moment as Start Cleaning. That is the muddle the one-door ruling
+         removes, and I had reintroduced it two screens further in. */
+      + ((last && !fork && WALK.mode==="strip")?'<button class="btn sm fsLog" type="button">Log it</button>':"")
       + '</div>';
+    const fc=bar.querySelector(".fsClean"); if(fc) fc.onclick=()=>walkCleanIt();
+    const fr=bar.querySelector(".fsReasm"); if(fr) fr.onclick=()=>walkReassemble();
     bar.querySelector(".fsAdd").onclick=()=>fsAddUserStep(f, isUser ? s.userStep.after : origStepIndex(stepIndex));
     const del=bar.querySelector(".fsDel");
     if(del) del.onclick=()=>{
       const list=fsUserSteps(f).filter(u=>u.id!==s.userStep.id);
       fsUserStepsSave(f, list);
-      fsBuildStrip(f); buildProgress();
+      walkBuild(f); buildProgress();
       stepIndex=Math.max(0, Math.min(stepIndex, curSteps().length-1));
       renderStep(false);
     };
@@ -65688,7 +66029,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
   /* a strip for mods IS a service event — Log it lands on Service & Mods */
   function fsLogIt(){
-    fsExit();
+    walkExit();
     show("scr-detail");
     setTimeout(()=>{
       const box=document.getElementById("svcBox");
@@ -65703,59 +66044,45 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
   const fsPrevRenderStep=renderStep;
   renderStep=function(animateText){
+    /* ⛔ NOTHING RENDERS OUTSIDE A WALK. With one door there is no legitimate
+       way to reach the player without a walk being open, so a render with the
+       walk torn down is a defect and must not be papered over with a fallback
+       step list — that fallback IS the second list rule 7 removed. */
+    if(!WALK.on) return;
     fsPrevRenderStep(animateText);
     const f=byId(activeId);
     const steps=curSteps(), s=steps[stepIndex];
     if(f && s) fsRenderNote(f, stepIndex, s);
-    if(FS_STRIP.on) fsRenderStripChrome();
-    else { const b=document.getElementById("fsStripBar"); if(b) b.hidden=true; }
+    walkRenderChrome();
     /* a step the owner wrote, or the empty-strip placeholder, has no art at all */
     const pl=document.getElementById("scr-player");
     if(pl) pl.classList.toggle("fs-noart", !!(s && (s.userStep || s.fsEmpty)));
   };
 
-  /* capture-phase interception: in strip mode these buttons mean something
-     different, and the shipped listeners must not also run */
-  (function(){
-    const nb=document.getElementById("nextBtn"), pb=document.getElementById("prevBtn");
-    if(nb) nb.addEventListener("click",e=>{
-      if(!FS_STRIP.on) return;
-      e.stopImmediatePropagation();
-      if(stepIndex<curSteps().length-1){ stepIndex++; renderStep(); return; }
-      /* the laid-out moment: out to Reassemble, never into the cleaning list */
-      const g=activeGuide();
-      const hasReasm=!!(g && ((g.reassembly&&g.reassembly.length)||g.fncheck));
-      fsExit();
-      if(hasReasm) document.getElementById("cleanGo").click();
-      else show("scr-detail");
-    }, true);
-    if(pb) pb.addEventListener("click",e=>{
-      if(!FS_STRIP.on) return;
-      if(stepIndex>0) return;                   /* normal back-step */
-      e.stopImmediatePropagation();
-      fsExit(); show("scr-detail");
-    }, true);
-  })();
+  /* ⛔ vC34.1 — THE PREV-BUTTON INTERCEPTOR IS GONE WITH THE SECOND WALK. It
+     existed because Back meant one thing in the strip walk and another in the
+     clean walk. One walk, one meaning: step back, or leave from step one. The
+     shipped prevBtn listener already does exactly that. */
 
-  /* the FIELD STRIP button: an ACTION beside Clean, equal weight, never a card
-     the corner-x can take away. It is present whether or not the gun has a
-     guide — with no published steps it opens straight into the owner's own. */
-  function fsMountButton(){
-    const row=document.getElementById("heroBtnRow"); if(!row) return;
-    let b=document.getElementById("fieldStripBtn");
+  /* ⛔ THE ONE DOOR. One word, all caps, full width, under Log Cleaning and The
+     Bench — and on EVERY firearm, guide or no guide: with nothing published it
+     opens straight into the owner's own steps, which is the whole reassembly
+     insurance. There is no other button anywhere that starts a walk. */
+  function walkMountDoor(){
+    const row=document.getElementById("heroDoorRow"); if(!row) return;
+    let b=document.getElementById("fieldstripBtn");
     if(!b){
       b=document.createElement("button");
-      b.id="fieldStripBtn"; b.className="btn primary";
-      b.textContent="Field Strip";
-      b.addEventListener("click",()=>fsStart());
+      b.id="fieldstripBtn"; b.className="btn primary full";
+      b.textContent="FIELDSTRIP";
+      b.addEventListener("click",()=>walkDoor());
     }
-    const gb=document.getElementById("guideBtn");
-    if(gb && gb.parentNode===row) row.insertBefore(b, gb.nextSibling); else row.appendChild(b);
+    row.appendChild(b);
   }
   const fsPrevRenderDetail=renderDetail;
   renderDetail=function(){
     fsPrevRenderDetail();
-    fsMountButton();
+    walkMountDoor();
   };
 
   /* ---------------------------------------------------------------
@@ -65837,17 +66164,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     f.demoSeen=true; saveSafe();
     montagePlay(f, set, go);
   }
-  /* the Clean card's own entry point, intercepted in capture so the montage
-     runs before the gate and hands straight back to it */
-  (function(){
-    const gb=document.getElementById("guideBtn"); if(!gb) return;
-    gb.addEventListener("click",e=>{
-      const f=byId(activeId); if(!f) return;
-      if(f.demoSeen || !montageSetFor(f)) return;
-      e.stopImmediatePropagation();
-      montageMaybe(f, ()=>{ buildGate(); show("scr-gate"); });
-    }, true);
-  })();
+  /* ⛔ vC34.1: the montage's capture-phase hook on guideBtn is DELETED with the
+     button. It runs from walkDoor() now — the one door, in the open, rather
+     than a second listener racing the first on a button that no longer exists. */
 
   /* ---------------------------------------------------------------
      ⛔ WALK ITEM 5, 2026-08-23 — THIS REVERSES vC34's ITEM 16.
@@ -65893,11 +66212,24 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   /* the vC34 surface, for the harness */
   window.FS_VC34={
     deepAbsent(f){ return fsDeepAbsentFor(f); },
-    stripOn(){ return FS_STRIP.on; },
-    stripLen(){ return FS_STRIP.steps.length; },
-    published(){ return FS_STRIP.published||0; },
-    start(){ fsStart(); },
-    exit(){ fsExit(); },
+    /* the vC34 names are kept so every existing harness keeps reading — they
+       report the ONE walk state, not a second copy of it. */
+    stripOn(){ return WALK.on; },
+    stripLen(){ return WALK.steps.length; },
+    published(){ return WALK.published||0; },
+    start(){ walkEnter(); },
+    exit(){ walkExit(); },
+    /* vC34.1 — the whole of the walk's state, read-only, so a leak selftest can
+       assert on FIELDS rather than on what happens to be on screen. */
+    door(){ walkDoor(); },
+    walk(){ return {on:WALK.on, mode:WALK.mode, deep:WALK.deep, steps:WALK.steps.length,
+                    map:WALK.map.slice(), published:WALK.published, forkAt:WALK.forkAt,
+                    at:stepIndex}; },
+    walkKeys(){ return Object.keys(WALK).sort(); },
+    blankKeys(){ return Object.keys(WALK_BLANK()).sort(); },
+    hasClean(){ return walkHasClean(); },
+    cleanIt(){ walkCleanIt(); },
+    reassemble(){ walkReassemble(); },
     montageFor(id){ const c=CATALOG.find(x=>x.i===id); return c?!!MONTAGE_SETS[(c.gp||"")+"|"+(c.ct||"")]:false; },
     montageSets(){ return Object.keys(MONTAGE_SETS); },
     montageLabel(k){ return (MONTAGE_SETS[k]||{}).label||null; },
