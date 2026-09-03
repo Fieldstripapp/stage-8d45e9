@@ -2068,7 +2068,10 @@
       <div class="feat"><span class="fx">▸</span><span><b>Spring life</b> — round-count tracking against the service interval, with a replacement log.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, on every guide. Standard guides stay free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Custom firearms</b> — add and <i>guide</i> firearms the catalog doesn't cover yet; assign any family's strip + parts diagram. One custom entry is free.</span></div>
-      <div class="price" id="proPrice">$19.99 · one time</div>
+      <!-- ⛔ NO PRICE IN THE MARKUP. openProSheet() sets this from PRO_PRICE_LABEL;
+           a literal here is a second source of truth and is exactly how the last
+           price change left a straggler behind. Rule 7: derive, never duplicate. -->
+      <div class="price" id="proPrice"></div>
       <button class="btn primary full" id="proBuy">Unlock Pro</button>
       <button class="btn full" id="proRestore" style="margin-top:8px">Restore Purchase</button>
       <button class="btn full" id="proClose" style="margin-top:8px">Not Now</button>
@@ -3942,7 +3945,7 @@
 
   /* =============== FIELDSTRIP PRO =============== */
   const FREE_MAX_GUNS = 2;
-  const PRO_PRICE_LABEL = "$19.99 · one time";   /* PRICE LOCKED (Darren ruling 2026-08-16, ruling-price-locked-20260816.md): $19.99. No block, copy draft, or defect round changes this — only an explicit ruling naming the price. */
+  const PRO_PRICE_LABEL = "$14.99 · one time";   /* PRICE: $14.99 (Darren ruling 2026-08-30, restated 2026-09-02; claude/price-ruling-14-99.md). That ruling is the explicit naming the 2026-08-16 lock required, and it supersedes it: $14.99 is the price; the old figure is the defect. Still the ONE constant — every price site reads it. */
   /* [DEV-BUILD-FLAG] tools/devflag.js flips this to false for the store artifact.
      It is a BUILD FLAG, not a debug variant: internal vC builds stay release-signed
      with the same key so `install -r` keeps working and nothing is ever uninstalled. */
@@ -4265,7 +4268,7 @@
   /* ⛔ REQUEST IS FREE (Darren ruling 2026-08-23, vC34 close-out). PRO #9 is
      STRUCK. It was gated at three call sites, and every one of them fired at the
      worst possible moment: a man who has just been told we do not have his gun
-     was shown a $19.99 paywall for the privilege of telling us so. That is the
+     was shown the Pro paywall for the privilege of telling us so. That is the
      founding failure with a price tag on it — he searched, found nothing, and
      the app asked him for money to ask us for help.
      The request itself costs us nothing to receive and is the single most
