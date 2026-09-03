@@ -1,1 +1,7 @@
-{}
+{
+ "winchesterwildcat": {
+  "src": "assets/examples/winchesterwildcat.jpg",
+  "label": "This is a photo of a Winchester Wildcat taken by its owner, shown so you can see that every step of a guide holds your own photo. This is not this firearm's illustrated procedure.",
+  "montageLabel": "These are photos of a Winchester Wildcat taken by its owner, shown so you can see that every step of a guide holds your own photo. This is not this firearm's illustrated procedure."
+ }
+}
