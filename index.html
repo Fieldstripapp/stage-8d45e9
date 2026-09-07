@@ -7520,7 +7520,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     benchJustCleaned=f.id;
     saveSafe(); renderSafe();
   }
-  renderSafe = function(){
+  function renderSafe(){
     updateProRow();
     document.getElementById("proNfaBtn").onclick = ()=> openProSheet();
     document.getElementById("proNfaLock").onclick = ()=> openProSheet();
