@@ -595,6 +595,46 @@
     flex-direction:column;gap:4px;padding:6px 5px;text-align:center;line-height:1.3}
   .attthumb.add .apl{font-size:21px;line-height:1;color:var(--amber);font-weight:600}
   .attthumb.add:active{background:rgba(232,163,61,.13);border-color:var(--amber)}
+  /* ============ vC48 — AN ATTACHMENT IS A THING ============ */
+  .attrow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+    background:#0e1013;border:1px solid var(--edge);border-radius:11px;
+    padding:10px 12px;margin-top:8px;color:var(--text);cursor:pointer}
+  .attrow:active{border-color:var(--amber-dim);background:rgba(232,163,61,.06)}
+  .attrow-ic{flex:0 0 42px;height:42px;border-radius:9px;background:#141719;
+    border:1px solid var(--edge);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .attrow-ic img{width:100%;height:100%;object-fit:cover}
+  .attrow-glyph{font-size:19px;color:var(--muted);line-height:1}
+  .attrow-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .attrow-type{font-family:var(--display);font-size:9.5px;letter-spacing:1.2px;color:var(--muted)}
+  .attrow-name{font-size:14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .attrow-det{font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .attrow-files{flex:0 0 auto;font-size:11px;color:var(--muted);font-family:var(--display);letter-spacing:.6px}
+  .attsheet .acHead{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+  .attsheet .acGlyph{font-size:27px;color:var(--amber);line-height:1}
+  .attsheet .acType{font-family:var(--display);font-size:11px;letter-spacing:1.5px;color:var(--muted)}
+  .attsheet .acName{font-size:19px;color:var(--text);line-height:1.25}
+  .attsheet .acDet{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+  .attsheet .acNotes{font-size:13px;color:var(--text);margin:8px 0 0;line-height:1.5}
+  /* the zero warning is amber, not red: it is a consequence to know, not a danger */
+  .attsheet .acZero{background:rgba(232,163,61,.1);border:1px solid var(--amber-dim);
+    border-radius:9px;padding:9px 11px;margin:11px 0 0;font-size:12.5px;line-height:1.5;color:var(--text)}
+  .attsheet .aclabel{font-family:var(--display);font-size:9.5px;letter-spacing:1.4px;
+    color:var(--muted);margin:16px 0 7px}
+  .attsheet .acActs{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+  .attsheet .acActs .btn{width:100%}
+  .attchips{display:flex;flex-wrap:wrap;gap:6px}
+  .attchip{font-family:var(--display);font-size:10px;letter-spacing:.9px;
+    background:#0e1013;border:1px solid var(--edge);border-radius:7px;
+    padding:7px 10px;color:var(--muted);cursor:pointer}
+  .attchip.on{border-color:var(--amber);color:var(--amber);background:rgba(232,163,61,.1)}
+  .asErr{color:var(--safe-red);font-size:12px;margin-top:9px}
+  .asErr[hidden]{display:none!important}
+  .benchAttLink{display:block;width:100%;text-align:left;background:none;border:none;
+    font:inherit;color:var(--text);padding:0;cursor:pointer}
+  .benchAttLink:active{color:var(--amber)}
+  .gearrow{display:flex;align-items:center;gap:11px;background:#0e1013;
+    border:1px solid var(--edge);border-radius:11px;padding:10px 12px;margin-top:8px}
+  .gearmount{flex:0 0 auto;max-width:132px}
   .photoslot{border:1px dashed var(--edge);border-radius:10px;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-family:var(--display);font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;background:#0e1013;cursor:pointer;text-align:center}
   .photoslot.filled{border-style:solid;border-color:rgba(95,163,107,.5)}
   .segrow{display:flex;gap:8px;margin-top:6px}
@@ -1318,7 +1358,13 @@
       <div class="lifebox" id="attBox">
         <div class="lrow"><span class="lt">Attachments</span><span class="lv" id="attSummary"></span></div>
         <div class="lmsg" id="attMsg"></div>
-        <div id="attGridWrap"></div>
+        <div id="attList"></div>
+        <button class="btn sm primary full" id="attAddBtn" style="margin-top:10px">+ ADD ATTACHMENT</button>
+      </div>
+      <div class="lifebox" id="filesBox">
+        <div class="lrow"><span class="lt">Photos &amp; Paperwork</span><span class="lv" id="filesSummary"></span></div>
+        <div class="lmsg" id="filesMsg"></div>
+        <div id="filesGridWrap"></div>
       </div>
       <div class="lifebox" id="svcBox">
         <div class="lrow"><span class="lt">Service &amp; Mods</span><span class="lv" id="svcSummary"></span></div>
@@ -2621,7 +2667,7 @@
 
   const KEY = "fs_attachments";
   const DIR = "bench/att";
-  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp"];  /* V19 item 6: ammo/svc/spec/stamp were never allowlisted — every add on those surfaces threw "bad parent" since their UIs shipped */
+  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp","att","gear"];  /* V19 item 6: ammo/svc/spec/stamp were never allowlisted — every add on those surfaces threw "bad parent" since their UIs shipped */
   /* compress-on-import threshold: only shots whose longest side exceeds this get the
      gentle recompress; below it the original bytes are stored untouched. Not a cap. */
   const IMPORT_MAX_DIM = 2600;
@@ -3115,6 +3161,32 @@
     });
     return buildCsv(rows);
   }
+  /* |X| vC48 item 10 — ATTACHMENTS EXPORT. type, name, serial, mounted, notes
+     and a FILE COUNT. The files themselves stay out of CSV and live in the
+     backup: a spreadsheet cell cannot hold a photo, and a path in a column is a
+     promise to a file the recipient does not have. The count is the honest
+     summary — it says what exists without pretending to carry it.
+     |X| THE GEAR LOCKER IS EXPORTED TOO, marked as unmounted, because a spare
+     optic is inventory whether or not it is bolted to something today. */
+  const ATT_HEADERS=["firearm_id","firearm","mounted_on","type","name","serial","mounted","notes","files"];
+  function buildAttachmentsCsv(store){
+    const safe=parse(store,"fs_safe",[]);
+    const reg=parse(store,"fs_attachments",[]);
+    const countFiles=id=>reg.filter(x=>x&&x.parent&&x.parent.kind==="att"&&x.parent.id===id).length;
+    const rows=[ATT_HEADERS.slice()];
+    safe.forEach(f=>{
+      const nm=[f.custom?(f.cmk||""):"",f.custom?(f.cmd||""):""].filter(Boolean).join(" ").trim();
+      (f.attachments||[]).forEach(a=>{
+        rows.push([f.id, nm, "yes", a.type||"", a.name||"", a.serial||"",
+                   a.mounted||"", a.notes||"", countFiles(a.id)]);
+      });
+    });
+    parse(store,"fs_gear",[]).forEach(a=>{
+      rows.push(["", (a.from&&a.from.name)||"", "no", a.type||"", a.name||"", a.serial||"",
+                 "", a.notes||"", countFiles(a.id)]);
+    });
+    return buildCsv(rows);
+  }
   function buildLockerCsv(store){
     const inv=parse(store,"fs_ammo",[]);
     const rows=[["id","maker","caliber","grain","bullet","rounds_on_hand","lot","container",
@@ -3208,7 +3280,7 @@
     return {ok:true, added, updated};
   }
 
-  return {buildCsv, parseCsv, INV_HEADERS,
+  return {buildCsv, parseCsv, INV_HEADERS, ATT_HEADERS, buildAttachmentsCsv,
           buildInventoryCsv, buildHistoryCsv, buildLockerCsv, buildInventoryTemplate,
           previewInventoryCsv, runInventoryImport};
 });
@@ -6778,9 +6850,166 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      rifles, handguns and suppressors — a can takes mounts, muzzle devices and a
      case like anything else. "Other" is the only escape hatch; without one a
      real accessory that is not on the list has nowhere to go. */
+  /* |X| vC48 — RECEIPT AND WORK PHOTO ARE GONE FROM THIS LIST. Darren's ruling
+     2026-09-07: "an attachment is a THING, not a photo." A receipt is not a
+     thing that hangs off a rifle; it is a FILE about one, and it now lives on
+     the record's files[] through the one files mechanism. Leaving them here is
+     what made an attachment mean two different things at once — a scope and a
+     scan of a scope's receipt sat in the same grid as peers.
+     The rest of the list is unchanged: these are the physical things that hang
+     off a firearm, and the same list serves rifles, handguns and suppressors.
+     "Other" is still the only escape hatch, and it is named by the owner. */
   const ATT_TYPES=["Optic","Red dot","Scope","Mount / rings","Sling","Light","Laser",
                    "Foregrip","Bipod","Grip","Muzzle device","Trigger","Stock","Choke",
-                   "Case","Receipt","Work photo","Other"];
+                   "Case","Other"];
+  /* |X| THE FILE VOCABULARY, and the whole of it. A file on ANY record is one of
+     these three; "note" stays as the text-only record BenchAttach already
+     writes. Anything else appearing here would mean a second photo path had
+     been invented somewhere, which is the thing rule 7 forbids. */
+  const FILE_KINDS=["photo","receipt","document"];
+  const FILE_KIND_LABEL={photo:"Photo", receipt:"Receipt", document:"Document"};
+  /* ================= vC48 — THE THING LAYER =================
+     An attachment is a record on the firearm: {id,type,name,serial,mounted,notes}.
+     Its FILES are not in it — they live in the one files mechanism under the
+     parent {kind:"att", id}, exactly as a firearm's own files live under
+     {kind:"firearm", id}. That is what makes "unlimited files per attachment"
+     free rather than a second store to keep in step, and it is what makes MOVE
+     TO GEAR LOCKER a move of one record: the files are keyed by the thing's id,
+     so they follow it without being touched.
+     |X| UNLIMITED, both ways. No cap on things per firearm, no cap on files per
+     thing. Nothing here counts and refuses. */
+  function fAtts(f){
+    if(!f) return [];
+    if(!Array.isArray(f.attachments)) f.attachments=[];
+    return f.attachments;
+  }
+  let attSeq=0;
+  function attMakeId(now){ attSeq=(attSeq+1)%46656;
+    return "atg_"+((now||Date.now())).toString(36)+"_"+attSeq.toString(36); }
+  /* the owner's word wins for a named Other; otherwise the type IS the label */
+  function attTypeLabel(a){ return (a && a.type) ? String(a.type) : "Other"; }
+  function attFilesOf(a){
+    if(!a || !a.id) return [];
+    try{ return BenchAttach.listFor(BenchEnv.store, {kind:"att", id:a.id}); }catch(e){ return []; }
+  }
+  /* the row's one-line detail: serial, then mounted date — whichever exist */
+  function attDetailLine(a){
+    const bits=[];
+    if(a && a.serial) bits.push("S/N "+a.serial);
+    if(a && a.mounted) bits.push("mounted "+a.mounted);
+    return bits.join(" \u00b7 ");
+  }
+
+  /* ================= vC48 — THE MIGRATION =================
+     |X| NOTHING IS LOST AND THE COUNT PROVES IT. Every file record that exists
+     before this runs still exists after it; what changes is what it is attached
+     TO and what it is called.
+       a photo carrying a TYPE label (Optic, Sling, Case, or an owner-named
+         Other)  -> becomes a THING of that type, carrying that one file
+       Receipt   -> stays on the firearm, re-kinded to the file vocabulary
+       Work photo-> stays on the firearm, re-kinded to "document"
+       photo / note -> untouched; they were already files on the record
+     |X| IT RUNS ONCE, behind a flag, and it is IDEMPOTENT anyway: a second run
+     finds no ATT_TYPES-kinded records left to move. The flag is belt and braces,
+     not the correctness argument — a migration whose only safety is "it already
+     ran" corrupts the day the flag is lost. */
+  const ATT_MIG_FLAG="fs_mig_v48_things";
+  function attIsThingKind(k){
+    if(!k) return false;
+    const s=String(k);
+    if(s==="note") return false;
+    if(FILE_KINDS.indexOf(s)>=0) return false;
+    if(s==="Receipt" || s==="Work photo") return false;
+    return true;   /* an ATT_TYPES entry, or an owner-named Other */
+  }
+  function attMigrateStore(store, opts){
+    opts=opts||{};
+    const report={movedToThings:0, thingsCreated:0, receipts:0, documents:0,
+                  untouched:0, before:0, after:0, ok:false};
+    let reg=[];
+    try{ reg=JSON.parse(store.getRaw("fs_attachments")||"[]"); }catch(e){ reg=[]; }
+    report.before=reg.length;
+    let safe=[];
+    try{ safe=JSON.parse(store.getRaw("fs_safe")||"[]"); }catch(e){ safe=[]; }
+    const byFirearm={};
+    safe.forEach(f=>{ if(f && f.id) byFirearm[f.id]=f; });
+    const now=Date.now();
+    reg.forEach(rec=>{
+      if(!rec || !rec.parent) { report.untouched++; return; }
+      if(rec.parent.kind!=="firearm"){ report.untouched++; return; }
+      const f=byFirearm[rec.parent.id];
+      if(!f){ report.untouched++; return; }       /* orphan: left exactly as found */
+      const k=rec.kind;
+      if(k==="Receipt"){ rec.kind="receipt"; report.receipts++; return; }
+      if(k==="Work photo"){ rec.kind="document"; report.documents++; return; }
+      if(!attIsThingKind(k)){ report.untouched++; return; }
+      /* a photo-with-a-label becomes a thing carrying that one file */
+      const known=ATT_TYPES.indexOf(k)>=0;
+      const list=fAtts(f);
+      const a={ id:attMakeId(now), type: known ? k : "Other",
+                name: known ? k : String(k),
+                serial:"", mounted:"", notes:"",
+                addedAt: rec.addedAt || now };
+      list.push(a);
+      rec.parent={kind:"att", id:a.id};
+      rec.kind="photo";
+      report.thingsCreated++; report.movedToThings++;
+    });
+    report.after=reg.length;
+    report.ok = report.before===report.after;
+    if(!report.ok) return report;                 /* |X| REFUSE TO WRITE A LOSS */
+    if(!opts.dryRun){
+      store.setRaw("fs_attachments", JSON.stringify(reg));
+      store.setRaw("fs_safe", JSON.stringify(safe));
+      store.setRaw(ATT_MIG_FLAG, "1");
+    }
+    return report;
+  }
+
+  /* |X| THE THING LAYER'S TEST SURFACE. The migration is the one piece of this
+     build that touches data an owner already has, so it is the piece that has to
+     be provable on a fixture BEFORE it is ever pointed at a real store. Exposed
+     read-only-ish: a gate seeds a store, runs the migration, and asserts
+     count-in == count-out on records it wrote itself. */
+  window.FS_ATT={
+    TYPES(){ return ATT_TYPES.slice(); },
+    FILE_KINDS(){ return FILE_KINDS.slice(); },
+    migrate(store, opts){ return attMigrateStore(store, opts); },
+    attsOf(f){ return fAtts(f).slice(); },
+    filesOf(a){ return attFilesOf(a); },
+    detailLine(a){ return attDetailLine(a); },
+    isThingKind(k){ return attIsThingKind(k); },
+    MIG_FLAG: ATT_MIG_FLAG,
+    /* the Gear Locker round trip, readable by a gate. The 2026-08-21 ruling has
+       two halves and both are assertable here: the thing moves WITH its files,
+       and the zero closes on unmount rather than following it. */
+    locker(){ return gearRead(); },
+    moveToLocker(fid, aid){ const f=byId(fid); if(f) attMoveToLocker(f, aid); },
+    mount(gearId, fid){ return gearMount(gearId, fid); },
+    zerosOf(fid){ const f=byId(fid); return f ? (f.zeros||[]).slice() : []; }
+  };
+
+  /* |X| THE MIGRATION RUNS HERE, NOT AT THE BOOT NORMALISER. It cannot run
+     beside the other fs_safe normalisation at load time: ATT_TYPES and
+     FILE_KINDS are `const`s declared in this block, so a call from up there hits
+     their temporal dead zone and kills the whole boot — the same dead-zone trap
+     the safe-load comment already warns about for defaultCleanIv.
+     |X| AND IT REFRESHES THE IN-MEMORY SAFE. The migration rewrites fs_safe in
+     the STORE; the app is holding an array it parsed before this ran. Without
+     the refresh an owner would see his attachments only after a restart, which
+     reads exactly like the migration lost them. Same array reference, so every
+     closure already holding `safe` sees the new records. */
+  (function attBootMigrate(){
+    try{
+      if(BenchEnv.store.getRaw(ATT_MIG_FLAG)==="1") return;
+      const rep=attMigrateStore(BenchEnv.store,{});
+      if(rep && rep.ok && rep.thingsCreated){
+        const fresh=store.get("fs_safe", []);
+        safe.length=0; fresh.forEach(x=>safe.push(x));
+      }
+    }catch(e){ /* a migration that throws must never stop the app booting */ }
+  })();
+
   function benchAttGrid(container, parent, opts){
     opts=opts||{};
     const items=BenchAttach.listFor(BenchEnv.store, parent);
@@ -7637,18 +7866,302 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const tag=document.getElementById("dNfaTag");
     tag.hidden=!f.nfaItemType;
     if(f.nfaItemType) tag.textContent=f.nfaItemType.toUpperCase();
-    /* firearm-level attachments (receipts, work photos) */
-    const ab=document.getElementById("attBox");
-    if(ab){
-      const wrap=document.getElementById("attGridWrap");
-      const n=benchAttGrid(wrap, {kind:"firearm", id:f.id},
-        {kind:"photo", types:ATT_TYPES, onchange:()=>benchAfterCardEdit()});
-      document.getElementById("attSummary").textContent = n ? `${n} file${n===1?"":"s"}` : "None yet";
-      document.getElementById("attMsg").textContent = BenchEnv.hasFS()
-        ? "Pick the type, then add the photo — optics, mounts, slings, cases and the rest. Thumbnails here; full size on tap."
-        : "Photos attach on the phone app.";
-    }
+    /* vC48 — ATTACHMENTS IS A LIST OF THINGS; the gun's own files are their own
+       box underneath it. Two boxes because they are two different questions:
+       "what is on this rifle" and "what paperwork do I have for this rifle". */
+    attRenderList(f);
+    attRenderFiles(f);
+    const ad=document.getElementById("attAddBtn");
+    if(ad && !ad.dataset.wired){ ad.dataset.wired="1";
+      ad.addEventListener("click",()=>{ const cur=byId(activeId); if(cur) attOpenSheet(cur); }); }
   };
+
+  /* ================= vC48 items 4 & 6 — THE FIREARM PAGE ================= */
+  function attRenderList(f){
+    const ab=document.getElementById("attBox"); if(!ab) return;
+    const host=document.getElementById("attList"); if(!host) return;
+    const list=fAtts(f);
+    host.innerHTML="";
+    document.getElementById("attSummary").textContent =
+      list.length ? `${list.length} thing${list.length===1?"":"s"}` : "None yet";
+    /* |X| THE EMPTY STATE SAYS WHAT GOES HERE. "None yet" alone tells an owner
+       the feature exists and nothing about what it is for. */
+    document.getElementById("attMsg").textContent = list.length
+      ? "What is on this one. Tap a row for its photos, receipts and serial."
+      : "Optics, mounts, slings, lights, cases \u2014 the things that hang off this one. Each keeps its own photos, receipts and serial.";
+    list.forEach(a=>{
+      const files=attFilesOf(a);
+      const thumbRec=files.find(x=>x && x.thumb);
+      const row=document.createElement("button");
+      row.type="button"; row.className="attrow";
+      const detail=attDetailLine(a);
+      row.innerHTML=
+        `<span class="attrow-ic">${thumbRec?`<img alt="" data-thumb="${escAttr(thumbRec.thumb)}">`:`<span class="attrow-glyph">${esc(attTypeGlyph(a.type))}</span>`}</span>`
+       +`<span class="attrow-body">`
+       +`<span class="attrow-type">${esc(attTypeLabel(a))}</span>`
+       +`<span class="attrow-name">${esc(a.name||attTypeLabel(a))}</span>`
+       +(detail?`<span class="attrow-det">${esc(detail)}</span>`:"")
+       +`</span>`
+       +`<span class="attrow-files">${files.length?`${files.length} file${files.length===1?"":"s"}`:""}</span>`;
+      row.addEventListener("click",()=>attOpenCard(f, a.id));
+      host.appendChild(row);
+      const img=row.querySelector("img[data-thumb]");
+      if(img) benchLoadThumb(img, thumbRec);
+    });
+  }
+  /* A glyph, not an icon set: one character the owner already reads as the
+     thing. No new asset, no new licence question, and it degrades to the type
+     word beside it when a font lacks the glyph. */
+  const ATT_GLYPH={"Optic":"\u25ce","Red dot":"\u25c9","Scope":"\u25ce","Mount / rings":"\u2338",
+    "Sling":"\u301c","Light":"\u2600","Laser":"\u2192","Foregrip":"\u2293","Bipod":"\u22cf",
+    "Grip":"\u220a","Muzzle device":"\u2299","Trigger":"\u21b5","Stock":"\u2310","Choke":"\u25d4",
+    "Case":"\u25a4","Other":"\u25a1"};
+  function attTypeGlyph(t){ return ATT_GLYPH[t] || ATT_GLYPH.Other; }
+  function attById(f,id){ return fAtts(f).find(x=>x && x.id===id) || null; }
+
+  /* ---------------- item 5 — THE THING'S OWN CARD ---------------- */
+  let attCardSheet=null, attCardOn=null;
+  function attCloseCard(){
+    if(attCardSheet) attCardSheet.classList.remove("open");
+    attCardOn=null;
+  }
+  function attOpenCard(f, id){
+    const a=attById(f,id); if(!a) return;
+    attCardOn={fid:f.id, aid:id};
+    if(!attCardSheet){
+      attCardSheet=document.createElement("div");
+      attCardSheet.className="prosheet"; attCardSheet.id="attCard";
+      document.body.appendChild(attCardSheet);
+      attCardSheet.addEventListener("click",e=>{ if(e.target===attCardSheet) attCloseCard(); });
+    }
+    attDrawCard();
+    attCardSheet.classList.add("open");
+  }
+  function attDrawCard(){
+    if(!attCardOn || !attCardSheet) return;
+    const f=byId(attCardOn.fid); if(!f){ attCloseCard(); return; }
+    const a=attById(f, attCardOn.aid); if(!a){ attCloseCard(); return; }
+    const detail=attDetailLine(a);
+    /* |X| THE OPTIC'S CARD SAYS WHAT UNMOUNTING COSTS, ON THE CARD, BEFORE THE
+       BUTTON. The 2026-08-21 ruling is that a zero belongs to the pairing and a
+       re-mount starts over; an owner who learns that AFTER tapping Move has
+       been told too late. Optics only \u2014 a sling has no zero to lose. */
+    const isOptic=["Optic","Red dot","Scope"].indexOf(a.type)>=0;
+    attCardSheet.innerHTML=
+      `<div class="sheet attsheet">`
+      +`<button class="sheetx" id="acX">\u00d7</button>`
+      +`<div class="acHead"><span class="acGlyph">${esc(attTypeGlyph(a.type))}</span>`
+      +`<div><div class="acType">${esc(attTypeLabel(a))}</div>`
+      +`<div class="acName">${esc(a.name||attTypeLabel(a))}</div></div></div>`
+      +(detail?`<div class="acDet">${esc(detail)}</div>`:"")
+      +(a.notes?`<div class="acNotes">${esc(a.notes)}</div>`:"")
+      +(isOptic?`<div class="acZero">Its zero belongs to this pairing. Move it to the Gear Locker and the zero record closes \u2014 mounting it again starts a new one.</div>`:"")
+      +`<div class="aclabel">PHOTOS</div><div id="acPhotos"></div>`
+      +`<div class="aclabel">RECEIPTS &amp; FILES</div><div id="acFiles"></div>`
+      +`<div class="acActs">`
+      +`<button class="btn sm" id="acEdit">EDIT</button>`
+      +`<button class="btn sm" id="acMove">MOVE TO GEAR LOCKER</button>`
+      +`<button class="btn sm" id="acDel">REMOVE</button>`
+      +`</div>`
+      +`</div>`;
+    attCardSheet.querySelector("#acX").addEventListener("click", attCloseCard);
+    /* both strips are the SAME mechanism, scoped by the file vocabulary */
+    benchAttGrid(attCardSheet.querySelector("#acPhotos"), {kind:"att", id:a.id},
+      {kind:"photo", addLabel:"ADD PHOTO", onchange:()=>{ attDrawCard(); attAfterChange(); }});
+    benchAttGrid(attCardSheet.querySelector("#acFiles"), {kind:"att", id:a.id},
+      {kind:"receipt", types:["Receipt","Document"], addLabel:"ADD FILE",
+       onchange:()=>{ attDrawCard(); attAfterChange(); }});
+    attCardSheet.querySelector("#acEdit").addEventListener("click",()=>{ attCloseCard(); attOpenSheet(f, a.id); });
+    attCardSheet.querySelector("#acMove").addEventListener("click",()=> attMoveToLocker(f, a.id));
+    let armed=false; const del=attCardSheet.querySelector("#acDel");
+    del.addEventListener("click",()=>{
+      if(!armed){ armed=true; del.textContent="TAP AGAIN TO REMOVE"; del.style.color="var(--safe-red)";
+                  setTimeout(()=>{ armed=false; del.textContent="REMOVE"; del.style.color=""; },4000); return; }
+      attRemove(f, a.id);
+    });
+  }
+  function attAfterChange(){ saveSafe(); const f=byId(activeId); if(f){ attRenderList(f); attRenderFiles(f); } }
+
+  /* ---------------- item 4 — THE ADD / EDIT SHEET ---------------- */
+  let attSheet=null;
+  function attOpenSheet(f, editId){
+    const editing = editId ? attById(f, editId) : null;
+    if(!attSheet){
+      attSheet=document.createElement("div");
+      attSheet.className="prosheet"; attSheet.id="attSheet";
+      document.body.appendChild(attSheet);
+      attSheet.addEventListener("click",e=>{ if(e.target===attSheet) attSheet.classList.remove("open"); });
+    }
+    let chosen = editing ? editing.type : "Optic";
+    const draw=()=>{
+      attSheet.innerHTML=
+        `<div class="sheet attsheet">`
+        +`<button class="sheetx" id="asX">\u00d7</button>`
+        +`<div class="acType">${editing?"Edit attachment":"Add attachment"}</div>`
+        +`<div class="aclabel">TYPE</div><div class="attchips" id="asChips">`
+        + ATT_TYPES.map(t=>`<button type="button" class="attchip${t===chosen?" on":""}" data-t="${escAttr(t)}">${esc(t)}</button>`).join("")
+        +`</div>`
+        +`<div class="nf wide" id="asOtherWrap"${chosen==="Other"?"":" hidden"}>`
+        +`<label for="asOther">What is it called?</label>`
+        +`<input type="text" id="asOther" maxlength="40" placeholder="e.g. Handstop" value="${escAttr(editing&&editing.type==="Other"?(editing.name||""):"")}"></div>`
+        +`<div class="nf wide"><label for="asName">Name <span style="color:var(--safe-red)">*</span></label>`
+        +`<input type="text" id="asName" maxlength="60" placeholder="e.g. Trijicon MRO" value="${escAttr(editing?editing.name||"":"")}"></div>`
+        +`<div class="nfagrid">`
+        +`<div class="nf"><label for="asSerial">Serial (optional)</label><input type="text" id="asSerial" maxlength="40" value="${escAttr(editing?editing.serial||"":"")}"></div>`
+        +`<div class="nf"><label for="asMounted">Mounted</label><input type="date" id="asMounted" value="${escAttr(editing?editing.mounted||"":"")}"></div>`
+        +`</div>`
+        +`<div class="nf wide"><label for="asNotes">Notes (optional)</label><input type="text" id="asNotes" maxlength="140" value="${escAttr(editing?editing.notes||"":"")}"></div>`
+        +`<div class="asErr" id="asErr" hidden></div>`
+        +`<button class="btn sm primary full" id="asSave" style="margin-top:11px">${editing?"SAVE":"ADD ATTACHMENT"}</button>`
+        +`</div>`;
+      attSheet.querySelector("#asX").addEventListener("click",()=> attSheet.classList.remove("open"));
+      attSheet.querySelectorAll(".attchip").forEach(b=>b.addEventListener("click",()=>{
+        chosen=b.getAttribute("data-t"); draw();
+      }));
+      attSheet.querySelector("#asSave").addEventListener("click",()=>{
+        const nameEl=attSheet.querySelector("#asName");
+        const other=attSheet.querySelector("#asOther");
+        const name=(nameEl.value||"").trim();
+        /* |X| NAME IS REQUIRED AND THE SHEET SAYS SO RATHER THAN FAILING QUIETLY.
+           A list of rows reading "Optic / Optic / Optic" is what an optional name
+           produces, and it is unreadable the moment a second one is added. */
+        if(!name){ const e=attSheet.querySelector("#asErr");
+          e.textContent="Give it a name \u2014 that is what the row will read."; e.hidden=false;
+          nameEl.focus(); return; }
+        const rec = editing || {id:attMakeId(Date.now()), addedAt:Date.now()};
+        rec.type=chosen;
+        rec.name=name;
+        if(chosen==="Other" && other && (other.value||"").trim()) rec.name=name;
+        rec.serial=(attSheet.querySelector("#asSerial").value||"").trim();
+        rec.mounted=(attSheet.querySelector("#asMounted").value||"").trim();
+        rec.notes=(attSheet.querySelector("#asNotes").value||"").trim();
+        if(!editing) fAtts(f).push(rec);
+        saveSafe();
+        attSheet.classList.remove("open");
+        attRenderList(f);
+        if(!editing) attOpenCard(f, rec.id);
+      });
+    };
+    draw();
+    attSheet.classList.add("open");
+  }
+  function attRemove(f, id){
+    const list=fAtts(f);
+    const i=list.findIndex(x=>x && x.id===id);
+    if(i<0) return;
+    /* the thing's files go with it \u2014 same promise the firearm removal makes */
+    try{ deleteAttachmentsForIds([id]); }catch(e){}
+    list.splice(i,1);
+    saveSafe(); attCloseCard(); attRenderList(f); benchAfterCardEdit();
+  }
+
+  /* ---------------- item 7 — THE GEAR LOCKER ---------------- */
+  const GEAR_KEY="fs_gear";
+  function gearRead(){
+    try{ const r=BenchEnv.store.getRaw(GEAR_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; }
+  }
+  function gearWrite(list){ BenchEnv.store.setRaw(GEAR_KEY, JSON.stringify(list||[])); }
+  /* |X| THE ZERO BELONGS TO THE PAIRING (Darren, 2026-08-21). Unmounting closes
+     the open zero for THIS optic on THIS gun; it is not deleted, because the
+     record of where it was is the point. A re-mount starts a new one. */
+  function gearCloseZerosFor(f, attId, now){
+    let closed=0;
+    (f.zeros||[]).forEach(z=>{
+      if(z && z.optic===attId && !z.closedAt){ z.closedAt=now; closed++; }
+    });
+    return closed;
+  }
+  function attMoveToLocker(f, id){
+    const a=attById(f,id); if(!a) return;
+    const now=Date.now();
+    const closed=gearCloseZerosFor(f, id, now);
+    const list=fAtts(f);
+    const i=list.findIndex(x=>x && x.id===id);
+    if(i<0) return;
+    list.splice(i,1);
+    const locker=gearRead();
+    /* |X| THE FILES ARE NOT MOVED, AND THAT IS THE DESIGN. They are keyed by the
+       thing's id, so they follow it into the Locker and back out again without a
+       single byte being rewritten \u2014 which is also why a move cannot lose one. */
+    locker.push(Object.assign({}, a, {unmountedAt:now,
+      from:{id:f.id, name:faInfo(f).name}, zerosClosed:closed}));
+    gearWrite(locker);
+    saveSafe(); attCloseCard(); attRenderList(f); benchAfterCardEdit();
+    gearOpen();
+  }
+  function gearMount(gearId, firearmId){
+    const locker=gearRead();
+    const i=locker.findIndex(x=>x && x.id===gearId);
+    if(i<0) return false;
+    const f=byId(firearmId); if(!f) return false;
+    const a=locker[i];
+    locker.splice(i,1); gearWrite(locker);
+    const rec=Object.assign({}, a);
+    delete rec.unmountedAt; delete rec.from; delete rec.zerosClosed;
+    rec.mounted=new Date().toISOString().slice(0,10);
+    fAtts(f).push(rec);
+    saveSafe();
+    return true;
+  }
+  let gearSheet=null;
+  function gearOpen(){
+    if(!gearSheet){
+      gearSheet=document.createElement("div");
+      gearSheet.className="prosheet"; gearSheet.id="gearSheet";
+      document.body.appendChild(gearSheet);
+      gearSheet.addEventListener("click",e=>{ if(e.target===gearSheet) gearSheet.classList.remove("open"); });
+    }
+    gearDraw();
+    gearSheet.classList.add("open");
+  }
+  function gearDraw(){
+    const locker=gearRead();
+    gearSheet.innerHTML=
+      `<div class="sheet attsheet">`
+      +`<button class="sheetx" id="glX">\u00d7</button>`
+      +`<div class="acType">Gear Locker</div>`
+      +`<div class="lmsg">Spares \u2014 anything not mounted on a particular firearm. Its photos and receipts came with it.</div>`
+      +(locker.length?`<div id="glList"></div>`
+        :`<div class="lmsg" style="margin-top:12px">Nothing in the Locker. Move an attachment off a firearm and it lands here with its files.</div>`)
+      +`</div>`;
+    gearSheet.querySelector("#glX").addEventListener("click",()=> gearSheet.classList.remove("open"));
+    const host=gearSheet.querySelector("#glList"); if(!host) return;
+    locker.forEach(a=>{
+      const files=attFilesOf(a);
+      const row=document.createElement("div"); row.className="gearrow";
+      row.innerHTML=
+        `<div class="attrow-ic"><span class="attrow-glyph">${esc(attTypeGlyph(a.type))}</span></div>`
+       +`<div class="attrow-body"><span class="attrow-type">${esc(attTypeLabel(a))}</span>`
+       +`<span class="attrow-name">${esc(a.name||attTypeLabel(a))}</span>`
+       +`<span class="attrow-det">${esc(a.from&&a.from.name?("off "+a.from.name):"")}${files.length?` \u00b7 ${files.length} file${files.length===1?"":"s"}`:""}</span></div>`;
+      const mount=document.createElement("select");
+      mount.className="gearmount";
+      mount.innerHTML=`<option value="">MOUNT ON\u2026</option>`
+        + safe.map(f=>`<option value="${escAttr(f.id)}">${esc(faInfo(f).name)}</option>`).join("");
+      mount.addEventListener("change",()=>{
+        if(!mount.value) return;
+        if(gearMount(a.id, mount.value)){
+          gearDraw();
+          const cur=byId(activeId); if(cur){ attRenderList(cur); }
+          benchAfterCardEdit();
+        }
+      });
+      row.appendChild(mount);
+      host.appendChild(row);
+    });
+  }
+
+  function attRenderFiles(f){
+    const box=document.getElementById("filesBox"); if(!box) return;
+    const wrap=document.getElementById("filesGridWrap");
+    const n=benchAttGrid(wrap, {kind:"firearm", id:f.id},
+      {kind:"photo", types:FILE_KINDS.map(k=>FILE_KIND_LABEL[k]||k),
+       onchange:()=>{ benchAfterCardEdit(); }});
+    document.getElementById("filesSummary").textContent = n ? `${n} file${n===1?"":"s"}` : "None yet";
+    document.getElementById("filesMsg").textContent = BenchEnv.hasFS()
+      ? "The gun itself \u2014 photos, receipts, manuals and paperwork."
+      : "Files attach on the phone app.";
+  }
 
   /* ---------- THE BENCH (top-level view; Pro, locked-visible) ---------- */
   /* ⛔ SCOPE LEAK ROOT FIX (Darren ruling 2026-08-16, reproduced live on vC20).
@@ -7722,6 +8235,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      prevent. */
   function attOwnedIds(f){
     const ids=[f.id];
+    /* |X| vC48 — THE THINGS' FILES ARE THE FIREARM'S FILES FOR THIS PURPOSE.
+       A thing's photos are parented to the THING, not to the gun, so without
+       this line deleting a firearm would leave every optic photo on disk with
+       no record pointing at it: the exact privacy defect the comment below this
+       function already describes, reintroduced one indirection further out. */
+    (f.attachments||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
     (f.mags||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
     (f.zeros||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
     (f.service||[]).forEach(x=>{ if(x&&x.id) ids.push(x.id); });
@@ -7733,6 +8252,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     (list||safe).forEach(f=>{
       const name=faInfo(f).name;
       m.set(f.id, {f, name, what:""});
+      /* vC48 item 8: the Bench roll-up names the THING a file belongs to, so its
+         link can land on that thing's own card rather than on a bare gun. */
+      (f.attachments||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:(x.name||x.type||"attachment"), att:x}); });
       (f.mags||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"mag #"+(x.num||"")}); });
       (f.zeros||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"zero"}); });
       (f.service||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"service"}); });
@@ -7744,9 +8266,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      Fire-and-forget by design: removal must not block on the filesystem, and a
      file that fails to unlink still loses its registry row rather than leaving
      a half-deleted record visible in the UI. */
-  function deleteAttachmentsFor(f){
+  function deleteAttachmentsFor(f){ return deleteAttachmentsForIds(attOwnedIds(f)); }
+  /* |X| THE ID-SET CORE. Everything below this line was written for the firearm
+     case and is correct for ANY set of parent ids; vC48 needs it for a single
+     attachment. Factored rather than copied, because the copy would not have
+     carried the atomic-write comment with it. */
+  function deleteAttachmentsForIds(ids){
     try{
-      const owned=new Set(attOwnedIds(f));
+      const owned=new Set(ids||[]);
+      if(!owned.size) return 0;
       const reg=BenchAttach.readReg(BenchEnv.store);
       const mine=reg.filter(a=>a && a.parent && owned.has(a.parent.id));
       if(!mine.length) return 0;
@@ -56424,7 +56952,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     {id:"suppBox",   label:"Suppressor spec",   twins:[],               count:f=>(f.supp&&f.supp.type?1:0)},
     {id:"magBox",    label:"Magazines",         twins:[],               count:f=>(f.mags||[]).length},
     {id:"careBox",   label:"Care reminders",    twins:[],               count:f=>(f.reminders||[]).length},
-    {id:"attBox",    label:"Attachments",       twins:[],               count:f=>BenchAttach.listFor(BenchEnv.store,{kind:"firearm",id:f.id}).length},
+    {id:"attBox",    label:"Attachments",       twins:[],               count:f=>(f.attachments||[]).length},
+    {id:"filesBox",  label:"Photos & paperwork",twins:[],               count:f=>BenchAttach.listFor(BenchEnv.store,{kind:"firearm",id:f.id}).length},
     {id:"svcBox",    label:"Service & mods",    twins:[],               count:f=>(f.service||[]).length},
     {id:"zeroBox",   label:"Zero record",       twins:["proZeroLock"],  count:f=>(f.zeros||[]).length},
     {id:"springBox", label:"Spring life",       twins:["proSpringLock"]},
@@ -58354,14 +58883,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const o=own.get(a.parent && a.parent.id);
       const key=o?o.f.id:("~"+((a.parent&&a.parent.kind)||"other"));
       const label=o?o.name:(((a.parent&&a.parent.kind)||"other")+" records");
-      if(!groups.has(key)) groups.set(key,{label, items:[]});
+      if(!groups.has(key)) groups.set(key,{key, label, items:[]});
       groups.get(key).items.push(a);
     });
     groups.forEach(g=>{
-      const head=document.createElement("div");
-      head.className="lmsg";
+      /* |X| vC48 item 8 — THE ROLL-UP IS A WAY IN, NOT A SECOND PLACE TO ADD.
+         This card is read-only by design: the firearm page owns the list now,
+         so the group header LINKS there rather than offering an add whose
+         target ("added to what, exactly?") was the ambiguity that closed this
+         ruling. Groups that are not a firearm (stray parent kinds) stay plain
+         text — there is nowhere to send someone. */
+      const isGun=!/^~/.test(g.key||"");
+      const head=document.createElement(isGun?"button":"div");
+      head.className=isGun?"benchAttLink":"lmsg";
       head.style.cssText="margin-top:10px;color:var(--text)";
-      head.textContent=`${g.label} — ${g.items.length} file${g.items.length===1?"":"s"}`;
+      head.textContent=`${g.label} — ${g.items.length} file${g.items.length===1?"":"s"}`
+        + (isGun?"  ›":"");
+      if(isGun) head.addEventListener("click",()=>{
+        activeId=g.key; renderDetail(); show("scr-detail");
+        const box=document.getElementById("attBox");
+        if(box) setTimeout(()=>box.scrollIntoView({block:"start"}),60);
+      });
       host.appendChild(head);
       const grid=document.createElement("div"); grid.className="attgrid";
       g.items.forEach(a=>{
@@ -59248,6 +59790,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
         <button class="btn sm" id="csvInv">Inventory CSV</button>
         <button class="btn sm" id="csvHist">History CSV</button>
+        <button class="btn sm" id="csvAtt">Attachments CSV</button>
         <button class="btn sm" id="csvLocker">Locker CSV</button>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
@@ -59259,6 +59802,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const csvBtn=(id,fn)=>{ const b=document.getElementById(id); if(b) b.onclick=fn; };
     csvBtn("csvInv",   ()=>benchCsvShare("fieldstrip-inventory", BenchCsv.buildInventoryCsv(BenchEnv.store, CATALOG)));
     csvBtn("csvHist",  ()=>benchCsvShare("fieldstrip-history",   BenchCsv.buildHistoryCsv(BenchEnv.store, CATALOG)));
+    csvBtn("csvAtt",   ()=>benchCsvShare("fieldstrip-attachments", BenchCsv.buildAttachmentsCsv(BenchEnv.store)));
     csvBtn("csvLocker",()=>benchCsvShare("fieldstrip-locker",    BenchCsv.buildLockerCsv(BenchEnv.store)));
     csvBtn("csvTemplate",()=>benchCsvShare("fieldstrip-template", BenchCsv.buildInventoryTemplate()));
     csvBtn("csvImport",()=>benchCsvImportFlow());
