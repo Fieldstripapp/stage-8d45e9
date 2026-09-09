@@ -4421,7 +4421,8 @@
         if(!isPro() && safe.length>=FREE_MAX_GUNS){ openProSheet(); return; }
         const f={id:Date.now().toString(36), model:c.i, totalRounds:0, roundsSinceClean:0, roundsSinceSpring:0, lastClean:null, lastChems:"",
                  cleanInterval:(c.gp==="Suppressors"?400:((c.fm==="PUMP-500"||c.fm==="PUMP-590")?200:500)),
-                 log:[{ts:Date.now(), type:"note", msg:"Added to safe", mags:[], magRotDays:90, reminders:[], service:[], zeros:[]}]};
+                 log:[{ts:Date.now(), type:"note", msg:"Added to safe"}],
+                 mags:[], magRotDays:90, reminders:[], service:[], zeros:[]};
         safe.unshift(f); saveSafe();
         /* straight into the new firearm's detail page (Darren, 2026-07-26 — a My Safe landing was
            tried and reverted). show() IS the picker's open/close state: it deactivates #scr-pick and
@@ -7424,7 +7425,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       sync();
     })();
     list.querySelectorAll(".attwrap").forEach(w=>{
-      if(w.dataset.mid) benchAttGrid(w, {kind:"mag", id:w.dataset.mid}, {onchange:()=>benchAfterCardEdit()});
+      if(w.dataset.mid) benchAttGrid(w, {kind:"mag", id:w.dataset.mid}, {kind:"work", addLabel:"PHOTO / FILE", onchange:()=>benchAfterCardEdit()});
     });
     list.querySelectorAll("[data-st]").forEach(b=>{
       b.addEventListener("click",()=>{
@@ -7869,8 +7870,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     /* vC48 — ATTACHMENTS IS A LIST OF THINGS; the gun's own files are their own
        box underneath it. Two boxes because they are two different questions:
        "what is on this rifle" and "what paperwork do I have for this rifle". */
-    attRenderList(f);
-    attRenderFiles(f);
+    /* ⛔ NO SILENT NO-OP (walk-48 item 1). If the attachments render throws, the
+       card must SAY SO, not open to nothing — and the failure must not abort the
+       rest of the page. The reported "attachments opens to nothing" is exactly
+       this shape: a throw on the way to drawing the list leaves an empty card. */
+    try{
+      attRenderList(f);
+      attRenderFiles(f);
+    }catch(e){
+      const host=document.getElementById("attList");
+      if(host) host.innerHTML='<div class="lmsg" style="color:#E5A093">Couldn’t load attachments here — your saved attachments are safe. Reopen this firearm to try again.</div>';
+      const sum=document.getElementById("attSummary"); if(sum) sum.textContent="—";
+      console.error("attachments render:", e);
+    }
     const ad=document.getElementById("attAddBtn");
     if(ad && !ad.dataset.wired){ ad.dataset.wired="1";
       ad.addEventListener("click",()=>{ const cur=byId(activeId); if(cur) attOpenSheet(cur); }); }
@@ -10510,7 +10522,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","That is the strip — and Benelli stops here",
           stA("Fore-end, barrels, trigger guard, receiver-and-stock. Nothing beyond that is published for the owner. ⚠ Before the gun goes in its case, Benelli wants both strikers let down: pull the trigger on the first barrel, move the selector, pull again.")
           +"Letting the strikers down is part of putting it away, not part of taking it apart.",
-          {"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Before placing the shotgun into its case, printed p.49"})
+          {"branch":true,"src":"BENELLI 828U — USE AND MAINTENANCE — 04-2020 — read from the document's own filename and page furniture — Before placing the shotgun into its case, printed p.49"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ Chokes stay IN to clean the barrel — and go back FULLY BOTTOMED",
@@ -11080,7 +11092,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Forend and adapter off, then the barrel — strip complete",
           stA("Hold the gun by the BARREL and pull the forend straight out toward the muzzle, then take off the forend adapter. Now keep the piston inside the gas cylinder with your fingers and draw the barrel out of the stock-receiver assembly. ⛔ Never remove the valve spring or its retaining nut — the valve is self-cleaning.")
           +stAs("NEVER REMOVE the spring of the valve or the valve retaining nut. The valve device is self-cleaning and requires no maintenance. If necessary, contact a competent gunsmith."),
-          {"src":"Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) — 1301 TACTICAL DISASSEMBLY, printed p.28-31"}),
+          {"branch":true,"src":"Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) — 1301 TACTICAL DISASSEMBLY, printed p.28-31"}),
         tgStep("Clean","Choke housing first — it is where the fouling packs in",
           stA("With the choke out, brush the housing clean and dry it, then check the choke itself inside AND outside. A thin film of gun oil goes on the barrel thread and the choke before it is screwed back — that is what stops a choke seizing in a gas gun after a season of hot loads.")
           +stAs("Apply a thin film of Beretta Gun Oil on the barrel thread and choke tube."),
@@ -11342,7 +11354,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ Top lever right, and HOLD the barrels",
           stA("Turn the top lever to the right and tilt the barrels down while holding them firmly — with the fore-end off, nothing stops them sliding right off the hinge pins. Lift them gently up and out, and take out any snap caps still in the chambers.")
           +stAs("Gently lift the barrels up and out of the receiver"),
-          {"src":"Beretta Side by Side Shotgun User Manual — C62841 004 (form code printed in the running header) — DISASSEMBLY, printed p.18"}),
+          {"branch":true,"src":"Beretta Side by Side Shotgun User Manual — C62841 004 (form code printed in the running header) — DISASSEMBLY, printed p.18"}),
         tgStep("Clean","⛔ Rod in from the CHAMBER end, every time",
           stA("Cotton cloth on a rod with a quality gun cleaner, bronze brush if the residue needs it — and the rod always enters at the cartridge chamber, never the muzzle. Then a clean dry cloth through to take the cleaner out, then a lightly oiled one. Running a rod in from the muzzle is how a crown gets worn on a gun that will otherwise outlive you.")
           +stAs("Never apply too much oil. A build up of oil will attract dirt and this can interfere with the shotgun's operation and reliability."),
@@ -11393,7 +11405,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Strip without recocking, if you want the springs at rest",
           stA("Tilting the barrels down recocks the hammers automatically. If you would rather store the gun with the hammers down — snap caps, trigger pulled, hammers dropped — Beretta points you at the disassembly chapter to strip it WITHOUT recocking. ⛔ Dry firing an empty over-and-under damages the firing pins; use the snap caps.")
           +stAs("The snap-caps allow the shotgun to be “dry fired”."),
-          {"src":"Beretta Over-and-Unders User Manual — MAN0022/001 (form code printed in the running header) — USE — UNLOADING, printed p.17"}),
+          {"branch":true,"src":"Beretta Over-and-Unders User Manual — MAN0022/001 (form code printed in the running header) — USE — UNLOADING, printed p.17"}),
         tgStep("Clean","⛔ Rod in from the CHAMBER end, every time",
           stA("Cotton cloth on a rod with a quality gun cleaner, bronze brush if the residue needs it — and the rod always enters at the cartridge chamber, never the muzzle. Then a clean dry cloth through to take the cleaner out, then a lightly oiled one. Running a rod in from the muzzle is how a crown gets worn on a gun that will otherwise outlive you.")
           +stAs("Never apply too much oil. A build up of oil will attract dirt and this can interfere with the shotgun's operation and reliability."),
@@ -11668,7 +11680,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Forend forward, adapter off, barrel out — strip complete",
           stA("Slide the forend toward the muzzle and take the barrel assembly out of the receiver; with the barrel off, the forend adapter / piston stop comes away. ⛔ Keep clear of the valve: its spring and retaining nut are never removed.")
           +stAs("With the barrel assembly off the forend adapter/piston stop can now be removed."),
-          {"src":"Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) — A300 PATROL DISASSEMBLY, printed p.26-27"}),
+          {"branch":true,"src":"Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) — A300 PATROL DISASSEMBLY, printed p.26-27"}),
         tgStep("Clean","⛔ Slugs and buck: clean the gas system every 200 rounds",
           stA("This is the Patrol's own maintenance rule and it appears nowhere else in the book. Firing slugs and buckshot leaves lead in the gas system, so Beretta asks for the gas cylinder, piston, ring and barrel to be cleaned every 200 rounds of that ammunition to keep the gun cycling. Birdshot practice does not carry the same interval.")
           +stLimit("Beretta","Firing slugs and buck shot through the A300 Patrol can result in lead buildup in the gas operating system. Beretta recommends cleaning the gas cylinder, piston, ring, and barrel after every 200 rounds to ensure reliable function when firing these types of ammunition.","Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) — DESCRIPTION — A300 Patrol, printed p.13"),
@@ -11746,7 +11758,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ Hold the piston, then draw the barrel off — strip complete",
           stA("Keep the piston inside the gas cylinder with your fingers while you pull the barrel out of the stock-receiver assembly. Let go and the piston and its parts come off the tube and scatter. ⛔ And while you are in there: never remove the valve spring or the valve retaining nut. The valve is self-cleaning and needs nothing from you.")
           +stAs("NEVER REMOVE the spring of the valve or the valve retaining nut. The valve device is self-cleaning and requires no maintenance. If necessary, contact a competent gunsmith."),
-          {"src":"Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) — A300 ULTIMA DISASSEMBLY, printed p.23-25"}),
+          {"branch":true,"src":"Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) — A300 ULTIMA DISASSEMBLY, printed p.23-25"}),
         tgStep("Clean","Choke housing first — it is where the fouling packs in",
           stA("With the choke out, brush the housing clean and dry it, then check the choke itself inside AND outside. A thin film of gun oil goes on the barrel thread and the choke before it is screwed back — that is what stops a choke seizing in a gas gun after a season of hot loads.")
           +stAs("Apply a thin film of Beretta Gun Oil on the barrel thread and choke tube."),
@@ -11815,7 +11827,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ Hold the piston, draw the barrel — and leave the valve alone",
           stA("Pull the barrel out of the stock-receiver assembly while holding the piston inside the gas cylinder; release it and the piston parts come off the tube. ⛔ Then stop at the valve: never strip its spring or its retaining nut. It is self-cleaning and needs nothing, and anything genuinely wrong with it is a factory-trained gunsmith's job.")
           +stAs("NEVER STRIP the spring of the valve or the valve retaining nut"),
-          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+          {"branch":true,"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
         tgStep("Clean","Barrel, and the locking shoulders at the breech",
           stA("Soft flannel through the bore for combustion residue, bronze brush or an oiled cloth if it needs more. Then clean the LOCKING SHOULDERS on the barrel breech thoroughly — that is what the bolt locks into, and fouling there is a gun that will not close. Dry cloth through, light oil, then check the bore is clear.")
           +stAs("Carefully clean the inside of the barrel with a soft cloth (flannel) to remove any combustion residue. If necessary, use a bronze brush or a cloth soaked with Beretta Gun Oil."),
@@ -11877,7 +11889,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Recoil spring out, then tilt the barrel by its cam lug",
           stA("Lift the recoil spring assembly out of the slide, then grasp the barrel by the cam lug, tilt it and take it out. Four parts on the bench and that is the whole published strip.")
           +stAs("The recoil spring assembly can"),
-          {"src":"Beretta APX A1 User Manual — MAN0011 01 (form code printed in the running header) — FIELD STRIPPING, printed p.28-29"}),
+          {"branch":true,"src":"Beretta APX A1 User Manual — MAN0011 01 (form code printed in the running header) — FIELD STRIPPING, printed p.28-29"}),
         tgStep("Clean","Bore from the chamber end, all the way through before pulling back",
           stA("Oil on the bore brush, in from the chamber end, and push it ALL the way through before you draw it back — reversing a brush mid-bore is how bristles get folded over and dragged. Solvent first if it needs it, then patches until one emerges clean, then the locking lug, then a light oil everywhere.")
           +stAs("Clean the barrel locking lug with a cloth soaked in gun oil. Lightly oil the entire barrel prior to reassembly."),
@@ -11942,7 +11954,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Recoil spring out, then the barrel by its cam lug",
           stA("Lift the recoil spring assembly out of the slide, then grasp the barrel by the cam lug, tilt and remove it. Beretta says outright that nothing beyond this is required for routine maintenance.")
           +stAs("NOTICE: No further disassembly is required for routine maintenance."),
-          {"src":"Beretta APX Carry User Manual — ⛔ No form code is printed in this file's running header, unlike every other book in the drop; the document names itself \"APX Carry\" in its own text — FIELD STRIPPING, printed p.28-30"}),
+          {"branch":true,"src":"Beretta APX Carry User Manual — ⛔ No form code is printed in this file's running header, unlike every other book in the drop; the document names itself \"APX Carry\" in its own text — FIELD STRIPPING, printed p.28-30"}),
         tgStep("Clean","Bore from the chamber end, all the way through before pulling back",
           stA("Oil on the bore brush, in from the chamber end, and push it ALL the way through before you draw it back — reversing a brush mid-bore is how bristles get folded over and dragged. Solvent first if it needs it, then patches until one emerges clean, then the locking lug, then a light oil everywhere.")
           +stAs("Clean the barrel locking lug with a cloth soaked in gun oil. Lightly oil the entire barrel prior to reassembly."),
@@ -12006,7 +12018,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ Upper is off — now NEVER let the hammer fall",
           stA("With the upper off the lower, do not manually cock the hammer and do not pull the trigger. There is nothing for the hammer to strike but the fire control unit itself, and Beretta says plainly that doing it will damage the pistol and the FCU. This is the single most expensive mistake available on this gun.")
           +stLimit("Beretta","WHEN THE UPPER RECEIVER IS REMOVED FROM LOWER RECEIVER, THE USER SHOULD NEVER MANUALLY COCK THE HAMMER OR PULL THE TRIGGER AND ALLOW THE HAMMER TO FALL.","Beretta B22 Jaguar User Manual — UD6A0672 rev 1 (form code printed in the running header) — DISASSEMBLY, printed p.18-19"),
-          {"src":"Beretta B22 Jaguar User Manual — UD6A0672 rev 1 (form code printed in the running header) — DISASSEMBLY, printed p.18-19"}),
+          {"branch":true,"src":"Beretta B22 Jaguar User Manual — UD6A0672 rev 1 (form code printed in the running header) — DISASSEMBLY, printed p.18-19"}),
         tgStep("Clean","Barrel from the chamber end, then oil the feed ramp",
           stA("Bore solvent and a brush ALWAYS beginning at the chamber end, then dry patches, repeating until it is clean. Wipe the barrel exterior and the feed ramp with a solvent patch, let it dry, and put lubrication on the feed ramp — a dry ramp on a .22 is a feed stoppage waiting to happen.")
           +stAs("Wipe down exterior of barrel and feed ramp with a solvent soaked patch."),
@@ -12061,7 +12073,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"Beretta BRX1 Rifle User Manual — C6D727/002 P029173/002 (form code printed in the running header) — MAINTENANCE, printed p.26-27"}),
         tgStep("Strip","Carrier slides straight out — strip complete",
           stA("With the button up, slide the carrier completely out of the receiver. That is the whole strip for cleaning: rifle, carrier, magazine."),
-          {"src":"Beretta BRX1 Rifle User Manual — C6D727/002 P029173/002 (form code printed in the running header) — MAINTENANCE, printed p.26-27"}),
+          {"branch":true,"src":"Beretta BRX1 Rifle User Manual — C6D727/002 P029173/002 (form code printed in the running header) — MAINTENANCE, printed p.26-27"}),
         tgStep("Clean","Barrel, and the locking shoulders at the breech",
           stA("Soft flannel through the bore, bronze brush or an oiled cloth if the residue needs it. Then clean the LOCKING SHOULDERS at the barrel breech thoroughly — on a straight-pull those are the surfaces the bolt head locks into, and fouling there is felt in the handle immediately. Clean cloth through, then a light oil inside.")
           +stAs("Carefully clean the inside of the barrel with a soft cloth (flannel). If necessary, use a bronze brush or a cloth soaked with Beretta Gun Oil."),
@@ -12704,7 +12716,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ That is the whole strip — three parts, and Blaser stops there",
           stA("Forearm, barrel assembly, action-and-stock. Blaser publishes no further dismantling of the F16 for the owner, and its warranty excludes firearms maintained by third parties. ⛔ Anything past this point is not in the book and is not in this guide.")
           +"A three-part gun is a gift. Clean it as three parts.",
-          {"src":"BLASER F16 — OPERATING INSTRUCTIONS / BEDIENUNGSANLEITUNG — UNKNOWN — no revision code is printed in the document — 6. Care and maintenance"})
+          {"branch":true,"src":"BLASER F16 — OPERATING INSTRUCTIONS / BEDIENUNGSANLEITUNG — UNKNOWN — no revision code is printed in the document — 6. Care and maintenance"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ Steel shot and the tight chokes — a barrel-damage prohibition",
@@ -12787,7 +12799,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","That is the strip — and Blaser stops here",
           stA("Forearm, barrel set, action-and-stock. Nothing further is published for the owner. ⚠ Even §6.2's damper for the top firing pin is explicitly marked as needing no maintenance at all.")
           +"Three parts. Clean it as three parts and put the tools away.",
-          {"src":"BLASER F3 — BEDIENUNGSANLEITUNG / INSTRUCTION MANUAL — 04-2014 — read from the document's own footer — 6.2. Damper for top firing pin"})
+          {"branch":true,"src":"BLASER F3 — BEDIENUNGSANLEITUNG / INSTRUCTION MANUAL — 04-2014 — read from the document's own footer — 6.2. Damper for top firing pin"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ SuperTrap only — the rail sets the point of impact, one click at a time",
@@ -12875,7 +12887,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","That is the strip — barrel, forearm, breech block",
           stA("The K 95 comes apart into the barrel, the forearm and (when wanted) the breech block. Blaser publishes nothing beyond that for the owner. ⛔ The trigger in particular is a factory item on this rifle.")
           +"Three parts and a receiver. Clean it as what it is.",
-          {"src":"BLASER K 95 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — 2.3. Removing breech block"})
+          {"branch":true,"src":"BLASER K 95 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — 2.3. Removing breech block"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ The trigger pull is a FACTORY setting — not a bench adjustment",
@@ -12959,7 +12971,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Loosen the two barrel fastening nuts with the supplied SW5 Allen key and lift the barrel out. That is the whole published strip: magazine, bolt assembly, barrel. ⛔ Blaser bars going further in as many words.")
           +"A modular rifle that opens with one hex key is a pleasure to maintain and an easy one to over-strip."
           +stAs("Remove barrel."),
-          {"warn":"Do not disassemble the firearm and its components beyond the activities specified in this instruction manual.","src":"BLASER R8 — INSTRUCTION MANUAL — 80400551 • 09 / 2025 — 5.1.2 DISASSEMBLY"})
+          {"warn":"Do not disassemble the firearm and its components beyond the activities specified in this instruction manual.","branch":true,"src":"BLASER R8 — INSTRUCTION MANUAL — 80400551 • 09 / 2025 — 5.1.2 DISASSEMBLY"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ The trigger is maintenance-free — greasing it is PROHIBITED",
@@ -13931,7 +13943,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⚠ Your STOCK may have its own manual — B&T says so",
           stA("Two steps above depend on the stock: the telescopic stock must be EXTENDED before the rear take-down pin will move, and it goes back in and UP on reassembly. ⛔ If your weapon carries an M4 stock on the stock adapter rather than a B&T stock, this book does not cover how that stock operates — B&T sends you to the operating manual of the respective stock.")
           +"A separate manual for a part that gates the strip is worth knowing about before you are holding a pin punch.",
-          {"src":"B&T APC9/10/40/45 PRO OPERATOR’S MANUAL (TM-APC9_10_40_45 PRO-AA-00-US) — TM-APC9_10_40_45 PRO-AA-00-US — Stocks / Adapters, p.34"}),
+          {"branch":true,"src":"B&T APC9/10/40/45 PRO OPERATOR’S MANUAL (TM-APC9_10_40_45 PRO-AA-00-US) — TM-APC9_10_40_45 PRO-AA-00-US — Stocks / Adapters, p.34"}),
         tgStep("Clean","Barrel from the REAR — copper brush, suitable-length rod",
           stA("Use a cleaning rod of suitable length with a COPPER brush and clean the barrel FROM THE REAR SIDE. Rear entry protects the muzzle, and a rod that is too short will not carry the brush clear at the far end.")
           +"Breech-end entry is the same discipline every serious maker prints, for the same reason: the crown.",
@@ -15069,7 +15081,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ Routine cleaning needs no disassembly at all",
           stA("That is the whole routine job. Charter states plainly that under normal conditions there is no need to take the revolver apart, and the deep clean below is for when something actually requires it.")
           +"⛔ This is the manufacturer's own boundary, not a limitation of this guide. A Charter revolver is cleaned assembled.",
-          {"src":"Charter 2000 Double Action Revolver — Operating Instructions and Safety Precautions — Instruction Folder — no form or revision code printed — DISASSEMBLY, printed p.4"})
+          {"branch":true,"src":"Charter 2000 Double Action Revolver — Operating Instructions and Safety Precautions — Instruction Folder — no form or revision code printed — DISASSEMBLY, printed p.4"})
       ],
       deepSteps:[
         tgStep("Deep","⛔ Unloaded first, in capitals",
@@ -15147,7 +15159,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ Routine cleaning needs no disassembly at all",
           stA("That is the whole routine job. Charter states plainly that under normal conditions there is no need to take the revolver apart, and the deep clean below is for when something actually requires it.")
           +"⛔ This is the manufacturer's own boundary, not a limitation of this guide. A Charter revolver is cleaned assembled.",
-          {"src":"Charter 2000 Double Action Revolver — Operating Instructions and Safety Precautions — Instruction Folder — no form or revision code printed — DISASSEMBLY, printed p.4"})
+          {"branch":true,"src":"Charter 2000 Double Action Revolver — Operating Instructions and Safety Precautions — Instruction Folder — no form or revision code printed — DISASSEMBLY, printed p.4"})
       ],
       deepSteps:[
         tgStep("Deep","⛔ Unloaded first, in capitals",
@@ -15229,7 +15241,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Field strip complete",
           stA("Upper, lower, bolt carrier group in pieces, charging handle. The buffer and buffer spring come out only for the deeper clean.")
           +"⛔ The trigger group stays in the lower — Christensen forbids taking it apart, in capitals.",
-          {"warn":"WARNING DO NOT DISASSEMBLE THE TRIGGER GROUP.","warnSrc":"maker","src":"Christensen Arms Modern Sporting Rifles Owner's Manual (08-2016 v03) — 08-2016 v03 — DISASSEMBLY, printed p.16-19"})
+          {"warn":"WARNING DO NOT DISASSEMBLE THE TRIGGER GROUP.","warnSrc":"maker","branch":true,"src":"Christensen Arms Modern Sporting Rifles Owner's Manual (08-2016 v03) — 08-2016 v03 — DISASSEMBLY, printed p.16-19"})
       ],
       deepSteps:[
         tgStep("Deep","⛔ Solvent and lubricant: no graphite, ever",
@@ -15816,7 +15828,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Barrel, bushing, recoil spring and guide, plug, slide stop, slide and receiver. ⛔ Colt's own IMPORTANT note bars going further and routes anything deeper to Service and Repair.")
           +"A match pistol is fitted. Parts that are fitted are parts a bench strip should leave alone."
           +stLimit("Colt","IMPORTANT: Do not strip your\npistol further than previously\ndescribed.","COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, printed p.27"),
-          {"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, printed p.27"})
+          {"branch":true,"src":"COLT GOLD CUP NATIONAL MATCH MK IV/SERIES 70 — INSTRUCTION MANUAL — UNKNOWN — no revision code is printed in the document — Maintenance — Stripping for Cleaning, printed p.27"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ The cleaning rod is what kills a match barrel",
@@ -16057,7 +16069,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Upper receiver with barrel, lower receiver, bolt carrier assembly, charging handle and magazine. That is enough to clean the rifle; everything past it is component disassembly, which Colt also publishes.")
           +"Reassembly is the same list backwards, and Colt says so — steps 15 through 1, with one thing that must be checked at the end."
           +stC("CAUTION: IF YOU ATTEMPT TO FIRE WITHOUT THE CAM PIN INSTALLED, DAMAGE OR INJURY MAY RESULT."),
-          {"src":"Colt AR-15 Semiautomatic Rifles and Carbines Safety and Instruction Manual — Colt AR-15 Semiautomatic Rifles and Carbines — STRIPPING FOR CLEANING — IMPORTANT, p.52"})
+          {"branch":true,"src":"Colt AR-15 Semiautomatic Rifles and Carbines Safety and Instruction Manual — Colt AR-15 Semiautomatic Rifles and Carbines — STRIPPING FOR CLEANING — IMPORTANT, p.52"})
       ],
       deepSteps:[
         tgStep("Deep Clean","Firing pin retaining pin out to the left",
@@ -16365,7 +16377,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Receiver, slide, mainspring housing, magazine catch with sear spring, and magazine. Colt states plainly that this is all the dismounting cleaning requires.")
           +"That sentence is the manual telling you where routine care stops — the complete dismounting exists, but it is a different job with a different purpose."
           +stC("If the recoil spring jars off the assembly lock during dismounting or assembly, press it forward again and hold it by pressing the assembly lock plunger down."),
-          {"src":"Colt \"Woodsman\" Automatic Pistol, Caliber .22 Long Rifle — Form M-90 — TO DISMOUNT, unpaginated p.4 of 4"})
+          {"branch":true,"src":"Colt \"Woodsman\" Automatic Pistol, Caliber .22 Long Rifle — Form M-90 — TO DISMOUNT, unpaginated p.4 of 4"})
       ],
       deepSteps:[
         tgStep("Deep Clean","Stocks off, side plate off",
@@ -16458,7 +16470,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Bolt back in, then check trigger and safety",
           stA("Insert the bolt into the receiver, close it, and check the function of the trigger and the safety before the rifle goes away.")
           +"Anything that does not feel right here is a phone call to CVA, not an adjustment — the book says so in as many words.",
-          {"src":"CVA Cascade Instruction Manual (Cascade-Manual-3.2) — Cascade-Manual-3.2 (revision printed in the filename, not on the page) — 12. CLEANING AND MAINTAINING THE CASCADE, printed p.8-10, step 12"})
+          {"branch":true,"src":"CVA Cascade Instruction Manual (Cascade-Manual-3.2) — Cascade-Manual-3.2 (revision printed in the filename, not on the page) — 12. CLEANING AND MAINTAINING THE CASCADE, printed p.8-10, step 12"})
       ],
       deepSteps:[
         tgStep("Deep","The bolt comes apart only if you need it to",
@@ -16931,7 +16943,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ Field strip complete — and the firing pin is not yours",
           stA("Frame, slide, barrel, recoil spring and magazine. That is the whole routine strip.")
           +"⛔ CZ is explicit that FIRING PIN CLEANING is a gunsmith job, and that after a large round count the pistol should be entrusted to one for it. That is a manufacturer's published boundary, not a preference.",
-          {"warn":"When a great number of cartridges has been fired, it is advisable to also disassemble magazine and to entrust the pistol to a competent gunsmith for the firing pin cleaning.","warnSrc":"maker","src":"CZ P-09 Instruction Manual (en/es) — Instruction Manual, English/Spanish (no form code printed) — MAINTENANCE INSTRUCTIONS / Stripping for Cleaning - Disassembly, printed p.10, step 9"})
+          {"warn":"When a great number of cartridges has been fired, it is advisable to also disassemble magazine and to entrust the pistol to a competent gunsmith for the firing pin cleaning.","warnSrc":"maker","branch":true,"src":"CZ P-09 Instruction Manual (en/es) — Instruction Manual, English/Spanish (no form code printed) — MAINTENANCE INSTRUCTIONS / Stripping for Cleaning - Disassembly, printed p.10, step 9"})
       ],
       deepSteps:[
         tgStep("Deep","When CZ says to clean it",
@@ -17281,7 +17293,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⛔ ORANGE ONLY — the SLIDE INSERT comes out before the barrel",
           stA("This is the step that is yours and not the standard TS 2's. On the ORANGE variant, once the recoil spring and guide are out you must remove the SLIDE INSERT. Only then does the barrel slide FORWARD out of the slide face.")
           +"If you have followed a standard TS 2 walkthrough and the barrel will not come out, this is why — there is a part in the way that the other variants do not have.",
-          {"src":"CZ TS 2 INSTRUCTION MANUAL — 06/2025 (part 735342000002) — Maintenance Instructions — Stripping for Cleaning, step 8 note, p.9"}),
+          {"branch":true,"src":"CZ TS 2 INSTRUCTION MANUAL — 06/2025 (part 735342000002) — Maintenance Instructions — Stripping for Cleaning, step 8 note, p.9"}),
         tgStep("Clean","⚠ That is far enough — no further strip for routine maintenance",
           stA("CZ marks the end of the routine strip here: no further disassembly is needed for routine maintenance. After a great many rounds it is advisable to also clean the firing pin and the magazine — and those are the only two things it adds.")
           +"A stated stopping point is worth as much as a step. Past this the book sends you to a gunsmith."
@@ -17472,7 +17484,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Before the rifle goes back together and forward, make sure no solvent, oil or water is standing inside the suppressor assembly. Daniel Defense's reason is pressure: liquid inside may induce dangerous pressure fluctuations on firing.")
           +"On an integral can this is the direct consequence of a solvent-heavy clean and a rifle reassembled too soon."
           +stLimit("Daniel Defense","NEVER DISCHARGE THE FIREARM WITH ANY LIQUID INSIDE OF THE SUPPRESSOR ASSEMBLY. a. The presence of liquid may induce dangerous pressure fluctuations upon firing.","DD4 / DDM4 / DD5 MANUAL — single_pg_1.4 — 3.1 Suppressor Handling Cautions (DDM4ISR), item 2, p.10"),
-          {"src":"DD4 / DDM4 / DD5 MANUAL — single_pg_1.4 — 3.1 Suppressor Handling Cautions (DDM4ISR), item 2, p.10"})
+          {"branch":true,"src":"DD4 / DDM4 / DD5 MANUAL — single_pg_1.4 — 3.1 Suppressor Handling Cautions (DDM4ISR), item 2, p.10"})
       ],
       deepSteps:[
         tgStep("Strip","⚠ WHEN the baffle comes out — and it is a short list",
@@ -17698,7 +17710,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Off the host — and that is as far as it comes apart",
           stA("Unthread the suppressor from the muzzle device. There is no further disassembly: Daniel Defense publishes none.")
           +"Cycling it on and off is itself part of the maintenance here.",
-          {"src":"Daniel Defense Mute® 30 Ti and Null® 9 Ti Suppressor Manual — MUTE_and_NULL_Manual_v2 — 8.0 CLEANING & MAINTENANCE, printed p.13"}),
+          {"branch":true,"src":"Daniel Defense Mute® 30 Ti and Null® 9 Ti Suppressor Manual — MUTE_and_NULL_Manual_v2 — 8.0 CLEANING & MAINTENANCE, printed p.13"}),
         tgStep("Inspect","Look for a baffle strike",
           stA("Visual check for debris, evidence of baffle strike, or loose parts, plus dents, cracks and corrosion after storage or transport.")
           +"A baffle strike is the finding that ends the range day, not one to note and carry on.",
@@ -17730,7 +17742,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Off the host — and that is as far as it comes apart",
           stA("Unthread the suppressor from the muzzle device. There is no further disassembly: Daniel Defense publishes none.")
           +"Cycling it on and off is itself part of the maintenance here.",
-          {"src":"Daniel Defense Mute® 30 Ti and Null® 9 Ti Suppressor Manual — MUTE_and_NULL_Manual_v2 — 8.0 CLEANING & MAINTENANCE, printed p.13"}),
+          {"branch":true,"src":"Daniel Defense Mute® 30 Ti and Null® 9 Ti Suppressor Manual — MUTE_and_NULL_Manual_v2 — 8.0 CLEANING & MAINTENANCE, printed p.13"}),
         tgStep("Inspect","Look for a baffle strike",
           stA("Visual check for debris, evidence of baffle strike, or loose parts, plus dents, cracks and corrosion after storage or transport.")
           +"A baffle strike is the finding that ends the range day, not one to note and carry on.",
@@ -17899,7 +17911,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Take the detent ring off and NOTE WHICH WAY THE DETENT FACES before anything else moves, then lift the wave spring out of the compression nut. Ring, wave spring, compression nut — three loose parts and one of them only goes back one way round.")
           +"Dead Air puts \"note the detent direction\" in the middle of its own sentence. That is where a reassembly goes wrong."
           +stC("Photograph the ring before it leaves the nut if you are not certain."),
-          {"src":"CT5P OWNER’S MANUAL — Rev011226 — Cleaning and Maintenance, Step Two — Adapter Disassembly, p.19"}),
+          {"branch":true,"src":"CT5P OWNER’S MANUAL — Rev011226 — Cleaning and Maintenance, Step Two — Adapter Disassembly, p.19"}),
         tgStep("Clean","Threads, tapers and mating faces — brass or nylon, never an edge",
           stA("Inspect the compression nut inside and out for rust or fouling and take it off with CLP and a brass or nylon brush. ⛔ The taper on the muzzle device is a critical surface: no knife, no scraper, no edged tool on it, ever.")
           +"A scratched taper is a misaligned can, and a misaligned can is a baffle strike.",
@@ -18496,7 +18508,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Front cap off with the pinned tool",
           stA("Align the pins of the Sandman Front Cap Tool (DA208, sold separately) into the holes in the front cap, hold the tool flat with the pins fully and evenly engaged, and turn counter-clockwise to loosen.")
           +"Flat and fully engaged is the whole instruction — a tool sitting proud on one pin will shear it out of the cap.",
-          {"src":"Dead Air Nomad Ti XC / LTi XC Owners Manual (Rev071824) — Rev071824 — 5. FRONT CAP INSTALLATION, printed p.8"})
+          {"branch":true,"src":"Dead Air Nomad Ti XC / LTi XC Owners Manual (Rev071824) — Rev071824 — 5. FRONT CAP INSTALLATION, printed p.8"})
       ],
       deepSteps:[
         tgStep("Deep","⛔ Clean threads and taper, then grease",
@@ -18651,7 +18663,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Front cap off with the pinned tool",
           stA("Align the pins of the Sandman Front Cap Tool (DA208, sold separately) into the holes in the front cap, hold the tool flat with the pins fully and evenly engaged, and turn counter-clockwise to loosen.")
           +"Flat and fully engaged is the whole instruction — a tool sitting proud on one pin will shear it out of the cap.",
-          {"src":"Dead Air Nomad Ti XC / LTi XC Owners Manual (Rev071824) — Rev071824 — 5. FRONT CAP INSTALLATION, printed p.8"})
+          {"branch":true,"src":"Dead Air Nomad Ti XC / LTi XC Owners Manual (Rev071824) — Rev071824 — 5. FRONT CAP INSTALLATION, printed p.8"})
       ],
       deepSteps:[
         tgStep("Deep","⛔ Clean threads and taper, then grease",
@@ -18932,7 +18944,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("The Front Cap Ring ships fitted and normally stays fitted. For cleaning it comes off with the supplied tools, or by laying a 3/32 Allen wrench across the grooves and turning CLOCKWISE. Left-hand threads: every instinct you have about which way to turn is backwards here.")
           +"Forcing it counter-clockwise tightens it. That is how a ring gets galled onto a titanium tube."
           +stC("Left-hand thread. Clockwise OFF, counter-clockwise ON."),
-          {"src":"RXD22Ti .22 CALIBER TITANIUM SUPPRESSOR OWNER’S MANUAL — Rev061125 — Front Cap Ring Installation and Removal, p.7"}),
+          {"branch":true,"src":"RXD22Ti .22 CALIBER TITANIUM SUPPRESSOR OWNER’S MANUAL — Rev061125 — Front Cap Ring Installation and Removal, p.7"}),
         tgStep("Clean","Control surfaces: threads, tapers, every mating face",
           stA("Get the control surfaces clean — threads, taper surfaces and all mating surfaces. Where there is build-up, a nylon or brass brush with cleaning oil, lightly, until it is gone. Then wipe the excess off with a shop or paper towel.")
           +"\"Lightly\" is the operative word. These surfaces are the alignment."
@@ -18990,7 +19002,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Mount out of the back — 13/16 inch on the mount, DAT002 on the body",
           stA("Put a 13/16 inch socket or the TL tool on the Direct Thread Brake Mount and the supplied DAT002 wrench on the wrench flats of the suppressor body, then rotate the mount counter-clockwise. Two tools, opposed — the body is held, the mount turns.")
           +"Holding the body by hand while you break a 25 ft-lb joint is how a titanium tube gets crushed.",
-          {"src":"RXD30Ti .30 CALIBER TITANIUM SUPPRESSOR OWNER’S MANUAL — Rev061225 — Mount and Adapter Removal, p.8"}),
+          {"branch":true,"src":"RXD30Ti .30 CALIBER TITANIUM SUPPRESSOR OWNER’S MANUAL — Rev061225 — Mount and Adapter Removal, p.8"}),
         tgStep("Clean","Control surfaces after the mount and cap are off",
           stA("With the mount, adapter and front cap removed, get threads, tapers and mating surfaces clean. Nylon or brass brush with cleaning oil where there is build-up, then wipe the excess away. Everything on the brake mount OTHER than threads, tapers and mating faces can be cleaned however you like.")
           +"The distinction is the point: control surfaces are precision, the rest is just metal."
@@ -19066,7 +19078,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Rotate the spring retainer counter-clockwise out of the piston housing, keeping constant pressure on it: it is under slight spring tension. Once it is off, the piston and spring pull straight out for cleaning, inspection or replacement.")
           +"\"Slight\" tension still launches a small steel part across a garage. Do it over a tray."
           +stC("Work over a tray or a towel. The o-ring in the retainer is easy to lose."),
-          {"src":"RXD910Ti 9MM OPTIMIZED • 10MM CAPABLE TITANIUM SUPPRESSOR OWNER’S MANUAL — Rev110625 — Booster Disassembly and Reassembly, p.8"}),
+          {"branch":true,"src":"RXD910Ti 9MM OPTIMIZED • 10MM CAPABLE TITANIUM SUPPRESSOR OWNER’S MANUAL — Rev110625 — Booster Disassembly and Reassembly, p.8"}),
         tgStep("Clean","Piston, housing, cap and control surfaces — and oil between spring and piston",
           stA("Get threads, tapers and mating surfaces free of debris, brushing lightly with nylon or brass and cleaning oil where there is build-up. Make sure the spring and piston are both clean of heavy build-up, then put a LIGHT coat of oil BETWEEN the spring and the piston. Wipe the excess off.")
           +"That oil film is what lets the booster actually stroke. A dry, carboned piston is the usual cause of a pistol that stops cycling suppressed.",
@@ -19124,7 +19136,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Off the key mount — counter-clockwise, and it indexes one way only",
           stA("Turn the tube counter-clockwise until the suppressor disconnects from the key mount muzzle brake. It can only go on one way and come off one way: the tabs on the locking collar are deliberately NOT equally spaced.")
           +"That uneven spacing is a feature — it is what stops you seating the can a third of a turn out and never noticing.",
-          {"warn":"WHEN REMOVING THE SUPPRESSOR FROM YOUR FIREARM BE EXTREMELY CAUTIOUS AS THE TEMPERATURE OF THE SUPPRESSOR COULD CAUSE BURNS AND OR PERSONAL INJURY TO THE USER. MAKE SURE TO EITHER USE PROTECTIVE GLOVES OR WAIT UNTIL THE SUPPRESSOR COOLS BEFORE ATTEMPTING REMOVAL.","warnSrc":"maker","src":"SANDMAN SERIES OWNER’S MANUAL — Rev121323 — Installation, Step Four — Removing the Suppressor, p.7"}),
+          {"warn":"WHEN REMOVING THE SUPPRESSOR FROM YOUR FIREARM BE EXTREMELY CAUTIOUS AS THE TEMPERATURE OF THE SUPPRESSOR COULD CAUSE BURNS AND OR PERSONAL INJURY TO THE USER. MAKE SURE TO EITHER USE PROTECTIVE GLOVES OR WAIT UNTIL THE SUPPRESSOR COOLS BEFORE ATTEMPTING REMOVAL.","warnSrc":"maker","branch":true,"src":"SANDMAN SERIES OWNER’S MANUAL — Rev121323 — Installation, Step Four — Removing the Suppressor, p.7"}),
         tgStep("Clean","⛔ This is the whole routine: clean threads, oil the outside",
           stA("Dead Air's stated maintenance for this can is short and it is deliberate — keep the threads clean and wipe the outside down with good quality gun oil. That is the job. There is no bore brushing, no soaking and no baffle service in the normal cycle.")
           +"For a centrefire rifle can this genuinely is enough, and the book says so in those words.",
@@ -25524,7 +25536,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Bolt IN until it rotates, then the cam pin 90°",
           stA("Push the bolt IN toward the carrier until it rotates and comes to a stop. Then turn the cam pin 90 degrees and lift it out. In, rotate, turn — the quarter turn only clears once the bolt has gone home.")
           +"The cam pin is what makes this a rotating-bolt rifle and it comes out with no tool at all.",
-          {"src":"JP ENTERPRISES OWNER’S MANUAL — RIFLES AND UPPER ASSEMBLIES — Version 11.19.18 — Disassembly, step 10, p.30"})
+          {"branch":true,"src":"JP ENTERPRISES OWNER’S MANUAL — RIFLES AND UPPER ASSEMBLIES — Version 11.19.18 — Disassembly, step 10, p.30"})
       ],
       deepSteps:[
         tgStep("Clean","⚠ The buffer and spring are an INSPECTION item, not a cleaning one",
@@ -25564,7 +25576,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Hinge the lower away from the upper",
           stA("With the rear pin out to its stop, pivot the lower receiver down and away from the upper. Most cleaning can be done from here without separating them.")
           +"Hinged open is enough for the bore and the carrier. Fully apart is for the buffer.",
-          {"src":"JP ENTERPRISES OWNER’S MANUAL — GMR-15 9mm RIFLES — UNKNOWN — no version line printed — Disassembly and Reassembly — Disassembly, step 2, p.23"}),
+          {"branch":true,"src":"JP ENTERPRISES OWNER’S MANUAL — GMR-15 9mm RIFLES — UNKNOWN — no version line printed — Disassembly and Reassembly — Disassembly, step 2, p.23"}),
         tgStep("Clean","⛔ Brush ALL THE WAY THROUGH before reversing",
           stA("Brass bristle brush on the rod dipped in cleaning solution, entering from the breech end only, all the way through before you reverse. Changing direction with the brush inside can stick it. Then patches on a TIGHT jag — JP is specific that slotted jags are not what it wants — until one comes out clean.")
           +"Same discipline as the JP-5, and the same two failure modes.",
@@ -25658,7 +25670,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Bolt IN until it rotates, then the cam pin 90°",
           stA("Push the bolt IN toward the carrier until it rotates and comes to a stop. Then turn the cam pin 90 degrees and lift it out. In, rotate, turn — the quarter turn only clears once the bolt has gone home.")
           +"The cam pin is what makes this a rotating-bolt rifle and it comes out with no tool at all.",
-          {"src":"JP ENTERPRISES OWNER’S MANUAL — RIFLES AND UPPER ASSEMBLIES — Version 11.19.18 — Disassembly, step 10, p.30"})
+          {"branch":true,"src":"JP ENTERPRISES OWNER’S MANUAL — RIFLES AND UPPER ASSEMBLIES — Version 11.19.18 — Disassembly, step 10, p.30"})
       ],
       deepSteps:[
         tgStep("Clean","⚠ The buffer and spring are an INSPECTION item, not a cleaning one",
@@ -25711,7 +25723,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("The SCS comes out by depressing the buffer retainer pin and sliding it from the extension tube — but JP says outright that this is not necessary for regular maintenance. It wants inspection every 1,000 to 2,000 rounds, or once a year, unless a specific problem needs access to it.")
           +"An interval and a condition, both stated. Pulling it every clean buys nothing."
           +stLimit("JP Enterprises","The Silent Captured Spring need only be removed for inspection every 1,000 to 2,000 rounds (or at least once a year) unless there is a specific problem requiring access to it.","JP ENTERPRISES OWNER’S MANUAL — JP-5 — Version 01.16.24 — Disassembly and Reassembly — Disassembly, step 5, p.24"),
-          {"src":"JP ENTERPRISES OWNER’S MANUAL — JP-5 — Version 01.16.24 — Disassembly and Reassembly — Disassembly, step 5, p.24"}),
+          {"branch":true,"src":"JP ENTERPRISES OWNER’S MANUAL — JP-5 — Version 01.16.24 — Disassembly and Reassembly — Disassembly, step 5, p.24"}),
         tgStep("Clean","⛔ Brush ALL THE WAY THROUGH before reversing — and keep the rod off the crown",
           stA("Brass bristle brush on the rod, dipped in cleaning solution, entering from the BREECH end ONLY. Pass the brush all the way through before reversing direction — JP warns that changing direction with the brush inside can stick it. And avoid letting the rod touch the muzzle: that wear costs accuracy.")
           +"Two failures in one step — a stuck brush and a worn crown — and both are avoidable by direction and care."
@@ -25838,7 +25850,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Bolt IN until it rotates, then the cam pin 90°",
           stA("Push the bolt IN toward the carrier until it rotates and comes to a stop. Then turn the cam pin 90 degrees and lift it out. In, rotate, turn — the quarter turn only clears once the bolt has gone home.")
           +"The cam pin is what makes this a rotating-bolt rifle and it comes out with no tool at all.",
-          {"src":"JP ENTERPRISES OWNER’S MANUAL — RIFLES AND UPPER ASSEMBLIES — Version 11.19.18 — Disassembly, step 10, p.30"})
+          {"branch":true,"src":"JP ENTERPRISES OWNER’S MANUAL — RIFLES AND UPPER ASSEMBLIES — Version 11.19.18 — Disassembly, step 10, p.30"})
       ],
       deepSteps:[
         tgStep("Strip","⚠ Locking the action open — two techniques, no bolt-release shortcut",
@@ -26900,7 +26912,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"Kimber Bolt Action Rifle Models Safety & Instruction Manual — Safety & Instruction Manual, 35pp. ⛔ No part, form or revision code and no copyright year is printed anywhere in this book. — OPERATION — Removal of the bolt, printed p.46"}),
         tgStep("Strip","Field strip complete — and the bolt gets stored separately",
           stA("Rifle and bolt is the whole field strip. Kimber asks that the bolt be kept separate from the rifle while it is being cleaned, serviced, transported or stored — a rifle that cannot chamber a round is the safest thing in a case."),
-          {"src":"Kimber Bolt Action Rifle Models Safety & Instruction Manual — Safety & Instruction Manual, 35pp. ⛔ No part, form or revision code and no copyright year is printed anywhere in this book. — OPERATION — Removal of the bolt, printed p.46"}),
+          {"branch":true,"src":"Kimber Bolt Action Rifle Models Safety & Instruction Manual — Safety & Instruction Manual, 35pp. ⛔ No part, form or revision code and no copyright year is printed anywhere in this book. — OPERATION — Removal of the bolt, printed p.46"}),
         tgStep("Clean","Bore guide in, oiled patch from the chamber end",
           stA("Use a bore guide and a quality rod, and start at the chamber — on a bolt rifle the bolt is out, so there is no reason to enter at the muzzle and risk the crown. An oil-soaked patch first to lift the loose fouling."),
           {"src":"Kimber Bolt Action Rifle Models Safety & Instruction Manual — Safety & Instruction Manual, 35pp. ⛔ No part, form or revision code and no copyright year is printed anywhere in this book. — CARE — Cleaning & Maintenance, printed p.50"}),
@@ -28647,7 +28659,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Breech plug out BY HAND, then set it soaking",
           stA("Turn the breech plug counter-clockwise by hand — CVA's Quick Release plug needs no tool even after dozens of shots. Wet it thoroughly with solvent and set it aside to soak while the bore is done.")
           +stAs("Simply unscrew the breech plug with your fingers to remove."),
-          {"src":"CVA Accura MR-X / LR-X Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed in CLEANING YOUR CVA ACCURA RIFLE"}),
+          {"branch":true,"src":"CVA Accura MR-X / LR-X Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed in CLEANING YOUR CVA ACCURA RIFLE"}),
         tgStep("Clean","Damp patches, brush, then patches until clean",
           stA("Jag on a rod, a patch or two damp with cleaning solvent (for Blackhorn 209) or water (for pelletised propellant) to take the bulk out. Then a properly fitting brush wet with solvent, several full-length strokes. Then damp patches, a minute or two to work, and dry ones after — repeat until it is clean.")
           +stAs("Use a good quality non-petroleum gun oil to protect the bore."),
@@ -28696,7 +28708,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Breech plug out BY HAND, then set it soaking",
           stA("Turn the breech plug counter-clockwise by hand — CVA's Quick Release plug needs no tool even after dozens of shots. Wet it thoroughly with solvent and set it aside to soak while the bore is done.")
           +stAs("Simply unscrew the breech plug with your fingers to remove."),
-          {"src":"CVA Accura MR-X / LR-X Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed in CLEANING YOUR CVA ACCURA RIFLE"}),
+          {"branch":true,"src":"CVA Accura MR-X / LR-X Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed in CLEANING YOUR CVA ACCURA RIFLE"}),
         tgStep("Clean","Damp patches, brush, then patches until clean",
           stA("Jag on a rod, a patch or two damp with cleaning solvent (for Blackhorn 209) or water (for pelletised propellant) to take the bulk out. Then a properly fitting brush wet with solvent, several full-length strokes. Then damp patches, a minute or two to work, and dry ones after — repeat until it is clean.")
           +stAs("Use a good quality non-petroleum gun oil to protect the bore."),
@@ -28739,7 +28751,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"CVA Apex Owner's Manual — FORM 103C • Rev 1/11 (printed on the first page) — CLEANING YOUR CVA APEX MUZZLELOADER"}),
         tgStep("Strip","Breech plug out, wet with solvent, set aside",
           stA("Remove the breech plug, wet it thoroughly with cleaning solvent and set it aside to soak while you work on the bore."),
-          {"src":"CVA Apex Owner's Manual — FORM 103C • Rev 1/11 (printed on the first page) — CLEANING YOUR CVA APEX MUZZLELOADER"}),
+          {"branch":true,"src":"CVA Apex Owner's Manual — FORM 103C • Rev 1/11 (printed on the first page) — CLEANING YOUR CVA APEX MUZZLELOADER"}),
         tgStep("Clean","Brush the bore, then patches until they come out clean",
           stA("Properly fitting bore brush on a cleaning rod to scrub the rifling and loosen the accumulated fouling, then several solvent-soaked patches to carry it out, then dry ones. Repeat the last two until the dry patches come out clean, then coat the bore with a rust-preventing gun oil.")
           +stAs("Push several dry, clean patches through the bore."),
@@ -28954,7 +28966,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
         tgStep("Strip","Breech plug out, counter-clockwise, and set it SOAKING",
           stA("Turn the breech plug counter-clockwise and take it out, then wet it thoroughly with cleaning solvent and put it aside to soak while you do the bore. Doing it in that order is the difference between wiping a plug and scraping one."),
-          {"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
+          {"branch":true,"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
         tgStep("Clean","Wet patches first, then the brush, then patches to clean",
           stA("Jag on the rod, a patch or two wet with WATER through the barrel to carry the bulk of the fouling out. Then a properly fitting bore brush wet with solvent, several full-length strokes. Then solvent patches, let them work a minute or two, and follow with dry ones — repeat until the barrel is clean.")
           +stAs("Place a properly fitting bore brush on the rod and make several full-length strokes through the barrel. The brush should be wet with solvent for this step."),
@@ -29012,7 +29024,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
         tgStep("Strip","Breech plug out, counter-clockwise, and set it SOAKING",
           stA("Turn the breech plug counter-clockwise and take it out, then wet it thoroughly with cleaning solvent and put it aside to soak while you do the bore. Doing it in that order is the difference between wiping a plug and scraping one."),
-          {"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
+          {"branch":true,"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
         tgStep("Clean","Wet patches first, then the brush, then patches to clean",
           stA("Jag on the rod, a patch or two wet with WATER through the barrel to carry the bulk of the fouling out. Then a properly fitting bore brush wet with solvent, several full-length strokes. Then solvent patches, let them work a minute or two, and follow with dry ones — repeat until the barrel is clean.")
           +stAs("Place a properly fitting bore brush on the rod and make several full-length strokes through the barrel. The brush should be wet with solvent for this step."),
@@ -29066,7 +29078,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
         tgStep("Strip","Breech plug out, counter-clockwise, and set it SOAKING",
           stA("Turn the breech plug counter-clockwise and take it out, then wet it thoroughly with cleaning solvent and put it aside to soak while you do the bore. Doing it in that order is the difference between wiping a plug and scraping one."),
-          {"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
+          {"branch":true,"src":"CVA Optima V2 / Wolf V2 Owner's Manual — ⛔ No form or revision code and no year is printed in this edition. — CLEANING PROCEDURE, printed p.12-13"}),
         tgStep("Clean","Wet patches first, then the brush, then patches to clean",
           stA("Jag on the rod, a patch or two wet with WATER through the barrel to carry the bulk of the fouling out. Then a properly fitting bore brush wet with solvent, several full-length strokes. Then solvent patches, let them work a minute or two, and follow with dry ones — repeat until the barrel is clean.")
           +stAs("Place a properly fitting bore brush on the rod and make several full-length strokes through the barrel. The brush should be wet with solvent for this step."),
@@ -33451,7 +33463,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"930™ AND 935™ AUTOLOADING SHOTGUN — Mossberg owner's manual — Part No. 16888, Owners Manual Rev E, typeset 2/27/18 — GAS SYSTEM REMOVAL, p.14"}),
         tgStep("Strip","Field strip complete",
           stA("Barrel, forearm, gas system, and the action if you went that far. That is as far as routine cleaning goes on this gun by Mossberg's own line."),
-          {"src":"930™ AND 935™ AUTOLOADING SHOTGUN — Mossberg owner's manual — Part No. 16888, Owners Manual Rev E, typeset 2/27/18 — ACTION REMOVAL/DISASSEMBLY, p.16"})
+          {"branch":true,"src":"930™ AND 935™ AUTOLOADING SHOTGUN — Mossberg owner's manual — Part No. 16888, Owners Manual Rev E, typeset 2/27/18 — ACTION REMOVAL/DISASSEMBLY, p.16"})
       ],
       deepSteps:[
         tgStep("Deep","Gas rings off the piston — screwdriver, then rotate",
@@ -33526,7 +33538,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"930™ AND 935™ AUTOLOADING SHOTGUN — Mossberg owner's manual — Part No. 16888, Owners Manual Rev E, typeset 2/27/18 — GAS SYSTEM REMOVAL, p.14"}),
         tgStep("Strip","Field strip complete",
           stA("Barrel, forearm, gas system, and the action if you went that far. That is as far as routine cleaning goes on this gun by Mossberg's own line."),
-          {"src":"930™ AND 935™ AUTOLOADING SHOTGUN — Mossberg owner's manual — Part No. 16888, Owners Manual Rev E, typeset 2/27/18 — ACTION REMOVAL/DISASSEMBLY, p.16"})
+          {"branch":true,"src":"930™ AND 935™ AUTOLOADING SHOTGUN — Mossberg owner's manual — Part No. 16888, Owners Manual Rev E, typeset 2/27/18 — ACTION REMOVAL/DISASSEMBLY, p.16"})
       ],
       deepSteps:[
         tgStep("Deep","Gas rings off the piston — screwdriver, then rotate",
@@ -34687,7 +34699,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Strip","Bolt carrier out, then the charging handle down and back",
           stA("Pull the bolt carrier straight back until it clears the charging handle and the upper. Then pull the charging handle back to its stop, drop it down out of its channel and withdraw it to the rear. That order matters: the handle cannot leave the receiver until it reaches the cut that lets it drop."),
-          {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
+          {"branch":true,"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Clean","Chamber first, with a chamber brush — and leave it DRY",
           stA("Scrub the chamber with a chamber brush and solvent or CLP, then patch it until the patches stay clean, then run one dry patch through. Do not oil the chamber: a wet chamber grips a fired case and raises pressure on the next round.")
           +stLimit("Palmetto State Armory","After cleaning,\nrun a dry patch through the chamber. Do not oil the chamber.","PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — MAINTENANCE, p.31"),
@@ -34756,7 +34768,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Strip","Bolt carrier out, then the charging handle down and back",
           stA("Pull the bolt carrier straight back until it clears the charging handle and the upper. Then pull the charging handle back to its stop, drop it down out of its channel and withdraw it to the rear. That order matters: the handle cannot leave the receiver until it reaches the cut that lets it drop."),
-          {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
+          {"branch":true,"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Clean","Chamber first, with a chamber brush — and leave it DRY",
           stA("Scrub the chamber with a chamber brush and solvent or CLP, then patch it until the patches stay clean, then run one dry patch through. Do not oil the chamber: a wet chamber grips a fired case and raises pressure on the next round.")
           +stLimit("Palmetto State Armory","After cleaning,\nrun a dry patch through the chamber. Do not oil the chamber.","PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — MAINTENANCE, p.31"),
@@ -35039,7 +35051,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Strip","Bolt carrier out, then the charging handle down and back",
           stA("Pull the bolt carrier straight back until it clears the charging handle and the upper. Then pull the charging handle back to its stop, drop it down out of its channel and withdraw it to the rear. That order matters: the handle cannot leave the receiver until it reaches the cut that lets it drop."),
-          {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
+          {"branch":true,"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Clean","Chamber first, with a chamber brush — and leave it DRY",
           stA("Scrub the chamber with a chamber brush and solvent or CLP, then patch it until the patches stay clean, then run one dry patch through. Do not oil the chamber: a wet chamber grips a fired case and raises pressure on the next round.")
           +stLimit("Palmetto State Armory","After cleaning,\nrun a dry patch through the chamber. Do not oil the chamber.","PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — MAINTENANCE, p.31"),
@@ -35108,7 +35120,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Strip","Bolt carrier out, then the charging handle down and back",
           stA("Pull the bolt carrier straight back until it clears the charging handle and the upper. Then pull the charging handle back to its stop, drop it down out of its channel and withdraw it to the rear. That order matters: the handle cannot leave the receiver until it reaches the cut that lets it drop."),
-          {"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
+          {"branch":true,"src":"PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — DISASSEMBLY, p.27"}),
         tgStep("Clean","Chamber first, with a chamber brush — and leave it DRY",
           stA("Scrub the chamber with a chamber brush and solvent or CLP, then patch it until the patches stay clean, then run one dry patch through. Do not oil the chamber: a wet chamber grips a fired case and raises pressure on the next round.")
           +stLimit("Palmetto State Armory","After cleaning,\nrun a dry patch through the chamber. Do not oil the chamber.","PSA AR FAMILY USERS MANUAL — AR Family Users Manual, 44pp. ⛔ No part, form or revision code is printed anywhere in the book. — MAINTENANCE, p.31"),
@@ -35439,7 +35451,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Clear the host again if it has been out of your hands. Then unthread the silencer counter-clockwise off the Cherry Bomb. ⚠ Q's own advice is to wait before touching it if you have just been shooting — a centrefire can comes off the rifle hot enough to burn through a glove.")
           +"It threads onto the brake, not onto the barrel. What comes off is the can; the brake stays where it is."
           +stLimit("Q","They also feature 3/4 inch SAE wrench ﬂats on the front for silencers installed under a handguard.","JUMBO SHRIMP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 1, p.2"),
-          {"src":"JUMBO SHRIMP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 1, p.2"}),
+          {"branch":true,"src":"JUMBO SHRIMP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 1, p.2"}),
         tgStep("Clean","⚠ A centrefire rifle can is NOT cleaned like a rimfire or pistol can",
           stA("Q says this outright, and it governs everything below: a centrefire rifle silencer does not need the cleaning cycle a rimfire or a pistol can needs. There is no schedule here and no round count — there is a taper to keep clean and an optional bath.")
           +"If you came to this from a .22 can, unlearn the routine. Over-cleaning this one costs you more than leaving it alone.",
@@ -35498,7 +35510,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Clear the host again if it has been out of your hands. Then unthread the silencer counter-clockwise off the Cherry Bomb. ⚠ Q's own advice is to wait before touching it if you have just been shooting — a centrefire can comes off the rifle hot enough to burn through a glove.")
           +"It threads onto the brake, not onto the barrel. What comes off is the can; the brake stays where it is."
           +stLimit("Q","Torque clockwise onto the Cherry Bomb to 10-15 lbs.","PORQ CHOP & SHORT CHOP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 2, p.2"),
-          {"src":"PORQ CHOP & SHORT CHOP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 2, p.2"}),
+          {"branch":true,"src":"PORQ CHOP & SHORT CHOP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 2, p.2"}),
         tgStep("Clean","⚠ A centrefire rifle can is NOT cleaned like a rimfire or pistol can",
           stA("Q says this outright, and it governs everything below: a centrefire rifle silencer does not need the cleaning cycle a rimfire or a pistol can needs. There is no schedule here and no round count — there is a taper to keep clean and an optional bath.")
           +"If you came to this from a .22 can, unlearn the routine. Over-cleaning this one costs you more than leaving it alone.",
@@ -35556,7 +35568,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Clear the host again if it has been out of your hands. Then unthread the silencer counter-clockwise off the Cherry Bomb. ⚠ Q's own advice is to wait before touching it if you have just been shooting — a centrefire can comes off the rifle hot enough to burn through a glove.")
           +"It threads onto the brake, not onto the barrel. What comes off is the can; the brake stays where it is."
           +stLimit("Q","Torque clockwise onto the Cherry Bomb to 10-15 lbs.","PORQ CHOP & SHORT CHOP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 2, p.2"),
-          {"src":"PORQ CHOP & SHORT CHOP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 2, p.2"}),
+          {"branch":true,"src":"PORQ CHOP & SHORT CHOP BY Q — OWNER'S MANUAL — © 2021 — Silencer Installation, step 2, p.2"}),
         tgStep("Clean","⚠ A centrefire rifle can is NOT cleaned like a rimfire or pistol can",
           stA("Q says this outright, and it governs everything below: a centrefire rifle silencer does not need the cleaning cycle a rimfire or a pistol can needs. There is no schedule here and no round count — there is a taper to keep clean and an optional bath.")
           +"If you came to this from a .22 can, unlearn the routine. Over-cleaning this one costs you more than leaving it alone.",
@@ -35823,7 +35835,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Field strip complete — and Radical draws the line here",
           stA("Upper, lower, carrier group, charging handle. Anything past this is service work in Radical's own words.")
           +stLimit("Radical Firearms","IMPORTANT: Do not strip your firearm further than previously described.","AR15 SEMI-AUTOMATIC INSTRUCTION / SAFETY MANUAL — Radical Firearms — AR15 Instruction/Safety Manual — p.34"),
-          {"src":"AR15 SEMI-AUTOMATIC INSTRUCTION / SAFETY MANUAL — Radical Firearms — AR15 Instruction/Safety Manual — p.34"})
+          {"branch":true,"src":"AR15 SEMI-AUTOMATIC INSTRUCTION / SAFETY MANUAL — Radical Firearms — AR15 Instruction/Safety Manual — p.34"})
       ],
       deepSteps:[
         tgStep("Deep","Firing pin retaining pin — RIGHT to LEFT",
@@ -36157,7 +36169,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Magazine out, action open, bore clean and proved clear. That is the whole strip Remington publishes for the Model 7600 — this rifle has no barrel-off field strip, and the manual documents none.")
           +"Keep the oil film thin from here. Remington's whole lubrication instruction for this rifle is one line, and it says a thin film is enough. The one disassembly the book does publish — the trigger plate assembly on its two pins — is in the deep clean."
           +stSrcX("Vermeiden Sie stets ein übermäßiges Auftragen von Schmiermittel. Ein dünner Film Rem™ Oil genügt, um Rosten zu verhindern.","Always avoid applying excessive lubricant. A thin film of Rem™ Oil is enough to prevent rust.","German","Bedienungsanleitung — Bedienungshandbuch für: Modell 7600 Zentralfeuer-Vorderschaftrepetierer — F407218 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Ölung und Wartung, p.11"),
-          {"src":"Bedienungsanleitung — Bedienungshandbuch für: Modell 7600 Zentralfeuer-Vorderschaftrepetierer — F407218 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Ölung und Wartung, p.11"})
+          {"branch":true,"src":"Bedienungsanleitung — Bedienungshandbuch für: Modell 7600 Zentralfeuer-Vorderschaftrepetierer — F407218 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Ölung und Wartung, p.11"})
       ],
       deepSteps:[
         tgStep("Strip","Safety on, action CLOSED before the pins come out",
@@ -36622,7 +36634,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           +"Clean the bore and chamber before the pistol is loaded and fired the first time — Remington asks for that explicitly, on a new gun as much as a dirty one. The magazine strip and the frame cleaning are in the deep clean."
           +stC("Excessive use of lubricants or cleaning agents that are not recommended can impair the function and the safe operation of your firearm.")
           +stSrcX("Reinigen Sie die Bohrung des Laufs und das Patronenlager, bevor Sie Ihre Schusswaffe das erste Mal laden und abfeuern.","Clean the bore of the barrel and the chamber before you load and fire your firearm for the first time.","German","Betriebsanleitung — Handbuch für: Modell 1911 R1 Selbstladende Pistole — F404704 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Reinigung, Schmierung und Wartung — note, p.20"),
-          {"src":"Betriebsanleitung — Handbuch für: Modell 1911 R1 Selbstladende Pistole — F404704 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Reinigung, Schmierung und Wartung — note, p.20"})
+          {"branch":true,"src":"Betriebsanleitung — Handbuch für: Modell 1911 R1 Selbstladende Pistole — F404704 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Reinigung, Schmierung und Wartung — note, p.20"})
       ],
       deepSteps:[
         tgStep("Strip","Follower and magazine spring down about 5 cm",
@@ -36809,7 +36821,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Barrel, fore-end, magazine cap and receiver. That is the routine strip — enough to clean the bore, the chamber and the outside of the gas system. The gas pistons, trigger group and bolt come out in the deep clean.")
           +"Keep the oil light from here. Remington's lubrication instruction for this gun is a single line and it says a small quantity is what prevents rust — more is not better on a gas gun."
           +stSrcX("Una lubrificazione eccessiva deve essere sempre evitata. L’applicazione di una piccola quantità d’olio RemTM aiuta ad evitare la ruggine.","Excessive lubrication must always be avoided. Applying a small quantity of Rem™ oil helps prevent rust.","Italian","Manuale d'uso — Libretto di istruzioni per: Remington® Versa Max™ Fucili semiautomatici — F404785_1 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Lubrificazione, p.18"),
-          {"src":"Manuale d'uso — Libretto di istruzioni per: Remington® Versa Max™ Fucili semiautomatici — F404785_1 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Lubrificazione, p.18"})
+          {"branch":true,"src":"Manuale d'uso — Libretto di istruzioni per: Remington® Versa Max™ Fucili semiautomatici — F404785_1 (RemArms' own part code for this book; no form number or revision code is printed inside the document) — Lubrificazione, p.18"})
       ],
       deepSteps:[
         tgStep("Strip","Both gas cylinder caps off with the 3/16 wrench",
@@ -36918,7 +36930,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Recoil spring out of its seat — field strip complete",
           stA("Last, lift the recoil spring out of its seat in the bolt. That is Retay's published strip in full: fore-end, barrel group, bolt, firing pin and spring, locking head pin, locking head, recoil spring. ⛔ Anything past this is not in the book.")
           +"Ten numbered steps, and the maker stops there. So do we.",
-          {"src":"RETAY GORDION LINE — USE • MAINTENANCE • SPARE PARTS — UNKNOWN — no revision code is printed in the document — Stripping procedure, step 10, p.78"})
+          {"branch":true,"src":"RETAY GORDION LINE — USE • MAINTENANCE • SPARE PARTS — UNKNOWN — no revision code is printed in the document — Stripping procedure, step 10, p.78"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ Recoil spring BETWEEN the locking head and the bolt",
@@ -37009,7 +37021,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Recoil spring out of its seat — field strip complete",
           stA("Last, lift the recoil spring out of its seat in the bolt. That is Retay's published strip in full: fore-end, barrel group, bolt, firing pin and spring, locking head pin, locking head, recoil spring. ⛔ Anything past this is not in the book.")
           +"Ten numbered steps, and the maker stops there. So do we.",
-          {"src":"RETAY MASAI MARA LINE — USE • MAINTENANCE • SPARE PARTS — UNKNOWN — no revision code is printed in the document — Stripping procedure, step 10, p.78"})
+          {"branch":true,"src":"RETAY MASAI MARA LINE — USE • MAINTENANCE • SPARE PARTS — UNKNOWN — no revision code is printed in the document — Stripping procedure, step 10, p.78"})
       ],
       deepSteps:[
         tgStep("Clean","⛔ Recoil spring BETWEEN the locking head and the bolt",
@@ -38140,7 +38152,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Stock off — open the FLOORPLATE first, then the front mounting screw",
           stA("Open the floorplate and hold it up out of the way, then loosen and remove the front mounting screw that holds the floorplate hinge assembly. ⚠ The floorplate is what gives you access to that screw — this is a floorplate rifle, and the order is not optional.")
           +"If you have looked for a magazine well on this rifle, that is why: there is a hinged floorplate instead, and it is part of the strip.",
-          {"src":"RUGER® HAWKEYE® & GUIDE GUN BOLT-ACTION RIFLES INSTRUCTION MANUAL (PM182) — PM182, DH 11/2024 R16 — Disassembly, step 5, p.21"}),
+          {"branch":true,"src":"RUGER® HAWKEYE® & GUIDE GUN BOLT-ACTION RIFLES INSTRUCTION MANUAL (PM182) — PM182, DH 11/2024 R16 — Disassembly, step 5, p.21"}),
         tgStep("Clean","⚠ Routine cleaning needs only the BOLT OUT and the FLOORPLATE OPEN",
           stA("Ruger's own scope for routine work: remove the bolt and open the floorplate, and that is all the disassembly cleaning requires. ⛔ Before any of it, be certain the rifle and its magazine are unloaded.")
           +"Everything in the strip above beyond the bolt is for a reason other than cleaning. Knowing that saves an evening.",
@@ -38213,7 +38225,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","⚠ Stock off — TWO screws AND a cross bolt through the magazine well",
           stA("This is where the LRT parts company with a floorplate Hawkeye. Loosen and remove the screw holding the Front Mounting Lug; then the screw holding the Trigger Guard / Magazine well; then the CROSS BOLT that runs through the stock at the REAR of the magazine well. Only then does the trigger guard/magazine well come out.")
           +"Three fasteners, and the cross bolt is the one people do not look for because no floorplate rifle has it.",
-          {"src":"RUGER® SCOUT, HAWKEYE® LRT, & HAWKEYE® LRH BOLT-ACTION RIFLES INSTRUCTION MANUAL (PM280) — PM280 — Disassembly, step 7c, p.23"}),
+          {"branch":true,"src":"RUGER® SCOUT, HAWKEYE® LRT, & HAWKEYE® LRH BOLT-ACTION RIFLES INSTRUCTION MANUAL (PM280) — PM280 — Disassembly, step 7c, p.23"}),
         tgStep("Clean","⚠ Routine cleaning needs only the BOLT and the MAGAZINE out",
           stA("Ruger's own scope for routine work on this rifle: remove the bolt and the magazine, and that is all the disassembly required. ⛔ Confirm the rifle and its magazine are unloaded before any of it.")
           +"Note the difference from the floorplate book — magazine, not floorplate. Same sentence, different rifle.",
@@ -40980,7 +40992,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Then 2.5 turns off — by the BODY, never the collar",
           stA("With the collar disengaged, hold the Axial by its BODY and rotate the whole suppressor counter-clockwise 2.5 turns, then slide it off the muzzle device. ⛔ Do not turn it by the locking collar — that is not what the collar is for in either direction.")
           +"Half a turn on the collar, two and a half on the body. Two different movements on two different parts, and mixing them up is what wears a mount.",
-          {"src":"AXIAL — BELT-FED RATED 7.62 SUPPRESSOR OPERATOR’S MANUAL — REV-06-23-25 — Axial Removal, Step 2/2, p.4"}),
+          {"branch":true,"src":"AXIAL — BELT-FED RATED 7.62 SUPPRESSOR OPERATOR’S MANUAL — REV-06-23-25 — Axial Removal, Step 2/2, p.4"}),
         tgStep("Clean","Mounting threads: solvent and a brush, and that is most of it",
           stA("Rugged's stated maintenance for this can is short by design — keep all the mounting threads clean and free from debris, with a small amount of gun cleaning solvent and a brush. The exotic materials in the body are why there is not more to do.")
           +"\"Limited service/maintenance\" is the maker's own phrase. Believe it and put the time into the threads instead.",
@@ -41255,7 +41267,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Barrelled receiver out of the stock base — and mind the magazine spring",
           stA("With the buttstock and fore-end off, remove the two fastening screws with their washers, the magazine guide and the SPRING, then lift the barrelled receiver out of the stock base. ⚠ The spring is a loose part in that sequence — keep it with the guide.")
           +"This is a modular chassis pretending to be a stock. Everything is a fastener and a washer, and everything goes back the same way.",
-          {"src":"SAKO 90 / S20 / QUAD / FINNFIRE II OWNER’S MANUAL — UNKNOWN — no revision code printed — Barreled Receiver (Sako S20), step 6, p.14"}),
+          {"branch":true,"src":"SAKO 90 / S20 / QUAD / FINNFIRE II OWNER’S MANUAL — UNKNOWN — no revision code printed — Barreled Receiver (Sako S20), step 6, p.14"}),
         tgStep("Clean","⛔ CORROSION CAN BEGIN WITHIN 24 HOURS — even on stainless",
           stA("Clean the rifle right after use, EVEN IF YOU DID NOT SHOOT. Sako is explicit that maintenance must not be neglected on the \"All-weather\" or \"Stainless\" models either, and that corrosion can begin within 24 hours if the rifle is not cleaned after use.")
           +"\"Even without shooting\" is the clause that catches people — a day in the rain counts as use."
@@ -43305,7 +43317,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"SIG MCX-SPEAR Operator's Manual — 4200452-01 Rev 02 — FIELD STRIP THE SIG MCX-SPEAR"}),
         tgStep("Strip","⛔ Op rod off the bolt carrier — the piston gun's step",
           stA("Separate the op rod from the bolt carrier. There is no such part on a direct-impingement AR, and its presence is the whole reason this rifle has its own guide."),
-          {"src":"SIG MCX-SPEAR Operator's Manual — 4200452-01 Rev 02 — FIELD STRIP THE SIG MCX-SPEAR"})
+          {"branch":true,"src":"SIG MCX-SPEAR Operator's Manual — 4200452-01 Rev 02 — FIELD STRIP THE SIG MCX-SPEAR"})
       ],
       deepSteps:[
         tgStep("Deep","Firing pin retaining pin out to its stop, then the lock",
@@ -43361,7 +43373,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Put the hook portion of both wrenches into the rectangular notches of two ADJACENT baffles. Hold one baffle still and unscrew the encapsulator counter-clockwise to remove it, then repeat the process for every remaining baffle.")
           +"Adjacent is the word that matters — the reaction has to be taken by the next baffle in the stack, not by your hand."
           +stC("Keep the baffles in order as they come off. They go back the way they came."),
-          {"src":"SIG SAUER MODX MODULAR PISTOL SUPPRESSOR — OPERATOR’S MANUAL — 8591451-01 REV09 — 5.1 Disassembly, item 7, p.28"}),
+          {"branch":true,"src":"SIG SAUER MODX MODULAR PISTOL SUPPRESSOR — OPERATOR’S MANUAL — 8591451-01 REV09 — 5.1 Disassembly, item 7, p.28"}),
         tgStep("Clean","Minimum every 1000 cartridges — and the rate depends on the ammunition",
           stA("SIG's stated minimum is a clean every 1000 cartridges under normal conditions, and it says outright that the rate of residue buildup varies with what you have been firing. Dirty subsonic ammunition moves that number down, not up.")
           +"A minimum is a floor, not a target. On a suppressed pistol the piston is the part that tells you when.",
@@ -48443,7 +48455,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Bushing out the front, then the barrel — strip complete",
           stA("Rotate the barrel bushing the other way — to the left of the slide — and take it out through the front, then tilt the barrel link forward and slide the barrel out of the front of the slide. That is the field strip: frame, slide, barrel, bushing, plug, spring and guide.")
           +stAs("Tilt barrel link forward and remove barrel from front of slide"),
-          {"src":"Springfield Armory 1911 Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ This edition prints NO page folios; printed pages below are read off the figure captions that sit on the same page. — DISASSEMBLY OF FULL-SIZE MODELS, Step 7 (printed p.29, per Figure 29-1)"}),
+          {"branch":true,"src":"Springfield Armory 1911 Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ This edition prints NO page folios; printed pages below are read off the figure captions that sit on the same page. — DISASSEMBLY OF FULL-SIZE MODELS, Step 7 (printed p.29, per Figure 29-1)"}),
         tgStep("Clean","Bore from the chamber end, and never reverse a brush mid-bore",
           stA("Push the rod in from the chamber end where you can and run it all the way out at the muzzle. Do not reverse direction with a brush or patch still in the bore — that is how a brush jams and a rod bends.")
           +stAs("Do not “reverse” rod direction when patch or brush is in barrel, it might bind."),
@@ -48496,7 +48508,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Field strip complete — the bolt stays whole",
           stA("The rifle is stripped for routine cleaning: barrelled action in the stock, and the bolt in your hand. ⛔ Do not take the bolt apart.")
           +"Springfield states that bolt disassembly is neither required nor recommended for routine cleaning, and there is no published procedure for it in this book.",
-          {"warn":"NOTE: Disassembly of the bolt is not required or recommended for routine cleaning.","warnSrc":"maker","src":"Springfield Armory Model 2020 Rimfire Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIP, printed p.30, step 6"})
+          {"warn":"NOTE: Disassembly of the bolt is not required or recommended for routine cleaning.","warnSrc":"maker","branch":true,"src":"Springfield Armory Model 2020 Rimfire Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIP, printed p.30, step 6"})
       ],
       deepSteps:[
         tgStep("Deep","Bore from the chamber, ejection port DOWN",
@@ -48555,7 +48567,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Bolt fully back, then press the REAR of the bolt stop",
           stA("Draw the bolt to its rearmost position and press the rear surface of the bolt stop, then pull the bolt straight out to the rear. Pressing the front of the stop does nothing; it is the rear face that releases.")
           +stAs("The rifle is now field stripped for routine cleaning."),
-          {"src":"Springfield Armory Model 2020 Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ No page folios are printed; printed pages are read off the figure captions on the same page. — FIELD STRIPPING (printed p.26, per Figure 26-1 on the page)"}),
+          {"branch":true,"src":"Springfield Armory Model 2020 Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ No page folios are printed; printed pages are read off the figure captions on the same page. — FIELD STRIPPING (printed p.26, per Figure 26-1 on the page)"}),
         tgStep("Clean","Barrel from the chamber to the muzzle, ejection port down",
           stA("Lay the barrelled action horizontally with the ejection port facing DOWN so solvent runs out rather than into the action, and always clean from the chamber end toward the muzzle. Push the brush fully out of the muzzle before pulling back — reversing a brush mid-bore is how one jams.")
           +stAs("You cannot change direction of the brush when brush is in the bore as this can jam the brush in the bore."),
@@ -48788,7 +48800,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Bushing out the front, then the barrel — strip complete",
           stA("Rotate the barrel bushing the other way — to the left of the slide — and take it out through the front, then tilt the barrel link forward and slide the barrel out of the front of the slide. That is the field strip: frame, slide, barrel, bushing, plug, spring and guide.")
           +stAs("Tilt barrel link forward and remove barrel from front of slide"),
-          {"src":"Springfield Armory 1911 Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ This edition prints NO page folios; printed pages below are read off the figure captions that sit on the same page. — DISASSEMBLY OF FULL-SIZE MODELS, Step 7 (printed p.29, per Figure 29-1)"}),
+          {"branch":true,"src":"Springfield Armory 1911 Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ This edition prints NO page folios; printed pages below are read off the figure captions that sit on the same page. — DISASSEMBLY OF FULL-SIZE MODELS, Step 7 (printed p.29, per Figure 29-1)"}),
         tgStep("Clean","Bore from the chamber end, and never reverse a brush mid-bore",
           stA("Push the rod in from the chamber end where you can and run it all the way out at the muzzle. Do not reverse direction with a brush or patch still in the bore — that is how a brush jams and a rod bends.")
           +stAs("Do not “reverse” rod direction when patch or brush is in barrel, it might bind."),
@@ -48949,7 +48961,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Field strip complete",
           stA("Buttstock with recoil spring, bolt carrier group, trigger pack, and the receiver. That is the routine strip.")
           +"Clean the bore and the carrier way from here; the BCG and gas block come apart only when the deep clean calls for it.",
-          {"src":"Springfield Armory Hellion Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIPPING & CLEANING, printed p.42"})
+          {"branch":true,"src":"Springfield Armory Hellion Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIPPING & CLEANING, printed p.42"})
       ],
       deepSteps:[
         tgStep("Deep","The interval — every 2,000 rounds",
@@ -49030,7 +49042,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           stA("Upper, lower, end cap, recoil spring assembly and bolt group. Springfield states that no further disassembly is required.")
           +"Extractor removal is specifically discouraged unless you are chasing an extractor fault."
           +stLimit("Springfield Armory","The pistol is now ready for cleaning. No further disassembly is required.","Springfield Armory Kuna Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIPPING & CLEANING, printed p.32, step 7"),
-          {"warn":"We do not advise extractor removal unless you are experiencing extractor issues.","warnSrc":"maker","src":"Springfield Armory Kuna Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIPPING & CLEANING, printed p.32, step 7"})
+          {"warn":"We do not advise extractor removal unless you are experiencing extractor issues.","warnSrc":"maker","branch":true,"src":"Springfield Armory Kuna Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIPPING & CLEANING, printed p.32, step 7"})
       ],
       deepSteps:[
         tgStep("Deep","The interval — every 2,000 rounds",
@@ -49257,7 +49269,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","If yours is a DUAL RECOIL SPRING gun, this is your front end instead",
           stA("A 1911 DS built with a dual recoil spring system does not use the hex wrench at all: lock the slide back, take the slide stop out, ease the slide off, then with the slide upside down press the guide rod head forward and snap the takedown piece over the exposed rod before the spring system will come out. Barrel out of the front last, as before.")
           +stAs("The recoil spring system can now be removed from the slide (Figure 24-4)."),
-          {"src":"Springfield Armory 1911 DS Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ No page folios are printed; printed pages are read off the figure captions on the same page. — FIELD STRIP — dual recoil spring variant (printed p.24, per Figure 24-3)"}),
+          {"branch":true,"src":"Springfield Armory 1911 DS Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ No page folios are printed; printed pages are read off the figure captions on the same page. — FIELD STRIP — dual recoil spring variant (printed p.24, per Figure 24-3)"}),
         tgStep("Clean","Bore from the chamber end, brush then patches",
           stA("Rod in from the chamber end where possible, solvent-wet patch through several times, then the bristle brush end to end, then dry patches until they come out clean. Never reverse a brush inside the bore.")
           +stAs("Do not “reverse” rod direction when patch or brush is in barrel, it might bind."),
@@ -49314,7 +49326,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Full separation, if you want it",
           stA("To take the receivers fully apart, also depress the pivot pin just below the delta ring on the left side and pull it out from the right until its stop. The two receivers then separate.")
           +"Springfield offers this as an ALTERNATE method, not the standard one — useful for a deep clean, unnecessary for a range-day wipe-down.",
-          {"src":"Springfield Armory SA-16A2 Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — printed p.31"})
+          {"branch":true,"src":"Springfield Armory SA-16A2 Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — printed p.31"})
       ],
       deepSteps:[
         tgStep("Deep","Seat the bolt, then pull the firing pin retaining pin",
@@ -49635,7 +49647,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Field strip complete",
           stA("Frame, slide, barrel, recoil system and magazine. That is the whole published field strip.")
           +"Springfield's blanket warning applies past this point — no further disassembly without training from a competent gunsmith.",
-          {"warn":"Do not attempt to disassemble this or any other firearm until you have received training and instructions from a competent gunsmith.","warnSrc":"maker","src":"Springfield Armory XD-E Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIP, printed p.30, step 10"})
+          {"warn":"Do not attempt to disassemble this or any other firearm until you have received training and instructions from a competent gunsmith.","warnSrc":"maker","branch":true,"src":"Springfield Armory XD-E Operation & Safety Manual — Operation & Safety Manual (no part or revision code printed) — FIELD STRIP, printed p.30, step 10"})
       ],
       deepSteps:[
         tgStep("Deep","When the magazines are actually due",
@@ -49747,7 +49759,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Slide forward off the frame, then the recoil system and barrel",
           stA("Run the slide forward off the frame, then lift the captive recoil spring assembly out and take the barrel out of the slide. The recoil assembly is captive but still under load — keep it as one piece and do not try to separate it.")
           +stAs("CAUTION: Captive Recoil Spring System. Spring is under tension. Maintain control."),
-          {"src":"Springfield Armory XD-S Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ No page folios are printed; printed pages are read off the figure captions on the same page. — FIELD STRIP (printed p.27-28, per Figures 27-1, 27-2, 28-1 and 28-2)"}),
+          {"branch":true,"src":"Springfield Armory XD-S Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ No page folios are printed; printed pages are read off the figure captions on the same page. — FIELD STRIP (printed p.27-28, per Figures 27-1, 27-2, 28-1 and 28-2)"}),
         tgStep("Clean","Breech face, extractor, chamber and feed ramp",
           stA("This is where a small carry pistol actually gets dirty. Bristle brush and solvent on the breech face, around the extractor, in the chamber and up the feed ramp — pocket lint and unburnt powder collect there and cause the failures people blame on ammunition."),
           {"src":"Springfield Armory XD-S Operation & Safety Manual — Operation & Safety Manual, current support-site edition (no part code printed). ⛔ No page folios are printed; printed pages are read off the figure captions on the same page. — TO ELIMINATE MALFUNCTIONS (PDF p.42)"}),
@@ -52434,7 +52446,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"Ruger® 10/22® Autoloading Rifle Instruction Manual — 10/22 instruction manual — DISASSEMBLY, p.29"}),
         tgStep("Strip","That is the routine strip — Ruger says so",
           stA("Stock, trigger housing, barrelled action. Everything past this point is for a barrel change or a deep clean of the receiver, not for ordinary maintenance."),
-          {"src":"Ruger® 10/22® Autoloading Rifle Instruction Manual — 10/22 instruction manual — DISASSEMBLY, p.29"})
+          {"branch":true,"src":"Ruger® 10/22® Autoloading Rifle Instruction Manual — 10/22 instruction manual — DISASSEMBLY, p.29"})
       ],
       deepSteps:[
         tgStep("Deep","⛔ The V-BLOCK — two 5/32\" screws, and this is the pattern",
@@ -52516,7 +52528,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Buffer and operating spring — hammer COCKED, detent depressed",
           stA("Cock the hammer with your thumb first. Then push the buffer in, depress the buffer detent to release it, and let the buffer and operating spring come out of the tube UNDER CONTROL. ⛔ Glasses on for this one.")
           +"Cocking the hammer first is what keeps it out of the buffer's path. Skip it and the buffer catches on the hammer every time.",
-          {"src":"ARMALITE®, INC OWNER’S MANUAL FOR M-15™ RIFLES AND CARBINES — November 2013 Rev 28, P/N: MANUAL M15 — 12.5 Lower Receiver Assembly, step 1, p.33"}),
+          {"branch":true,"src":"ARMALITE®, INC OWNER’S MANUAL FOR M-15™ RIFLES AND CARBINES — November 2013 Rev 28, P/N: MANUAL M15 — 12.5 Lower Receiver Assembly, step 1, p.33"}),
         tgStep("Clean","⛔ NEVER reverse a bore brush inside the bore",
           stA("Solvent on the bore and chamber, the gas tube, the upper receiver and barrel assembly, the locking lugs and everywhere fouling has collected. Run the rod through from the chamber and out the muzzle several times. ⛔ Never change the brush's direction while it is in the bore — push it all the way through and unscrew it, or use a pull-through cable, which is ArmaLite's own recommendation for breech-to-muzzle cleaning.")
           +"Reversing a bronze brush in a rifled bore is how crowns and lands get damaged, and it is entirely avoidable.",
@@ -52698,7 +52710,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Upper straight off, bolt straight back",
           stA("The upper now lifts straight off the frame. To get the bolt out of the upper, simply pull it straight back on the bolt handle.")
           +"No tools to this point on this pistol — that is the whole design of the take-down button.",
-          {"src":"VOLQUARTSEN BLACK MAMBA OWNER’S MANUAL — UNKNOWN — no revision code printed — Disassembly, step 6, p.9"}),
+          {"branch":true,"src":"VOLQUARTSEN BLACK MAMBA OWNER’S MANUAL — UNKNOWN — no revision code printed — Disassembly, step 6, p.9"}),
         tgStep("Clean","⛔ BREECH TO MUZZLE, PULL-THROUGH — with the bolt LOCKED OPEN",
           stA("Lock the bolt open using the bolt hold open feature, then clean the barrel ONLY from breech to muzzle with a pull-through system. ⛔ A cleaning rod from the muzzle end voids the warranty and greatly affects accuracy.")
           +"The hold-open is what gives the pull-through a straight run at the breech. It is in the instruction for a reason.",
@@ -53952,7 +53964,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           {"src":"model 307™ RIFLES — Weatherby owner's manual — Model 307 Rifles owner's manual — DISASSEMBLY OF THE MODEL 307 RIFLE"}),
         tgStep("Strip","Bolt assembly out of the receiver",
           stA("Take the bolt assembly out. That alone is enough for most cleaning; the steps below are for a full strip."),
-          {"src":"model 307™ RIFLES — Weatherby owner's manual — Model 307 Rifles owner's manual — DISASSEMBLY OF THE MODEL 307 RIFLE"})
+          {"branch":true,"src":"model 307™ RIFLES — Weatherby owner's manual — Model 307 Rifles owner's manual — DISASSEMBLY OF THE MODEL 307 RIFLE"})
       ],
       deepSteps:[
         tgStep("Deep","Floorplate open, then the two trigger guard screws",
@@ -54142,7 +54154,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         tgStep("Strip","Apart with the end cap tool and the hub-mount wrench",
           stA("Use the provided end cap tool — it takes a male 1/2 inch square socket — and the provided blast chamber / hub mount wrench to disassemble the suppressor. That is the whole tool list, and both tools ship in the box.")
           +"This is a can designed to be opened. The tools are not accessories; they are the procedure.",
-          {"src":"SILENT BANDIT SUPPRESSORS — OWNER’S MANUAL — UNKNOWN — no revision code printed — Cleaning & Maintenance — Cleaning Procedure, item 1, p.19"}),
+          {"branch":true,"src":"SILENT BANDIT SUPPRESSORS — OWNER’S MANUAL — UNKNOWN — no revision code printed — Cleaning & Maintenance — Cleaning Procedure, item 1, p.19"}),
         tgStep("Clean","Every 50-250 rounds — the maker's own interval",
           stA("Wilson publishes a real interval for this can: clean it every 50 to 250 rounds depending on how it is being used and what is going through it. ⚠ For a high-volume shooter that is a range-day job, not an annual one.")
           +"Most rifle cans get \"as needed\". This one gets a number, so use the number."
@@ -56584,7 +56596,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         if(!isPro() && safe.length>=FREE_MAX_GUNS){ openProSheet(); return; }
         const f={id:Date.now().toString(36), model:c.i, totalRounds:0, roundsSinceClean:0, roundsSinceSpring:0, lastClean:null, lastChems:"",
                  cleanInterval:(c.gp==="Suppressors"?400:((c.fm==="PUMP-500"||c.fm==="PUMP-590")?200:500)),
-                 log:[{ts:Date.now(), type:"note", msg:"Added to safe", mags:[], magRotDays:90, reminders:[], service:[], zeros:[]}]};
+                 log:[{ts:Date.now(), type:"note", msg:"Added to safe"}],
+                 mags:[], magRotDays:90, reminders:[], service:[], zeros:[]};
         safe.unshift(f); saveSafe();
         activeId=f.id; show("scr-detail");
       });
@@ -57184,53 +57197,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
      NOTHING AT ALL, silently, which is a defect this lane already caught once. */
   /* [HERO-ART:START] */
   const HERO_ART_FM={
-    "1911":"1911-hero.png",
     "AR15":"ar15-hero.png",
     "BARRETT-M82":"50-bmg-m107.png",
     "BARRETT-M99":"50-bmg-m107.png",
-    "BREAK-OU":"over-under-12.png",
-    "BREAK-SS":"over-under-24.png",
-    "BREAK-SXS":"over-under-24.png",
-    "GLOCK":"glock-hero.png",
-    "LEVER-BL22":"lever-gun-10.png",
-    "LEVER-HENRY":"lever-gun-10.png",
-    "LEVER-HENRY-CF":"lever-gun-10.png",
-    "LEVER-LR":"lever-gun-10.png",
-    "LEVER-MARLIN":"lever-gun-10.png",
-    "LEVER-SAV99":"lever-gun-10.png",
-    "LEVER-WIN73":"lever-gun-10.png",
-    "LEVER-WIN92":"lever-gun-10.png",
-    "LEVER-WIN94":"lever-gun-10.png",
-    "OU-BENELLI-828U":"over-under-12.png",
-    "OU-BERETTA-69X":"over-under-12.png",
-    "OU-BERETTA-DT":"over-under-12.png",
-    "OU-BERETTA-SIDELOCK":"over-under-12.png",
-    "OU-BLASER-F16":"over-under-12.png",
-    "OU-BLASER-F3":"over-under-12.png",
-    "OU-FABARM":"over-under-12.png",
-    "OU-GUERINI":"over-under-12.png",
-    "OU-KOLAR":"over-under-12.png",
-    "OU-KRIEGHOFF":"over-under-12.png",
-    "OU-PERAZZI":"over-under-12.png",
-    "OU-RIZZINI":"over-under-12.png",
-    "OU-SYREN":"over-under-12.png",
-    "OU-ZOLI":"over-under-12.png",
-    "REV-DA":["kimber-k6s-315.png","kimber-k6s-318.png"],
-    "REV-SA":["kimber-k6s-315.png","kimber-k6s-318.png"],
-    "SB-BROWNING-BT99":"over-under-24.png",
-    "SB-KRIEGHOFF-KX6":"over-under-24.png",
-    "SB-PERAZZI":"over-under-24.png",
     "SERBU-BFG50":"50-bmg-m107.png",
     "SERBU-BFG50A":"50-bmg-m107.png",
-    "SXS-BERETTA-486":"over-under-24.png",
   };
   const HERO_ART_GP={
-    "Muzzleloaders":["muzzleloader-10.png"],
     "Pistols":["pistol-10.png","pistol-8.png"],
-    "Revolvers":["kimber-k6s-315.png","kimber-k6s-318.png"],
-    "Rifles":["hunting-rifle-15.png"],
-    "Shotguns":["pump-shotgun-722.png"],
-    "Suppressors":["suppressor-floor.png"],
   };
   /* [HERO-ART:END] */
   function heroArtHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
@@ -61275,10 +61249,33 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(box) box.remove();
   }
   const fsPrevRenderDetail_16=renderDetail;
+  /* ⛔ NO SILENT NO-OP (walk-48 item 1). This is the OUTERMOST renderDetail. A
+     throw anywhere in the render chain used to leave a half-drawn page with no
+     signal — the class of failure behind "opens to nothing". Now it surfaces a
+     visible banner on the firearm page AND logs to the console, and it does not
+     propagate so navigation stays usable. Additive: runs only on the error path,
+     which the working path never reaches. */
+  function fsDetailErrorBox(){
+    const sd=document.getElementById("scr-detail"); if(!sd) return null;
+    let b=document.getElementById("detailErr");
+    if(!b){
+      b=document.createElement("div"); b.id="detailErr";
+      b.style.cssText="margin:12px 0;padding:12px 14px;border:1px solid var(--safe-red);border-radius:10px;background:rgba(212,85,63,.12);color:#E5A093;font-size:13px;line-height:1.5";
+      sd.insertBefore(b, sd.firstChild);
+    }
+    return b;
+  }
   renderDetail=function(){
-    fsPrevRenderDetail_16();
-    const f=byId(activeId); if(!f) return;
-    fsRenderDeepAbsent(f);
+    try{
+      fsPrevRenderDetail_16();
+      const f=byId(activeId); if(!f) return;
+      fsRenderDeepAbsent(f);
+      const eb=document.getElementById("detailErr"); if(eb) eb.hidden=true;
+    }catch(e){
+      try{ const b=fsDetailErrorBox(); if(b){ b.hidden=false;
+        b.textContent="Something went wrong drawing this firearm’s page. Your data is safe — go back and reopen it. ("+((e&&e.message)||e)+")"; } }catch(_){}
+      console.error("renderDetail:", e);
+    }
   };
 
   /* the vC34 surface, for the harness */
