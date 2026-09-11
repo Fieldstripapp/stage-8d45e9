@@ -9173,6 +9173,68 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       reassembly:["Firing pin complete with its spring back into the bolt, fixed with its pin.","Bolt taken by the top part and squeezed, then inserted in its proper place.","Firearm held vertically; the fore-end guide rods inserted in their respective tracks.","Firearm laid horizontal; the action bars hooked onto the bolt guide, lifting the bars slightly with the other hand.","CHECK the action bars-to-bolt engagement is correct before going further.","Fore-end slid ahead; trigger guard inserted with the hammer COCKED, twisting in at the front locking hole and then seating the rear on the receiver.","Trigger guard pins pushed in — the LONGER pin goes in the forward hole.","If a pistol grip or telescopic stock is fitted: TIGHTEN the retaining nut or ring nut fully, until it solidly contacts the receiver.","Barrel and barrel retaining cap refitted to complete the assembly."],
       fncheck:"With the gun proven empty: check the action bars-to-bolt engagement is correct before the trigger guard goes back, because it cannot be seen afterwards. Refit the trigger guard only with the hammer cocked. On a pistol grip or telescopic stock, confirm the retaining nut is fully tightened against the receiver — a loose stock nut here is a loose trigger group. With everything together, press the safety button until the red ring disappears and confirm it does, work the fore-end fully back and forward to confirm the bolt runs and locks, and check the barrel retaining cap is fully screwed down onto the magazine tube."
     },
+    "sg_beretta1301comppro": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) (UNDATED — Beretta prints a form code rather than a year)",
+      sourceSha256:"775abb44fcf9ac7ef102a4fbe6f79b367d85824c0dfcdb217e28a988aa699585",
+      cleanIntro:"A 1301 built for competition arrives assembled and is expected to keep running through a programme, not a morning. The strip is the same tool-free sequence the rest of Beretta's semiautos use — cap, fore-end, barrel, bolt group — and the same hard rule governs the gas system: clean it, then put it back dry.",
+      steps:[
+        tgStep("Clear","Three places checked, hammer decocked",
+          stA("Ejection port, loading gate, chamber — look at each one, then confirm the hammer is decocked. A competition gun gets handled between stations more than it gets fired, which is exactly why the check happens every time and not just at the end.")
+          +stAs("It is advisable to carry out the stripping operations over a table to catch components should they drop."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","Carrier stop pin all the way down, bolt open",
+          stA("Push the carrier stop pin fully down, then pull the bolt right back so it stays open. Nothing forward of the receiver will release until both of those are true, and the cap is not the part to force.")
+          +stAs("Pull the breech bolt all the way back so that it remains open"),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","Front cap anticlockwise, fore-end off toward the muzzle",
+          stA("Unscrew the fore-end's front cap anticlockwise, then hold the gun by the BARREL and pull the fore-end straight out toward the muzzle. Straight is the whole trick — angled, it wedges on the magazine tube.")
+          +stAs("Holding the shotgun by the barrel, pull the fore-end straight out toward the muzzle."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","⛔ Barrel off with the piston held — and the valve stays shut",
+          stA("Draw the barrel out of the stock-receiver assembly with the piston held inside its gas cylinder, then let the piston parts off the tube. ⛔ The valve is where this stops: never strip its spring or its retaining nut. It is self-cleaning and needs no maintenance; if it is genuinely wrong, that is a factory-trained gunsmith's work.")
+          +stAs("The valve device is self-cleaning and requires no maintenance"),
+          {"branch":true,"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Clean","Bore, and then the locking shoulders",
+          stA("Soft flannel through the bore, bronze brush or an oiled cloth for the rest, dry cloth after, then a light film. Then the breech end, and give it real attention — a competition gun that starts closing sluggishly halfway through a programme is usually complaining about those bearing surfaces, not about the shells.")
+          +stAs("Lightly lubricate the barrel with a soft clean cloth soaked with Beretta Gun Oil."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","Gas system cleaned, then left dry",
+          stA("Clean and spray the piston, the elastic piston seal and the magazine tube; spray the cylinder walls, brush them with a bronze brush and wipe the inside out. ⛔ Then stop — Beretta says the components named must not be lubricated, and a wet gas system is the fastest route to a gun that will not finish a round.")
+          +stAs("After removing any combustion residue, clean the inside of the gas cylinder with a clean cloth."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","Piston glides freely, or it does not go back",
+          stA("Push the piston along the magazine tube by hand. It should slide with no catch at all. This is the check that separates a gun that will run a full programme from one that starts leaving the bolt short somewhere in the middle of it.")
+          +stAs("To clean the walls of the gas cylinder, spray them with Beretta Gun Oil and clean thoroughly with a bronze brush."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"})
+      ],
+      deepSteps:[
+        tgStep("Deep","The bolt comes apart to be CLEANED, and for nothing else",
+          stA("Beretta puts the reason above the procedure, and it is the reason to do this at the end of a season rather than after a squad: the breech bolt assembly is taken down to clean its components. Nothing below is a tuning operation."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Ride the bolt forward under control",
+          stA("Keep the index or middle finger on the cocking handle, press the release button, and let the bolt travel forward slowly until it stops. Letting it slam is how a bolt face and a barrel breech get peened over a season of doing it."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Depress the bolt head until the neck groove lines up",
+          stA("Press the head of the bolt in until the groove in its neck sits level with the edge of the bolt body. With the groove aligned the cocking handle will pull straight out and it takes force; with it misaligned nothing will come and levering it is how the handle gets bent.")
+          +stAs("Keeping the head depressed in this position, extract the cocking handle from the breech bolt, pulling forcefully."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Bolt group forward off the receiver — ejection port UP",
+          stA("Flat surface, ejection port facing upward, and pull the bolt assembly, the operating rods with sleeve, the recoil spring and the spring holder forward together. Port up is what keeps the firing pin, the locking block and their springs inside the bolt instead of on the floor."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Trigger plate out — safety ON, hammer cocked",
+          stA("Engage the safety with the hammer cocked, press the carrier stop pin, then drive the trigger guard retaining pin out with a punch or an awl and lever the plate free by the trigger guard — toward the barrel first, then outward. The order matters; pulling straight out binds it.")
+          +stAs("The trigger plate only needs to be disassembled in order to clean the trigger mechanism."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Clean bolt, plate and receiver — then put the tools down",
+          stA("Spray and clean the bolt parts, dry them thoroughly, lubricate lightly. Wipe the trigger plate and put a light film on its metal parts and its retaining pin. Do the receiver the same way, lubricating the internal bolt guides. ⛔ The plate comes OUT to be cleaned; it does not come APART, and the valve stays exactly where the strip left it.")
+          +stAs("Proceed as indicated for the breech bolt. Clean thoroughly with a soft cloth and lubricate the internal breech bolt guides."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — SPECIAL MAINTENANCE, printed p.36"})
+      ],
+      cleaning:[{"name":"BARREL & LOCKING SHOULDERS","tasks":["Flannel through the bore for combustion residue; bronze brush if a match day has earned it","Locking shoulders at the barrel breech cleaned thoroughly","Dry cloth through, then a light oil; bore and chamber checked clear of obstruction"]},{"name":"GAS CYLINDER, PISTON, SEAL, MAGAZINE TUBE","tasks":["Piston, elastic piston seal and magazine tube cleaned and sprayed","Piston proved to glide freely along the tube by hand","Cylinder walls sprayed and brushed, then wiped out with a clean cloth","⛔ These components must NOT be lubricated"]},{"name":"BREECH BOLT, TRIGGER PLATE, RECEIVER (end of season)","tasks":["Bolt parts sprayed and cleaned, dried thoroughly, lightly lubricated","Trigger plate wiped; metal parts and the retaining pin lightly oiled","Receiver treated as the bolt was, internal bolt guides lubricated"]},{"name":"⛔ LEAVE ALONE","tasks":["The valve assembly is never disassembled","The valve spring and the valve retaining nut are never stripped","Oil never goes on a cartridge, and never stays in the bore"]}],
+      reassembly:["Trigger plate back in with the hammer cocked and the safety engaged, rear of the plate flush to the receiver, pushed firmly toward the stock.","Retaining pin in only once the trigger guard hole is centred on the receiver.","Bolt group, operating rods with sleeve, recoil spring and piston stop onto the magazine tube, ejection port UP on a flat surface.","Bolt head depressed to the neck groove, cocking handle driven home firmly.","Piston into the barrel's gas cylinder, elastic seal pinched between the fingers to start it.","Barrel checked clear, carrier stop pin down, fore-end on and the front cap tightened."],
+      fncheck:"Back together and unloaded: cycle the action several times, confirm the bolt locks open on the carrier stop and returns fully into battery, and check the front cap is tight and the choke seated. Short-stroking straight after a clean points at oil left in the gas system, which the book says should carry none."
+    },
     "sg_beretta1301tactical": {
       textMode:true, parts:{}, origins:{},
       sourcedFrom:"Beretta Semiauto Shotgun User Manual — UQAN3953 rev 3 (form code printed in the running header of every page; the book prints no year) (UNDATED — Beretta prints a form code rather than a year)",
@@ -9910,6 +9972,138 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       cleaning:[{"name":"CHOKE TUBE & HOUSING","tasks":["Choke out, housing brushed and dried","Choke checked clean inside AND outside","Thin film of gun oil on the barrel thread and the choke before it goes back"]},{"name":"BARREL","tasks":["Soft patch through to lift combustion residue; brass brush if it needs it","Barrel extension cleaned thoroughly — that is the locking surface","Dry patch, then a lightly oiled cloth over the outside","⛔ Bore checked clear before it goes back on"]},{"name":"GAS CYLINDER, PISTON, MAGAZINE TUBE","tasks":["Magazine tube shaft sprayed and cleaned; piston must glide freely on it","Gas cylinder walls brushed with a brass brush, then wiped out","⛔ NEVER oil inside the gas cylinder — these parts run dry"]},{"name":"BREECH BOLT, TRIGGER PACK, RECEIVER (end of season)","tasks":["Bolt parts sprayed, dried thoroughly, lightly lubricated","Trigger pack wiped clean; metal parts and the retaining pin lightly oiled","Receiver's internal bolt guides cleaned and lubricated","⛔ Never spray or apply oil to cartridges"]}],
       reassembly:["Connecting rod with sleeve back onto the breech bolt.","Working on a flat surface with the ejection port UP, bolt assembly and operating rod with sleeve onto the magazine tube shaft.","Push the operating rod all the way in to enter the bolt into the receiver, then slide it down against the recoil spring until the breech locks open.","⛔ Cocking handle into the bolt and struck firmly until FULLY seated — a handle that is not fully seated can dislodge during operation.","Barrel checked clear, then back into the receiver with the piston held in its cylinder; forend on, forend cap tightened.","Trigger pack back in and its retaining pin driven home before anything else.","Choke tube in, tightened, and the gun cycled to check function."],
       fncheck:"Reassembled and unloaded: the cocking handle must be COMPLETELY seated in the breech bolt — Beretta warns that a partly-seated handle can fly out of the gun in use, and that the damage is not covered by warranty. Then cycle the bolt several times and confirm it locks open on the carrier stop and closes fully. Check the choke is tight before shooting."
+    },
+    "sg_berettaa400xcelmultitarget": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) (UNDATED — Beretta prints a form code rather than a year)",
+      sourceSha256:"775abb44fcf9ac7ef102a4fbe6f79b367d85824c0dfcdb217e28a988aa699585",
+      cleanIntro:"The Multitarget is one A400 asked to shoot several disciplines, so it lives with an adjustable comb and a shell count that never stops climbing. None of that changes the strip: cap, fore-end, barrel, bolt group, no tool needed. What it does change is how often you are into the gas system — and Beretta is explicit that the gas parts are cleaned and then left DRY.",
+      steps:[
+        tgStep("Clear","Prove it empty three ways, then check the hammer",
+          stA("Look through the ejection port, the loading gate and the chamber — three places, three looks — and then confirm the hammer is decocked before a single part moves. On a gun that spends its day being loaded two at a time, the magazine is the one that catches people out.")
+          +stAs("It is advisable to carry out the stripping operations over a table to catch components should they drop."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","Stop pin down first, then lock the bolt back",
+          stA("The carrier stop pin goes all the way down, and the bolt gets pulled fully back so it stays open. Do these in that order — with the bolt already back it is awkward to reach the pin, and with neither done the cap simply will not free the fore-end.")
+          +stAs("Pull the breech bolt all the way back so that it remains open"),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","Cap anticlockwise, fore-end forward off the barrel",
+          stA("Spin the front cap off anticlockwise and set it where it cannot roll. Hold the gun by the BARREL and pull the fore-end straight forward off the muzzle end; it comes easily when it is straight and binds the moment it is not.")
+          +stAs("Holding the shotgun by the barrel, pull the fore-end straight out toward the muzzle."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","⛔ Barrel off with the piston held — the valve is not yours",
+          stA("Keep a hand on the piston inside its cylinder as the barrel comes away, then let the piston and its elastic seal slide off the magazine tube. ⛔ The valve is where this stops: nothing in it is serviceable, and a valve that is genuinely wrong goes to a factory-trained gunsmith rather than onto the bench.")
+          +stAs("The valve device is self-cleaning and requires no maintenance"),
+          {"branch":true,"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Clean","Bore, then the shoulders the bolt locks into",
+          stA("Flannel through for residue, bronze brush if it has earned one, then a dry cloth and a light film of oil. The step people skip is the locking shoulders at the barrel breech: clean those thoroughly, because that is where a gun stops closing fully and starts feeling gritty.")
+          +stAs("Pull a soft, clean, dry cloth through the barrel."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","Heavy powders foul four named parts — clean all four",
+          stA("The book names them: gas cylinder, piston, elastic piston seal, magazine tube. Clean and spray each, brush the cylinder walls, wipe the inside out. ⛔ Then they go back dry — the components named above must not be lubricated, and that instruction is not a preference about oil brands.")
+          +stAs("The particular composition of the powders of some Super Magnum ammunition can leave consistent deposits of combustion residue."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","The piston must glide, by hand, before reassembly",
+          stA("Slide the piston up and down the magazine tube with your fingers. Free is free; any drag at all means it goes back to the brush. A multi-discipline gun that has been running light target loads all morning is exactly the gun that will not cycle a light load once the piston starts to stick.")
+          +stAs("To clean the walls of the gas cylinder, spray them with Beretta Gun Oil and clean thoroughly with a bronze brush."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","⛔ Right tube in the right barrel",
+          stA("Changing discipline means changing choke, and a bench full of tubes is where the wrong pattern gets started into an Optima-Bore HP barrel. ⛔ That barrel takes Optimachoke HP tubes only; the book states plainly that other Beretta patterns are incompatible with it.")
+          +stAs("Beretta Optimachoke® HP (High Performance) tubes are built in high resistance steel to ensure a long life and rust protection and are designed to withstand the use of steel shot."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — BERETTA OPTIMACHOKE® HP CHOKE TUBES, printed p.42"})
+      ],
+      deepSteps:[
+        tgStep("Deep","The bolt comes apart to be CLEANED, and for nothing else",
+          stA("Beretta puts the reason above the procedure, and it is the reason to do this at the end of a season rather than after a squad: the breech bolt assembly is taken down to clean its components. Nothing below is a tuning operation."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Ride the bolt forward under control",
+          stA("Keep the index or middle finger on the cocking handle, press the release button, and let the bolt travel forward slowly until it stops. Letting it slam is how a bolt face and a barrel breech get peened over a season of doing it."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Depress the bolt head until the neck groove lines up",
+          stA("Press the head of the bolt in until the groove in its neck sits level with the edge of the bolt body. With the groove aligned the cocking handle will pull straight out and it takes force; with it misaligned nothing will come and levering it is how the handle gets bent.")
+          +stAs("Keeping the head depressed in this position, extract the cocking handle from the breech bolt, pulling forcefully."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Bolt group forward off the receiver — ejection port UP",
+          stA("Flat surface, ejection port facing upward, and pull the bolt assembly, the operating rods with sleeve, the recoil spring and the spring holder forward together. Port up is what keeps the firing pin, the locking block and their springs inside the bolt instead of on the floor."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Trigger plate out — safety ON, hammer cocked",
+          stA("Engage the safety with the hammer cocked, press the carrier stop pin, then drive the trigger guard retaining pin out with a punch or an awl and lever the plate free by the trigger guard — toward the barrel first, then outward. The order matters; pulling straight out binds it.")
+          +stAs("The trigger plate only needs to be disassembled in order to clean the trigger mechanism."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Clean bolt, plate and receiver — then put the tools down",
+          stA("Spray and clean the bolt parts, dry them thoroughly, lubricate lightly. Wipe the trigger plate and put a light film on its metal parts and its retaining pin. Do the receiver the same way, lubricating the internal bolt guides. ⛔ The plate comes OUT to be cleaned; it does not come APART, and the valve stays exactly where the strip left it.")
+          +stAs("Proceed as indicated for the breech bolt. Clean thoroughly with a soft cloth and lubricate the internal breech bolt guides."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — SPECIAL MAINTENANCE, printed p.36"})
+      ],
+      cleaning:[{"name":"BARREL, BREECH SHOULDERS & CHOKE","tasks":["Flannel through the bore for combustion residue; bronze brush or an oiled cloth if it needs more","Locking shoulders at the barrel breech cleaned thoroughly","Dry cloth pulled through, light oil, bore and chamber checked clear of obstruction","⛔ Optima-Bore HP barrels take Optimachoke HP tubes and no other Beretta pattern"]},{"name":"GAS CYLINDER, PISTON, SEAL, MAGAZINE TUBE","tasks":["Piston, elastic piston seal and magazine tube cleaned and sprayed","Piston made to glide freely along the tube by hand before anything goes back","Cylinder walls sprayed and brushed with a bronze brush, then wiped out with a clean cloth","⛔ These components go back DRY — the book forbids lubricating them"]},{"name":"BREECH BOLT, TRIGGER PLATE, RECEIVER (end of season)","tasks":["Bolt parts sprayed and cleaned, dried thoroughly, lightly lubricated","Trigger plate wiped; metal parts and the retaining pin lightly oiled","Receiver cleaned as the bolt was, internal bolt guides lubricated"]},{"name":"⛔ LEAVE ALONE","tasks":["The valve assembly is never disassembled","The valve spring and the valve retaining nut are never stripped","Oil never goes on a cartridge, and never stays in the bore"]}],
+      reassembly:["Trigger plate back in with the hammer cocked and the safety engaged, rear of the plate flush to the receiver, pushed firmly toward the stock.","Retaining pin in only once the trigger guard hole is centred on the receiver.","Bolt group, operating rods with sleeve, recoil spring and piston stop onto the magazine tube, ejection port UP on a flat surface.","Bolt head depressed to the neck groove, cocking handle driven home firmly.","Piston into the barrel's gas cylinder, elastic seal pinched between the fingers to start it.","Barrel checked clear, carrier stop pin down, fore-end on and the front cap tightened."],
+      fncheck:"Reassembled and unloaded: work the bolt several times, confirm it holds open on the carrier stop and closes fully into battery, and check the front cap is tight and the choke fully seated. A gun that suddenly will not cycle its lightest load after a clean has oil where the book says there should be none."
+    },
+    "sg_berettaa400xcelsporting": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) (UNDATED — Beretta prints a form code rather than a year)",
+      sourceSha256:"775abb44fcf9ac7ef102a4fbe6f79b367d85824c0dfcdb217e28a988aa699585",
+      cleanIntro:"A sporting A400 goes through more shells in a season than most guns see in a decade, and it is the gas system that decides whether the last station of the day feels like the first. It strips with no tool at all: cap, fore-end, barrel, bolt group off the magazine tube. The one thing to fix in your head before you start is that the gas parts get cleaned and then go back DRY — Beretta says in as many words that they must not be lubricated.",
+      steps:[
+        tgStep("Clear","Empty in all three places, hammer decocked",
+          stA("Chamber, receiver and magazine, each looked at — through the ejection port, the loading gate and the chamber. Then check the hammer is decocked. A tube gun that reads empty at the port can still be holding shells in the magazine.")
+          +stAs("It is advisable to carry out the stripping operations over a table to catch components should they drop."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","Carrier stop pin down, bolt held open",
+          stA("Press the carrier stop pin all the way down if it is not already there, then draw the bolt fully to the rear so it stays open. Both have to be true before the fore-end cap will release anything, and forcing the cap against a closed bolt is how the threads get chewed.")
+          +stAs("Pull the breech bolt all the way back so that it remains open"),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","Front cap off anticlockwise, fore-end off the muzzle end",
+          stA("Unscrew the fore-end's front cap anticlockwise. Then hold the gun BY THE BARREL and draw the fore-end straight out toward the muzzle — holding it by the receiver puts your hand where the fore-end has to travel.")
+          +stAs("Holding the shotgun by the barrel, pull the fore-end straight out toward the muzzle."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Strip","⛔ Hold the piston as the barrel comes off — and stop at the valve",
+          stA("Draw the barrel out of the stock-receiver assembly with the piston held inside its gas cylinder, then let the piston parts come off the tube. ⛔ Stop at the valve. Beretta gives a reason rather than just a rule — there is nothing inside it to service — and anything genuinely wrong with it goes to a factory-trained gunsmith.")
+          +stAs("The valve device is self-cleaning and requires no maintenance"),
+          {"branch":true,"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Clean","Bore first, then the locking shoulders at the breech",
+          stA("Soft flannel down the bore for combustion residue, bronze brush or an oiled cloth if a heavy day has left more than that. Then the surfaces people walk past: the shoulders at the breech end that the bolt actually locks into. Fouling there is what a gun that will not quite close on the second bird is complaining about.")
+          +stAs("Carefully clean the inside of the barrel with a soft cloth (flannel) to remove any combustion residue."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","The gas parts get cleaned — and go back dry",
+          stA("Beretta names where heavy powders deposit: the gas cylinder, the piston, the elastic piston seal and the magazine tube. Clean and spray those, brush the cylinder walls with a bronze brush and wipe the inside out with a clean cloth. ⛔ Then leave them dry. Oil in a gas cylinder turns residue into paste, and paste is what a short-stroking gun is full of.")
+          +stAs("After removing any combustion residue, clean the inside of the gas cylinder with a clean cloth."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","Make the piston glide before anything goes back together",
+          stA("Run the piston along the magazine tube by hand and feel it move freely. This is the one check on a gas gun that predicts the failure before it happens: a piston that drags will short-stroke long before it refuses to fire, and you will blame the shells.")
+          +stAs("To clean the walls of the gas cylinder, spray them with Beretta Gun Oil and clean thoroughly with a bronze brush."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — ROUTINE MAINTENANCE, printed p.35-36"}),
+        tgStep("Clean","⛔ Choke back in — and only an Optimachoke HP tube",
+          stA("Sporting guns get their chokes changed more than anything else on the gun, which is how the wrong tube ends up in the right barrel. ⛔ An Optima-Bore HP barrel takes Optimachoke HP tubes and no other Beretta pattern; the book says a wrong-pattern tube will damage the shotgun.")
+          +stAs("Check the barrel. The barrel and cartridge chamber must be clean and free from obstructions."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — BERETTA OPTIMACHOKE® HP CHOKE TUBES, printed p.42"})
+      ],
+      deepSteps:[
+        tgStep("Deep","The bolt comes apart to be CLEANED, and for nothing else",
+          stA("Beretta puts the reason above the procedure, and it is the reason to do this at the end of a season rather than after a squad: the breech bolt assembly is taken down to clean its components. Nothing below is a tuning operation."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Ride the bolt forward under control",
+          stA("Keep the index or middle finger on the cocking handle, press the release button, and let the bolt travel forward slowly until it stops. Letting it slam is how a bolt face and a barrel breech get peened over a season of doing it."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Depress the bolt head until the neck groove lines up",
+          stA("Press the head of the bolt in until the groove in its neck sits level with the edge of the bolt body. With the groove aligned the cocking handle will pull straight out and it takes force; with it misaligned nothing will come and levering it is how the handle gets bent.")
+          +stAs("Keeping the head depressed in this position, extract the cocking handle from the breech bolt, pulling forcefully."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Bolt group forward off the receiver — ejection port UP",
+          stA("Flat surface, ejection port facing upward, and pull the bolt assembly, the operating rods with sleeve, the recoil spring and the spring holder forward together. Port up is what keeps the firing pin, the locking block and their springs inside the bolt instead of on the floor."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Trigger plate out — safety ON, hammer cocked",
+          stA("Engage the safety with the hammer cocked, press the carrier stop pin, then drive the trigger guard retaining pin out with a punch or an awl and lever the plate free by the trigger guard — toward the barrel first, then outward. The order matters; pulling straight out binds it.")
+          +stAs("The trigger plate only needs to be disassembled in order to clean the trigger mechanism."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — FIELD STRIPPING, printed p.31-32"}),
+        tgStep("Deep","Clean bolt, plate and receiver — then put the tools down",
+          stA("Spray and clean the bolt parts, dry them thoroughly, lubricate lightly. Wipe the trigger plate and put a light film on its metal parts and its retaining pin. Do the receiver the same way, lubricating the internal bolt guides. ⛔ The plate comes OUT to be cleaned; it does not come APART, and the valve stays exactly where the strip left it.")
+          +stAs("Proceed as indicated for the breech bolt. Clean thoroughly with a soft cloth and lubricate the internal breech bolt guides."),
+          {"src":"Beretta Semiauto Shotgun User Manual — MAN0088/001 (form code printed in the running header) — SPECIAL MAINTENANCE, printed p.36"})
+      ],
+      cleaning:[{"name":"BARREL, BREECH SHOULDERS & CHOKE","tasks":["Flannel through the bore for combustion residue; bronze brush or an oiled cloth if it needs more","Locking shoulders at the barrel breech cleaned thoroughly","Dry cloth pulled through, light oil, bore and chamber checked clear of obstruction","⛔ Optima-Bore HP barrels take Optimachoke HP tubes and no other Beretta pattern"]},{"name":"GAS CYLINDER, PISTON, SEAL, MAGAZINE TUBE","tasks":["Piston, elastic piston seal and magazine tube cleaned and sprayed","Piston made to glide freely along the tube by hand before anything goes back","Cylinder walls sprayed and brushed with a bronze brush, then wiped out with a clean cloth","⛔ These components go back DRY — the book forbids lubricating them"]},{"name":"BREECH BOLT, TRIGGER PLATE, RECEIVER (end of season)","tasks":["Bolt parts sprayed and cleaned, dried thoroughly, lightly lubricated","Trigger plate wiped; metal parts and the retaining pin lightly oiled","Receiver cleaned as the bolt was, internal bolt guides lubricated"]},{"name":"⛔ LEAVE ALONE","tasks":["The valve assembly is never disassembled","The valve spring and the valve retaining nut are never stripped","Oil never goes on a cartridge, and never stays in the bore"]}],
+      reassembly:["Trigger plate back in with the hammer cocked and the safety engaged, rear of the plate flush to the receiver, pushed firmly toward the stock.","Retaining pin in only once the trigger guard hole is centred on the receiver.","Bolt group, operating rods with sleeve, recoil spring and piston stop onto the magazine tube, ejection port UP on a flat surface.","Bolt head depressed to the neck groove, cocking handle driven home firmly.","Piston into the barrel's gas cylinder, elastic seal pinched between the fingers to start it.","Barrel checked clear, carrier stop pin down, fore-end on and the front cap tightened."],
+      fncheck:"Back together and unloaded: cycle the bolt several times, confirm it locks open on the carrier stop and returns fully into battery, and check the front cap is tight and the choke seated. If it short-strokes after a clean, the first suspect is oil left in the gas cylinder — those parts run dry by design."
     },
     "sg_berettaa400xtremeplus": {
       textMode:true, parts:{}, origins:{},
@@ -42716,6 +42910,82 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       reassembly:["Confirm all seven baffles and the end cap are clean, dry and free of oil and solvent.","Install the seven baffles into the tube with the rounded edge facing forward.","Thread the front end cap into the tube and tighten it by hand using the suppressor wrench.","If your host is M9-.75 threaded, thread the adapter into the end cap and snug it with an adjustable wrench on the adapter flats.","Clear the host firearm, check the muzzle and suppressor threads are clean and that they match (1/2 x 28 TPI right hand unless the adapter is fitted), align them and screw the suppressor on as tight as you can by hand. Do not use the suppressor wrench to install it on the firearm."],
       fncheck:"There is no dry-fire check for a suppressor — the check is a mounting and inspection check. With the host cleared, confirm the suppressor is fully threaded and hand-tight against the shoulder with no visible gap, that the baffle count was seven and each one showed no strike damage, and that nothing was added to the assembly that changes its overall length (that is unlawful under NFA rules). Once shooting, check frequently that the suppressor is still securely threaded to the firearm — SIG makes that a during-firing check, not an end-of-day one — and watch for tube discolouration as the sign it is being overheated."
     },
+    "sg_silencercentralbanish22": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. (ABSENT — no copyright line printed.)",
+      sourceSha256:"2163420733f95a83bed05b4cf97df38e33901c07f26c20a05527605608840dde",
+      cleanIntro:"A rimfire can is the one suppressor that has to come apart on a schedule rather than when something feels wrong. Unjacketed .22 bullets throw lead, the lead lands with the carbon, and left long enough the two weld the baffle stack into one piece — after which nothing you own will get it apart. BANISH puts a number on it: every 100 to 200 rounds.",
+      steps:[
+        tgStep("Clear","Host unloaded and open before the can is touched",
+          stA("Magazine out, bolt or slide locked back, then look INTO the chamber and put a finger in it. Then the safety. A can comes off the muzzle of a loaded gun more often than anybody admits, and this is the sequence that stops it.")
+          +stAs("Visually and physically inspect the chamber to ensure the firearm is empty and unloaded. Engage the safety."),
+          {"src":"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — INSTALLATION OF SUPPRESSOR, printed p.5"}),
+        tgStep("Strip","⛔ Let it cool, then unscrew it off the muzzle",
+          stA("Give it time, or use a cover or a glove. A .22 can after a brick of ammunition will still take skin off. Unscrew it off the threads with the action still open and clear.")
+          +stAs("When removing the silencer, use extreme caution as it may be hot to the touch after firing."),
+          {"src":"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — WARNING, printed p.2-3"}),
+        tgStep("Strip","Muzzle cap off with the tool key, then the breach cap",
+          stA("The key that shipped with the can is the tool for both ends — the muzzle cap first, then the breach cap off the other end. Nothing here is torqued; if a cap will not start moving with the key, the stack is fouled and the soak comes before the force.")
+          +stAs("To disassemble make sure the firearm is unloaded and remove from host firearm."),
+          {"src":"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.6"}),
+        tgStep("Strip","Soak an hour or two before anything is pushed",
+          stA("Penetrating oil down the tube and over the baffles, then leave it alone for an hour or two. This is the step people skip and the reason a stack seizes: the oil is what lets the baffles come out without being driven.")
+          +stAs("It is recommended that the suppressor be cleaned regularly."),
+          {"src":"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.6"}),
+        tgStep("Strip","⛔ Baffles out — pushed, not hammered",
+          stA("They should slide. Where they will not, BANISH's own answer is their baffle removal tool and a careful push — and the caution that comes with it is about damaging the baffles, so the force stops well before anything deforms.")
+          +stAs("This will result in the baffles not being able to slide out past the buildup.")
+          +stLimit("Silencer Central","If excessive fouling has occurred, our Baffle Remove Tool (sold separately) can be used to push the baffles out. Care must be taken to avoid damage to the baffles.","BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.6"),
+          {"src":"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.6"}),
+        tgStep("Clean","Nylon brush, baffles and tube, until the carbon is off",
+          stA("Nylon, not bronze, and not a wire wheel — the finish and the baffle faces are what you are protecting. Work the tube's inside wall as well as the baffles; the wall is where the build-up that stops the next strip actually lives.")
+          +stAs("Note: .22 Long rifle projectiles are not jacketed."),
+          {"src":"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.6"}),
+        tgStep("Clean","Dry, then a light film of oil on the baffles",
+          stA("Everything dry first — oil over solvent is paste. Then the thinnest film on the baffles, which BANISH gives for one reason only: so the stack goes back together and comes apart again next time.")
+          +stAs("Cleaning is required every 100 - 200 rounds to avoid having the baffles fuse together."),
+          {"src":"BANISH 22 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.6"})
+      ],
+      deepAbsentReason:"BANISH publishes NO procedure deeper than the one above for this can, and there is nothing deeper to publish: the BANISH 22 is a tube, two caps and a stack of individual baffles, and the field strip already takes all of it apart. A baffle does not itself come apart. ⛔ The book's only escalation past its own cleaning section is to the maker — the warranty page sends a suppressor needing repair back to Customer Service — so inventing a deeper teardown would be substitution from a different product, which is the exact failure the sealed/serviceable record exists to prevent.",
+      cleaning:[{"name":"BAFFLE STACK","tasks":["Soaked 1–2 hours in penetrating oil before anything is pushed","Pushed out, never driven — BANISH's own tool where the stack resists","Nylon-brushed until the carbon is off, then dried","Light film of oil on the baffles, for assembly only"]},{"name":"TUBE","tasks":["Inside wall brushed — that is where the build-up that blocks the next strip sits","Threads inside the tube cleaned before grease or anti-seize goes back on"]},{"name":"CAPS AND THREADS","tasks":["Muzzle cap and breach cap cleaned and dried","Barrel threads and the can's thread mount checked clean and undamaged","⛔ No gap between barrel shoulder and thread mount, ever"]},{"name":"⛔ THE SCHEDULE IS THE MAINTENANCE","tasks":["Every 100–200 rounds, by the maker's own number","A can left past it can foul solid and refuse to come apart at all"]}],
+      reassembly:["A little grease or anti-seize on the threads inside the tube.","Breach cap into the COUNTER-BORED short end, hand tight — if it will not shoulder, it is on the wrong end.","Baffles back in with the shortest one LAST, each aligned on its own etched line.","Muzzle cap on hand tight with the key tool.","Onto the host only with the action open and clear: threads clean, screwed down until it seats against the shoulder, hand tight.","Re-check the mount is still tight after the first few shots and periodically thereafter."],
+      fncheck:"Back together and off the gun: both caps hand tight with the key, no baffle proud of either end, and the bore clear when you look through it. On the host, the can screws down until it seats against the shoulder with NO visible gap — and then it gets checked again after the first few shots, because a thread mount that walks loose is how a baffle strike starts."
+    },
+    "sg_silencercentralbanish30v2": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"BANISH 30-V2 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. (ABSENT — no copyright line printed.)",
+      sourceSha256:"584870c63230b9e6e1695bc0cef221024b79cbbe7b7690f6151f458c95c74d47",
+      cleanIntro:"A modular .30 can that changes length is a can with more threads and more indexing than most, and both of those are what a cleaning schedule protects. Silencer Central puts the interval at 50 to 100 rounds and prints an end-cap torque — this is one of the few cans whose own book gives you a number to tighten to.",
+      steps:[
+        tgStep("Clear","Host unloaded and open, and the can off it",
+          stA("Nothing starts until the action is open and you have looked into it. Then the can comes off — and it comes off hot for far longer than it looks.")
+          +stAs("When removing the silencer, use extreme caution as it may be hot to the touch after firing."),
+          {"src":"BANISH 30-V2 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — WARNING, printed p.2-3"}),
+        tgStep("Strip","End cap off with the key and a T-45",
+          stA("Both tools, together — the tool key and the T-45. The book's own tip is to bond the two into one tool so the pair is never half-missing when the can needs opening at the bench.")
+          +stAs("It is recommended that the suppressor be cleaned every 50 - 100 rounds fired."),
+          {"src":"BANISH 30-V2 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING & DISASSEMBLE, printed p.8"}),
+        tgStep("Strip","⛔ Front module off — and the barrel-side cap stays put",
+          stA("The front module unthreads from the main tube; that is the joint that opens. ⛔ The cap at the barrel end is not one of them, and the book says so in as many words. Turning it is how a tube gets damaged for nothing.")
+          +stAs("The end cap of the suppressor that threads onto the barrel is not intended to be removed from the main tube of the suppressor."),
+          {"src":"BANISH 30-V2 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING & DISASSEMBLE, printed p.8"}),
+        tgStep("Strip","Soak a full day before the baffles move",
+          stA("Solvent inside, then leave it for twenty-four hours. A day sounds like a lot until you have tried to drive a dry .30 baffle stack out of a titanium tube; the soak is what makes the next step a push instead of a fight.")
+          +stAs("Push baffles out of the tube with our Baffle Removal Tool (sold separately) or a wooden dowel."),
+          {"src":"BANISH 30-V2 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING & DISASSEMBLE, printed p.8"}),
+        tgStep("Strip","⛔ Count the baffles as they come out",
+          stA("This can ships in two lengths with two baffle counts, and the reassembly differs between them. Lay the stack out in the order it came out and count it — that count is the only thing that tells you which configuration you are putting back."),
+          {"src":"BANISH 30-V2 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING & DISASSEMBLE, printed p.8"}),
+        tgStep("Clean","Stiff brush, brass or nylon, baffles and tube",
+          stA("Work the baffle faces and the inside of the tube with solvent and a stiff brush. The indexing tabs matter as much as the faces: carbon in a tab is what stops a stack seating square, and a stack that will not seat square will not let the end cap go down.")
+          +stAs("The use of solid lead or plated lead bullets is not recommended."),
+          {"src":"BANISH 30-V2 OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING & DISASSEMBLE, printed p.8"})
+      ],
+      deepAbsentReason:"There is nothing below this. Silencer Central publishes ONE procedure for the BANISH 30-V2 and the field strip above is all of it — cap, module, baffle stack, brush. A baffle does not itself come apart, and the one joint the book explicitly withholds (the barrel-side end cap in the main tube) is carried as a PROHIBITION rather than being quietly turned into a deeper step. ⛔ Inventing a deeper teardown for a can would be exactly the substitution the sealed/serviceable record exists to prevent.",
+      cleaning:[{"name":"BAFFLE STACK","tasks":["Soaked 24 hours in solvent before anything is pushed","Pushed out with the maker's tool or a wooden dowel — never driven","Faces AND indexing tabs brushed; a fouled tab stops the stack seating square","Counted out and laid in order — 8 or 11, and the two configurations differ"]},{"name":"TUBE AND MODULE","tasks":["Inside of the main tube and the extension brushed with solvent","All solvent removed before anything goes back","⛔ The barrel-side end cap stays in the main tube"]},{"name":"THREADS","tasks":["Anti-seize on the threads before the end cap or modular end goes back","Mount and barrel threads checked clean and undamaged","⛔ No gap between barrel shoulder and thread mount, ever"]},{"name":"⛔ THE SCHEDULE IS THE MAINTENANCE","tasks":["Every 50–100 rounds, by the maker's own number","Solid lead and plated lead are not recommended through this can"]}],
+      reassembly:["Seven matching baffles stacked on a flat surface, indexing tabs aligned and fully engaged.","Tube slid over the stack, upright, and the stack pushed up until it indexes with the main tube.","Assembly flipped open-end up, and the threads get anti-seize before anything is started into them.","Short baffle into the main tube; for the long configuration, two tall extension baffles and a short one into the extension tube, then the end cap.","End cap started light — only the 45° bevel showing, about 1/32\"; an o-ring in sight means the tabs are wrong.","Finish to 110–120 inch pounds, then check the bore is clear before it goes back on a barrel."],
+      fncheck:"Reassembled and off the gun: with the baffles indexed correctly ONLY the 45-degree bevel on the end cap shows, about 1/32\". If more than that is proud, or you can see the o-ring, the tabs are not aligned and the cap comes back off — torquing it down at that point is how a baffle stack gets crushed. Then 110–120 inch-pounds, and a clear look down the bore."
+    },
     "sg_silencercentralbanish556": {
       textMode:true, parts:{}, origins:{},
       sourcedFrom:"BANISH 556 PRODUCT MANUAL — ABSENT — no revision, date code or edition statement printed anywhere in the document. (ABSENT — no copyright line printed.)",
@@ -42768,6 +43038,41 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       cleaning:[{"name":"INTERIOR","tasks":["Interval: every 500 - 600 rounds fired","Submerge the whole can, or seal the muzzle end and fill it, and soak 24 hours","Mild firearm solvent, sonic wash solution or dish soap — nothing that strips Cerakote","Brass brush the blast chamber once it has soaked","Do NOT attempt to remove the baffles — they are not removable"]},{"name":"MOUNT & THREADS","tasks":["Remove the mounting adapter — the only removable part","Clean the suppressor's rear HUB threads (1.375x24)","Clean the adapter's internal AND external threads","Clean the barrel threads on the host; remove any crush washer under an existing brake"]},{"name":"AFTER CLEANING","tasks":["Let it dry fully before the adapter goes back in","Fire 10-15 clearing rounds at the next session to evacuate loosened debris","Fit a thread protector to the bare muzzle whenever the can is off"]}],
       reassembly:["Dry the suppressor completely, then reinstall the mounting adapter into the rear HUB thread.","Check the barrel threads and the adapter face are clean and undamaged.","Line the threaded end up with the barrel and start it by hand, taking care not to cross-thread.","Screw it down until the mount seats firmly against the barrel shoulder — hand tight only, no tools.","Confirm there is no visible gap between the barrel shoulder and the face of the suppressor mount.","Fire 10-15 clearing rounds at the next range session to evacuate anything the soak loosened."],
       fncheck:"Check the fit before you fire it: on a direct-thread mount there must be NO visible gap between the barrel shoulder and the face of the suppressor mount, and the can must be free of any obstruction down the bore. If there is any gap, do not fire the host with the suppressor attached — a can that is not seated against the thread shoulder gives poor accuracy and can damage the product. Once shooting, re-check that it is still securely tightened after the first 5 discharges and every 30 thereafter, letting it cool or using a cover before you re-tighten."
+    },
+    "sg_silencercentralbanishspeedk": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. (ABSENT — no copyright line printed.)",
+      sourceSha256:"ada485dc53b4501e3ea11f3c0d5eeec0b570b5beded993612b5b8ab3da1470e0",
+      cleanIntro:"This one does not come apart, and that is a design decision rather than a warning: it is printed as one piece and the baffles are part of the print. So the whole of its maintenance is a soak, a brush where a brush can reach, and the mount — which is the only thing on it that unthreads. Every 50 to 100 rounds, by the maker's number.",
+      steps:[
+        tgStep("Clear","Host unloaded, can off, and let it cool",
+          stA("Action open and looked into before anything comes off the muzzle, and then give it time — a short can on a short barrel gets hotter faster than anything else you own.")
+          +stAs("When removing the silencer, use extreme caution as it may be hot to the touch after firing."),
+          {"src":"BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.7"}),
+        tgStep("Strip","⛔ The mount is the only thing that comes off",
+          stA("Unthread the mount interface and set it aside. ⛔ That is the entire strip. The tube and the baffles are one printed piece, and no amount of soaking will change that — anything that looks like a seam is not one.")
+          +stAs("It is recommended that the silencer be cleaned every 50 - 100 rounds fired.")
+          +stLimit("Silencer Central","The BANISH Speed K is not user-serviceable, it is a solid 3D printed construction and the baffles cannot be removed.","BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.7"),
+          {"src":"BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.7"}),
+        tgStep("Clean","Soak it whole, a full day",
+          stA("Either put the can into a dish-soap bath or plug the muzzle exit and fill it. Twenty-four hours either way. ⛔ Read the label first — a solution that lifts Cerakote will take the finish off a can that cannot be refinished by taking it apart.")
+          +stAs("Ensure not to use solutions that will strip the Cerakote coating from the silencer."),
+          {"src":"BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.7"}),
+        tgStep("Clean","Brass brush where the brush reaches",
+          stA("The blast chamber and the accuracy baffle are what you can get at, and they are where the fouling is worst. Brass, not steel, and take your time — this is the only mechanical cleaning this can will ever get."),
+          {"src":"BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.7"}),
+        tgStep("Clean","Threads, both sets — and the vent ports",
+          stA("The mount has internal AND external threads and both foul. Then run a rod down the four vent ports in the muzzle cap; carbon packs into those and nothing else will move it."),
+          {"src":"BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.7"}),
+        tgStep("Clean","Dry, remount — and let the first rounds finish the job",
+          stA("Let it dry properly before the mount goes back. The maker's last instruction is the one people skip: a short string through it blows out what the brush loosened and could not reach.")
+          +stAs("Shoot 10 - 15 rounds through the silencer. The high pressure will shoot out any loose debris and buildup that was loosened during cleaning."),
+          {"src":"BANISH SPEED K OWNER'S MANUAL — ABSENT — no revision or edition statement is printed in the document; the cached file is the 2025 posting. — CLEANING, printed p.7"})
+      ],
+      deepAbsentReason:"⛔ SEALED, ON THE MAKER'S OWN SENTENCE, WHICH THE STRIP STEP QUOTES IN FULL. There is no deeper procedure because there is nothing deeper to have: the only removable part is the mount interface, and the field strip already covers it. A baffle-stack teardown written for this can would be borrowed from a different product — the exact substitution this project has already been bitten by — and it would tell an owner to open something that does not open.",
+      cleaning:[{"name":"THE WHOLE CAN","tasks":["Soaked 24 hours — dish-soap bath, or muzzle plugged and filled","⛔ Nothing that strips Cerakote","Blast chamber and accuracy baffle brushed with brass","Dried thoroughly before the mount goes back"]},{"name":"MOUNT AND THREADS","tasks":["Mount removed — the only part that comes off","Silencer threads, and the mount's internal AND external threads, cleaned","⛔ No gap between barrel shoulder and thread mount, ever"]},{"name":"VENT PORTS","tasks":["A rod down each of the four muzzle-cap vent ports to push carbon out"]},{"name":"⛔ LEAVE ALONE","tasks":["The baffles are part of the printed body and do not come out","Solid lead and plated lead are not recommended through this can"]}],
+      reassembly:["Can fully dry before anything is threaded back on.","Mount interface back onto the can, threads clean, seated properly.","Onto the host only with the action open and clear — hand tight, seated against the shoulder, no gap.","Bore checked clear before a round goes near it.","First 10–15 rounds treated as part of the cleaning, not as the start of the next session."],
+      fncheck:"Dry, mount back on hand tight, bore clear when you look through it. On the host it screws down until it seats against the shoulder with NO visible gap. Then the maker's own last step: 10 to 15 rounds, which is what actually clears the debris the soak loosened."
     },
     "sg_silencercochimera300": {
       textMode:true, parts:{}, origins:{},
@@ -53848,6 +54153,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "benellinova": "sg_benellinova",
     "benellisuperblackeagle3": "sg_benellisuperblackeagle3",
     "benellisupernova": "sg_benellisupernova",
+    "beretta1301comppro": "sg_beretta1301comppro",
     "beretta1301tactical": "sg_beretta1301tactical",
     "beretta20xbobcat": "sg_beretta20xbobcat",
     "beretta21abobcat": "sg_beretta21abobcat",
@@ -53862,6 +54168,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "beretta92xperformance": "sg_beretta92xperformance",
     "berettaa300patrol": "sg_berettaa300patrol",
     "berettaa300ultima": "sg_berettaa300ultima",
+    "berettaa400xcelmultitarget": "sg_berettaa400xcelmultitarget",
+    "berettaa400xcelsporting": "sg_berettaa400xcelsporting",
     "berettaa400xtremeplus": "sg_berettaa400xtremeplus",
     "berettaapxa1": "sg_berettaapxa1",
     "berettaapxcarrya1": "sg_berettaapxcarrya1",
@@ -54362,7 +54670,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "sigsauerp365xmacro": "sg_sigsauerp365xmacro",
     "sigsauerp938": "sg_sigsauerp938",
     "sigsauersrd22x": "sg_sigsauersrd22x",
+    "silencercentralbanish22": "sg_silencercentralbanish22",
+    "silencercentralbanish30v2": "sg_silencercentralbanish30v2",
     "silencercentralbanish556": "sg_silencercentralbanish556",
+    "silencercentralbanishspeedk": "sg_silencercentralbanishspeedk",
     "silencercochimera300": "sg_silencercochimera300",
     "silencercoharvester300": "sg_silencercoharvester300",
     "silencercoharvesterevo": "sg_silencercoharvesterevo",
