@@ -541,6 +541,10 @@
     font-family:var(--display);font-size:10.5px;letter-spacing:1.4px;
     text-transform:uppercase;color:var(--amber);text-align:center;cursor:pointer}
   .heroinvitebar:active{color:var(--text)}
+  .heroartline{font-size:12.5px;line-height:1.45;color:var(--muted);text-align:center;max-width:34em;margin:0 auto}
+  .heroinvitebar.said{font-family:var(--body);font-size:11.5px;letter-spacing:0;
+    text-transform:none;color:var(--muted);line-height:1.4;cursor:default}
+  .heroinvitebar.said:active{color:var(--muted)}
   .uarttag.top{bottom:auto;top:8px}
   .exframe{margin-top:9px;display:flex;flex-direction:column;gap:8px}
   .exframe .exf-t{color:var(--muted);font-size:11.5px;line-height:1.45}
@@ -3577,7 +3581,6 @@
     const nfaEligible=nfaOptions.length>0;
     const nfaCls=nfaClassOf(f);
     const nfaLocked = (isNFA||nfaEligible) && !isPro();
-    document.getElementById("proNfaLock").style.display = nfaLocked ? "block" : "none";
     nfaBoxEl.style.display=((isNFA||nfaEligible)&&!nfaLocked)?"block":"none";
     document.getElementById("nfaSupWrap").hidden=!isNFA;
     document.getElementById("nfaClassWrap").hidden=!nfaEligible;
@@ -3590,18 +3593,6 @@
     const dNfaTag=document.getElementById("dNfaTag");
     dNfaTag.hidden=!nfaCls;
     if(nfaCls) dNfaTag.textContent=NFA_LABEL[nfaCls];
-    if(nfaLocked){
-      const has=[];
-      if(f.nfa && Object.keys(f.nfa).some(k=>f.nfa[k])) has.push("form details");
-      if(nfaCls) has.push(NFA_LABEL[nfaCls]+" classification");
-      if(f.nfaDate) has.push("a stamp date");
-      if(f.stamp) has.push("a stamp photo");
-      document.getElementById("proNfaMsg").textContent =
-        (has.length ? `${has.join(", ")} already stored — unlock to view and edit. ` : "")
-        + (isNFA
-            ? "Stamp and Form 4/1 tracking, plus a stored photo of the stamp itself. Part of Fieldstrip Pro."
-            : "SBR/SBS/AOW classification, stamp date, and a stored photo of the stamp itself. Part of Fieldstrip Pro.");
-    }
 
     const wtBoxEl=document.getElementById("wtBox");
     const wtLocked = isNFA && !isPro();
@@ -3625,13 +3616,6 @@
     const zeroLocked = !isNFA && !isPro();
     const zbxDet=document.getElementById("zeroBox");
     if(zbxDet && zbxDet.closest("#scr-detail")) zbxDet.style.display=(isNFA||zeroLocked)?"none":"block";
-    document.getElementById("proZeroLock").style.display=zeroLocked?"block":"none";
-    if(zeroLocked){
-      const n=(f.zeros||[]).length;
-      document.getElementById("proZeroMsg").textContent =
-        (n ? `${n} ${n===1?"zero":"zeros"} already recorded and still stored — unlock to view and log more. ` : "")
-        + "Where this firearm is zeroed, with what ammo — so a re-zero after optic work starts from facts, not memory. Part of Fieldstrip Pro.";
-    }
     if(!isNFA && !zeroLocked && zbxDet && zbxDet.closest("#scr-detail")) renderZero(f);
 
 
@@ -6186,21 +6170,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const isNFAcan=(fcat(f)||{}).gp==="Suppressors";
     const locked=!isPro();
     document.getElementById("nfaBox").style.display = locked ? "none" : "block";
-    document.getElementById("proNfaLock").style.display = locked ? "block" : "none";
     document.getElementById("nfaSupWrap").hidden=false;
     document.getElementById("nfaClassWrap").hidden=true;
     document.getElementById("nfaForm").hidden=true;
     document.getElementById("nfaSave").hidden=true;
     document.getElementById("nfaEdit").style.display="none";
     if(locked){
-      const has=[];
-      const fls=Array.isArray(f.nfaFilings)?f.nfaFilings:[];
-      if(fls.length) has.push(`${fls.length} filing${fls.length===1?"":"s"}`);
-      if(f.nfaItemType) has.push(f.nfaItemType+" item type");
-      if(f.stamp) has.push("a stamp photo");
-      document.getElementById("proNfaMsg").textContent =
-        (has.length ? `${has.join(", ")} already stored — unlock to view and edit. ` : "")
-        + "Item type, every filing — Form 1/4/5 or your own — dates, entity, status, stamp photo and documents. Part of Fieldstrip Pro.";
     } else {
       renderNfa(f);
       document.getElementById("stampWrap").hidden = !(isNFAcan || f.nfaItemType || f.stamp);
@@ -6585,17 +6560,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           <button class="btn sm primary" id="benchUnlock">Unlock Pro</button>
         </div>`;
       lh+=lockRow("NFA Items", c.nfa.length||"—",
-        c.nfa.length
+        (c.nfa.length
           ? c.nfa.slice(0,3).map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.name)}</div><div class="bs">${esc(x.f.nfaItemType||"filings on record")}</div></div></div>`).join("")
-          : `<div class="lmsg">Item types and every filing — Form 1/4/5 or your own — would gather here.</div>`);
+          : `<div class="lmsg">Item types and every filing — Form 1/4/5 or your own — would gather here.</div>`)
+        + `<div id="benchNfaLockHost"></div>`);
       lh+=lockRow("Magazines", totMags?`${totMags} mags`:"—",
         c.fleets.length
           ? c.fleets.slice(0,3).map(g=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(g.model||g.cap+"-rd")}</div><div class="bs">${g.mags.length} mag${g.mags.length===1?"":"s"} · ${esc(g.name)}</div></div></div>`).join("")
           : `<div class="lmsg">Your fleet, individually numbered per firearm, would live here.</div>`);
       lh+=lockRow("Zero Records", c.zeros.length||"—",
-        c.zeros.length
+        (c.zeros.length
           ? c.zeros.slice(0,2).map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.name)} · ${x.z.dist} ${esc(x.z.unit)}</div><div class="bs">${fmtDate(x.z.ts)}</div></div></div>`).join("")
-          : `<div class="lmsg">Distance, load AND lot, before/after targets — per firearm.</div>`);
+          : `<div class="lmsg">Distance, load AND lot, before/after targets — per firearm.</div>`)
+        + `<div id="benchZeroLockHost"></div>`);
       lh+=lockRow("Care Reminders", c.care.length?`${c.care.length} clock${c.care.length===1?"":"s"}`:"—",
         c.care.length
           ? c.care.slice(0,3).map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.r.label)} — ${esc(x.name)}</div><div class="bs">${esc(benchDueLabel(x.f,x.r))}</div></div></div>`).join("")
@@ -6605,6 +6582,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       lh+=lockRow("Backup", "—",
         `<div class="lmsg">One local file with everything the Bench knows, photos optional — saved wherever you choose.</div>`);
       body.innerHTML=lh;
+      benchSeatProLocks(byId(benchScopeId) || benchScopedSafe()[0] || null);
       document.getElementById("benchUnlock").onclick=()=>openProSheet();
       body.onclick=e=>{ if(e.target.id!=="benchUnlock") openProSheet(); };
       return;
@@ -55131,7 +55109,6 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "SERBU-BFG50A":"50-bmg-m107.png",
   };
   const HERO_ART_GP={
-    "Pistols":["pistol-10.png","pistol-8.png"],
   };
   function heroArtHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
   function heroArtPick(files,row){return files.length===1?files[0]:files[heroArtHash(String((row&&row.i)||""))%files.length];}
@@ -55513,6 +55490,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     return `<div class="heroph"><img src="assets/hero/${file}" alt=""></div>`;
   }
 
+  const ART_LINE_APP = "Fieldstrip doesn't ship pictures of your guns. Put your own here and this card becomes yours.";
+  const ART_LINE_WEB = "Fieldstrip doesn't ship pictures of your guns. Your own photo goes here in the Android app.";
   function benchAttachBox(host, f){
     const rec=benchUserArtRec(f);
     const example=rec?null:benchOwnerExamplePath(f);
@@ -55520,7 +55499,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const ph=(rec||plate||example)?null:benchHeroArt(f);
     const canFS=BenchEnv.hasFS();
     const attach=canFS?'<button class="uartbtn abAttach" title="Attach your piece">＋</button>':"";
-    const invite=canFS?'<div class="heroinvitebar">Attach your piece here.</div>':"";
+    const invite=canFS?'<div class="heroinvitebar">Attach your piece here.</div>'
+                      :`<div class="heroinvitebar said">${esc(ART_LINE_WEB)}</div>`;
     let art, state;
     if(rec){
       state="photo";
@@ -55548,7 +55528,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       art=`<div class="heroart abBox">${ph}${attach}${invite}</div>`;
     } else {
       state="empty";
-      art=`<div class="heroart empty abBox">${FS_LOGO_WM}${canFS?'<div class="heroinvite">Attach your piece here.</div>':""}</div>`;
+      art=`<div class="heroart empty abBox" style="cursor:${canFS?"pointer":"default"}">${FS_LOGO_WM}`
+        + `<div class="heroartline">${esc(canFS?ART_LINE_APP:ART_LINE_WEB)}</div>`
+        + (canFS?`<button class="btn sm primary abAdd" type="button">Add a photo of yours</button>`:"")
+        + `</div>`;
     }
     host.innerHTML=art;
     const box=host.querySelector(".abBox");
@@ -55568,7 +55551,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     } else {
       const ha=box.querySelector(".abAttach");
       if(ha) ha.onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
-      const hi=box.querySelector(".heroinvitebar");
+      const aa=box.querySelector(".abAdd");
+      if(aa) aa.onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
+      const hi=canFS?box.querySelector(".heroinvitebar"):null;
       if(hi) hi.onclick=e=>{ e.stopPropagation(); benchSetUserArt(f); };
       const hw=host.querySelector(".abHow");
       const ha2=host.querySelector(".abAttach2");
@@ -56265,15 +56250,36 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(id && byId(id)) activeId=id;
   }
 
+  const BENCH_MOVED=["careBox","svcBox","nfaBox","magBox","zeroBox","roundsBox","proNfaLock","proZeroLock"];
+  function benchSeatProLocks(f){
+    const fls=(f && Array.isArray(f.nfaFilings))?f.nfaFilings:[];
+    const has=[];
+    if(fls.length) has.push(`${fls.length} filing${fls.length===1?"":"s"}`);
+    if(f && f.nfaItemType) has.push(f.nfaItemType+" item type");
+    if(f && f.stamp) has.push("a stamp photo");
+    const nm=document.getElementById("proNfaMsg");
+    if(nm) nm.textContent =
+      (has.length ? `${has.join(", ")} already stored — unlock to view and edit. ` : "")
+      + "Item type, every filing — Form 1/4/5 or your own — dates, entity, status, stamp photo and documents. Part of Fieldstrip Pro.";
+    const zn=(f && Array.isArray(f.zeros))?f.zeros.length:0;
+    const zm=document.getElementById("proZeroMsg");
+    if(zm) zm.textContent =
+      (zn ? `${zn} ${zn===1?"zero":"zeros"} already recorded and still stored — unlock to view and log more. ` : "")
+      + "Where this firearm is zeroed, with what ammo — so a re-zero after optic work starts from facts, not memory. Part of Fieldstrip Pro.";
+    [["benchNfaLockHost","proNfaLock"],["benchZeroLockHost","proZeroLock"]].forEach(([hid,lid])=>{
+      const host=document.getElementById(hid), lock=document.getElementById(lid);
+      if(host && lock){ host.appendChild(lock); lock.style.display="block"; }
+    });
+  }
   const benchHoldPen=(function(){
     const d=document.createElement("div");
     d.id="benchHoldPen"; d.style.display="none";
     document.body.appendChild(d);
-    ["careBox","svcBox","nfaBox","magBox","zeroBox","roundsBox"].forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.display=""; d.appendChild(el); } });
+    BENCH_MOVED.forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.display=""; d.appendChild(el); } });
     return d;
   })();
   (function(){
-    ["careBox","svcBox","nfaBox","magBox","zeroBox","roundsBox"].forEach(id=>{
+    BENCH_MOVED.forEach(id=>{
       const i=BENCH_BOXES.findIndex(b=>b.id===id);
       if(i>=0) BENCH_BOXES.splice(i,1);
     });
@@ -56504,16 +56510,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   renderBench=function(scopeId){
     if(arguments.length) benchScopeId = scopeId || null;
     const body=document.getElementById("benchBody");
+    BENCH_MOVED.forEach(id=>{ const el=document.getElementById(id); if(el) benchHoldPen.appendChild(el); });
     if(!isPro()){
       benchPrevRenderBench_v16locked();
       return;
     }
-    benchHoldPen.appendChild(document.getElementById("careBox"));   
-    benchHoldPen.appendChild(document.getElementById("svcBox"));
-    benchHoldPen.appendChild(document.getElementById("nfaBox"));
-    benchHoldPen.appendChild(document.getElementById("magBox"));
-    benchHoldPen.appendChild(document.getElementById("zeroBox"));    
-    benchHoldPen.appendChild(document.getElementById("roundsBox"));  
     const c=benchCollect();
     const totMags=c.fleets.reduce((a,g)=>a+g.mags.length,0);
     let h=`<div class="d-head"><div class="dname">The Bench</div><div class="dsub">${benchScopeId&&byId(benchScopeId)?esc(faInfo(byId(benchScopeId)).name)+" \u2014 this item only.":"Your whole inventory, without going through a firearm."}</div></div>`;
@@ -56726,6 +56727,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(benchNfaTargetId && byId(benchNfaTargetId)) activeId=benchNfaTargetId;
     const nh=document.getElementById("benchNfaHost"), nbx=document.getElementById("nfaBox");
     if(nh && nbx && benchNfaTargetId){ nh.appendChild(nbx); nbx.style.display="block"; renderNfa(byId(benchNfaTargetId)); }
+    ["proNfaLock","proZeroLock"].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display="none"; });
     const mh=document.getElementById("benchMagHost"), mbx=document.getElementById("magBox");
     if(mh && mbx && benchMagTargetId){ mh.appendChild(mbx); mbx.style.display="block"; renderMags(byId(benchMagTargetId)); }
     const zeroSeatGuns=benchScopedSafe();
