@@ -420,12 +420,15 @@
     #scr-player .step-info{grid-column:2;grid-row:3;min-height:0;overflow-y:auto}
     #scr-player .controls{grid-column:2;grid-row:4}
 
-    #scr-player.fs-textguide .player{grid-template-columns:1fr}
-    #scr-player.fs-textguide .stage{display:none}
-    #scr-player.fs-textguide .expbtn,
-    #scr-player.fs-textguide .progress,
-    #scr-player.fs-textguide .step-info,
-    #scr-player.fs-textguide .controls{grid-column:1}
+    #scr-player.fs-textguide .player{grid-template-columns:1fr;grid-template-rows:auto auto auto 1fr auto auto}
+    #scr-player.fs-textguide .stage{grid-column:1;grid-row:1;display:block;height:auto;min-height:0;
+      max-height:32svh;overflow:hidden;padding:8px 0 2px;
+      border-right:none;border-bottom:1px solid var(--edge)}
+    #scr-player.fs-textguide .expbtn{grid-column:1;grid-row:2}
+    #scr-player.fs-textguide .progress{grid-column:1;grid-row:3}
+    #scr-player.fs-textguide .step-info{grid-column:1;grid-row:4}
+    #scr-player.fs-textguide #fsStripBar{grid-column:1;grid-row:5}
+    #scr-player.fs-textguide .controls{grid-column:1;grid-row:6}
 
     .lviewport{position:absolute!important;inset:0!important;margin:auto!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:82svh!important}
     .stage svg.gun-svg.active{max-height:82svh}
@@ -720,6 +723,14 @@
   .fsbar .fsActs{display:flex;gap:8px;flex-wrap:wrap}
   .fsbar .fsFork{display:flex;gap:10px;margin:2px 0 12px}
   .fsbar .fsFork .btn{flex:1 1 0;min-width:0}
+  .fsbar .fslaid{margin:0 0 12px}
+  .fsbar .fslaid .heroplate{margin:6px auto}
+  .fsbar .fslaid .tmplate{display:flex;align-items:center;justify-content:center;padding:10px 12px}
+  .fsbar .fslaid .tmplate img{display:block;width:auto;height:auto;max-width:100%;max-height:236px;
+    filter:invert(1) brightness(.92);mix-blend-mode:screen}
+  .fsbar .fslaid .tmcredit{display:block;text-align:center;color:var(--muted);
+    font-family:var(--display);font-size:8.5px;letter-spacing:1.1px;text-transform:uppercase;
+    padding:2px 0 0}
   .fsbar .fsAddWrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .fsbar .fsAddIn{flex:1;min-width:150px;background:var(--panel2);color:var(--text);border:1px solid var(--edge);
     border-radius:8px;padding:9px;font-family:var(--body);font-size:14px}
@@ -54867,6 +54878,280 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   };
   Object.assign(GUNS, SOURCED_GUIDES);
 
+  const TM_PLATE_FOR = {
+   "aeroprecisionac15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "aeroprecisionm4e1": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "andersonmanufacturingam15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "ar15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "atiomnihybrid": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "battlearmsworkhorse": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "bcmrecce16": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "bearcreekarsenalbc15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "bushmasterxm15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "centurionarmsc4": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "christensenarmsca15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "cmmgresolute": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "coltle6920": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "danieldefenseddm4v7": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "danieldefensemk18": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "diamondbackdb15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "dpmsoracle": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "faxonfx15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "fnfn15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "geisselesuperduty": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "greyghostcombat": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "iwizionz15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "jpenterprisesjp15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "knightsarmamentsr15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "lantacraven": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "lmtdefender": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "lwrcicdi": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "mossbergmmr": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "nemobattlelight": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "noveskegen4": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "palmettostatearmorypa15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "pofrenegadeplus": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "radianmodel1": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "radicalfirearmsrf15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "rainierultramatch": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "rockriverarmslar15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "rugerar556": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "rugerar556mpr": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "savagearmsmsr15recon": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "seekinsnx15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "sigsauerm400tread": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "sionicspatrolrifle": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "smithwessonmp15sportiii": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "sonsoflibertym489": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "springfieldarmorysa16a2": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "springfieldarmorysaint": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "springfieldarmorysaintedge": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "springfieldarmorysaintvict": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "stagarmsstag15": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "twoaarmamentblr16": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "vsevenharbinger": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "wilsoncombatprotector": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "windhamweaponrysrc": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   },
+   "zevcoreelite": {
+    "f": "f1546775fb56718c.png",
+    "w": 1457,
+    "h": 1599
+   }
+  };
+  const TM_PLATE_CREDIT = "TM 9-1005-319-23&P · Distribution A";
+
   const TEXT_GUIDE_FAM = {"1022":"sg_tx1022","AR15":"sg_txar15"};
   function textGuideKey(modelId){
     const c = CATALOG.find(x=>x.i===modelId);
@@ -54969,10 +55254,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const f=byId(activeId);
     return f ? (benchUserArtRec(f)||null) : null;
   }
+  const WALK_UNIFORM = true;
   const benchOrigStartGuide = startGuide;
   startGuide = function(){
     const gun=activeGuide();
-    if(!gun.textMode){
+    if(!WALK_UNIFORM && !gun.textMode){
       document.getElementById("textArtPane").hidden=true;
       benchOrigStartGuide();
       renderStep(false);   
@@ -54982,7 +55268,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.querySelectorAll(".gun-svg").forEach(s=>s.classList.remove("active"));
     document.getElementById("textArtPane").hidden=false;
     buildProgress();
-    document.getElementById("explodedBtn").hidden=true;
+    document.getElementById("explodedBtn").hidden=!gun.exploded;
     document.getElementById("explodedOverlay").hidden=true;
     stepIndex=0; renderStep(false);
   };
@@ -54992,7 +55278,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const fSlot=byId(activeId);
     const stepRec=fSlot?benchStepArtRec(fSlot, stepIndex):null;
     const pane=document.getElementById("textArtPane");
-    if(!gun.textMode && !stepRec){
+    if(!WALK_UNIFORM && !gun.textMode && !stepRec){
       if(pane) pane.hidden=true;
       document.getElementById("layerViewport").hidden=!gun.layerMode;
       document.querySelectorAll(".gun-svg").forEach(s=>s.classList.toggle("active", !gun.layerMode && s.id===gun.svg));
@@ -55780,8 +56066,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     });
   }
 
-  function benchHeroPlate(f){
-    const k=(f && f.model)?guideKey(f.model):null;
+  function benchPlateFigure(k){
     if(!k) return null;
     const g=GUNS[k], ls=(typeof LAYER_SETS!=="undefined")?LAYER_SETS[k]:null;
     if(!g || !g.layerMode || !ls || !ls.layers || !ls.art) return null;
@@ -55795,6 +56080,22 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }).join("");
     return `<div class="heroplate" style="aspect-ratio:${aw} / ${ah};width:min(100%,${wCap}px)">${imgs}</div>`;
   }
+  function benchLaidOutUnder(f){
+    const tm=benchTmPlateFigure(f);
+    if(tm) return tm;
+    return benchPlateFigure(benchPlateKey(f));
+  }
+  function benchTmPlateFigure(f){
+    if(!f || !f.model || typeof TM_PLATE_FOR==="undefined") return null;
+    const p=TM_PLATE_FOR[f.model];
+    if(!p) return null;
+    return '<div class="tmplate">'
+         + '<img src="assets/plates/'+p.f+'" alt="" width="'+p.w+'" height="'+p.h+'">'
+         + '</div>'
+         + '<span class="tmcredit">'+TM_PLATE_CREDIT+'</span>';
+  }
+  function benchPlateKey(f){ return (f && f.model) ? guideKey(f.model) : null; }
+  function benchHeroPlate(f){ return benchPlateFigure(benchPlateKey(f)); }
   function benchHeroArt(f){
     const file=heroArtFile(f);
     if(!file) return null;
@@ -56069,9 +56370,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
   function benchStepArtRec(f, i){
     if(!f || !f.stepArt) return null;
-    const id=f.stepArt[benchStepArtKey(f,i)];
+    return benchArtRecByKey(f, benchStepArtKey(f,i));
+  }
+  function benchLaidOutKey(f){
+    const k=(typeof fkey==="function" && fkey(f))||"guide";
+    return k+":laidout";
+  }
+  function benchArtRecByKey(f, key){
+    if(!f || !f.stepArt) return null;
+    const id=f.stepArt[key];
     return id ? (BenchAttach.readReg(BenchEnv.store).find(a=>a.id===id)||null) : null;
   }
+  function benchLaidOutRec(f){ return benchArtRecByKey(f, benchLaidOutKey(f)); }
   function benchSlotSeen(){ return !!BenchEnv.store.getRaw("fs_slot_seen"); }
   function benchSlotIntro(go){
     if(benchSlotSeen()){ go(null); return; }
@@ -56097,12 +56407,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     sh.querySelector("#slotNo").onclick=()=>{ done(); };
     sh.classList.add("open");
   }
-  function benchSetStepArt(f, i){
+  function benchSetStepArt(f, i){ return benchSetSlotArt(f, benchStepArtKey(f,i)); }
+  function benchSetLaidOutArt(f){ return benchSetSlotArt(f, benchLaidOutKey(f)); }
+  function benchSetSlotArt(f, key){
     benchSlotIntro(mode=>{
       benchPickPhoto(async (b64,dims)=>{
         try{
-          const key=benchStepArtKey(f,i);
-          const old=benchStepArtRec(f,i);
+          const old=benchArtRecByKey(f, key);
           const rec=await benchImport({kind:"firearm", id:f.id}, b64, dims, "steppic");
           if(old) await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), old.id);
           if(!f.stepArt) f.stepArt={};
@@ -56112,9 +56423,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       }, mode);
     });
   }
-  async function benchClearStepArt(f, i){
-    const key=benchStepArtKey(f,i);
-    const old=benchStepArtRec(f,i);
+  async function benchClearStepArt(f, i){ return benchClearSlotArt(f, benchStepArtKey(f,i)); }
+  async function benchClearLaidOutArt(f){ return benchClearSlotArt(f, benchLaidOutKey(f)); }
+  async function benchClearSlotArt(f, key){
+    const old=benchArtRecByKey(f, key);
     if(old) await BenchAttach.deleteAttachment(BenchEnv.store, BenchEnv.files(), old.id);
     if(f.stepArt) delete f.stepArt[key];
     saveSafe(); renderStep(false);
@@ -56126,33 +56438,43 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }catch(e){}
     benchLoadThumb(imgEl, rec);
   }
-  function benchRenderStepSlot(f, gun, stepRec){
-    const host=document.getElementById("textArtBox");
-    const line=document.getElementById("textArtLine");
-    if(line) line.innerHTML="";
+  function benchRenderStepSlot(f, gun, stepRec, opts){
+    opts=opts||{};
+    const host=opts.host||document.getElementById("textArtBox");
+    if(!opts.host){ const line=document.getElementById("textArtLine"); if(line) line.innerHTML=""; }
     if(!host) return;
     const canFS=BenchEnv.hasFS();
+    const doSet=opts.set||(()=>benchSetStepArt(f, stepIndex));
+    const doClr=opts.clr||(()=>benchClearStepArt(f, stepIndex));
     if(stepRec){
-      const plateStep=!gun.textMode;   
+      const revert = opts.under ? "Revert to the diagram" : "Remove photo";
       host.innerHTML=`<div class="heroart abBox"><img class="abImg" alt="Your photo">
         <div class="heroacts abActs" hidden>
           <button class="btn sm primary abReplace">Replace</button>
-          <button class="btn sm abRevert">${plateStep?"Revert to illustration":"Remove photo"}</button>
+          <button class="btn sm abRevert">${revert}</button>
         </div></div>`;
       const box=host.querySelector(".abBox");
       benchSlotImg(box.querySelector(".abImg"), stepRec);
       const acts=box.querySelector(".abActs");
       box.querySelector(".abImg").onclick=()=>{ acts.hidden=!acts.hidden; };
       acts.onclick=e=>{ if(e.target===acts) acts.hidden=true; };
-      box.querySelector(".abReplace").onclick=e=>{ e.stopPropagation(); benchSetStepArt(f, stepIndex); };
-      box.querySelector(".abRevert").onclick=e=>{ e.stopPropagation(); benchClearStepArt(f, stepIndex); };
+      box.querySelector(".abReplace").onclick=e=>{ e.stopPropagation(); doSet(); };
+      box.querySelector(".abRevert").onclick=e=>{ e.stopPropagation(); doClr(); };
+      return;
+    }
+    if(opts.under){
+      const plus=canFS?'<button class="uartbtn abAttach" title="Your own laid-out photo">＋</button>':"";
+      host.innerHTML=`<div class="heroart abBox" style="cursor:${canFS?"pointer":"default"}">${opts.under}${plus}</div>`;
+      if(canFS) host.querySelector(".abBox").onclick=()=>doSet();
+      const ab0=host.querySelector(".abAttach");
+      if(ab0) ab0.onclick=e=>{ e.stopPropagation(); doSet(); };
       return;
     }
     const attach=canFS?'<button class="uartbtn abAttach" title="Photo for this step">＋</button>':"";
     host.innerHTML=`<div class="heroart empty abBox" style="cursor:${canFS?"pointer":"default"}">${FS_LOGO_WM}${attach}</div>`;
-    if(canFS) host.querySelector(".abBox").onclick=()=>benchSetStepArt(f, stepIndex);
+    if(canFS) host.querySelector(".abBox").onclick=()=>doSet();
     const ab=host.querySelector(".abAttach");
-    if(ab) ab.onclick=e=>{ e.stopPropagation(); benchSetStepArt(f, stepIndex); };
+    if(ab) ab.onclick=e=>{ e.stopPropagation(); doSet(); };
   }
   function benchStageAttach(f){
     const stage=document.getElementById("gunStage"); if(!stage) return;
@@ -56562,7 +56884,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
 
   const BENCH_MOVED=["careBox","svcBox","nfaBox","magBox","zeroBox","roundsBox","proNfaLock","proZeroLock"];
-  function benchSeatProLocks(f){
+  function benchSeatProLocks(f, seats){
     const fls=(f && Array.isArray(f.nfaFilings))?f.nfaFilings:[];
     const has=[];
     if(fls.length) has.push(`${fls.length} filing${fls.length===1?"":"s"}`);
@@ -56577,8 +56899,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(zm) zm.textContent =
       (zn ? `${zn} ${zn===1?"zero":"zeros"} already recorded and still stored — unlock to view and log more. ` : "")
       + "Where this firearm is zeroed, with what ammo — so a re-zero after optic work starts from facts, not memory. Part of Fieldstrip Pro.";
-    [["benchNfaLockHost","proNfaLock"],["benchZeroLockHost","proZeroLock"]].forEach(([hid,lid])=>{
-      const host=document.getElementById(hid), lock=document.getElementById(lid);
+    (seats || [["benchNfaLockHost","proNfaLock"],["benchZeroLockHost","proZeroLock"]]).forEach(([hid,lid])=>{
+      const host=(typeof hid==="string")?document.getElementById(hid):hid;
+      const lock=document.getElementById(lid);
       if(host && lock){ host.appendChild(lock); lock.style.display="block"; }
     });
   }
@@ -56753,6 +57076,39 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
   };
 
+  function benchCanNfaSeat(){
+    let h=document.getElementById("suppNfaHost");
+    if(!h){
+      const anchor=document.getElementById("wtBox");
+      if(!anchor || !anchor.parentNode) return null;
+      h=document.createElement("div");
+      h.id="suppNfaHost";
+      anchor.parentNode.insertBefore(h, anchor);
+    }
+    return h;
+  }
+  const benchPrevRenderDetail_vc53=renderDetail;
+  renderDetail=function(){
+    const f0=byId(activeId);
+    const can=!!(f0 && typeof benchIsSuppressor==="function" && benchIsSuppressor(f0));
+    const seat=can?benchCanNfaSeat():null;
+    const nbx=document.getElementById("nfaBox"), nlk=document.getElementById("proNfaLock");
+    if(can && seat){
+      if(nbx && nbx.parentNode!==seat) seat.appendChild(nbx);
+    } else {
+      if(nbx && nbx.closest("#scr-detail")) benchHoldPen.appendChild(nbx);
+      if(nlk && nlk.closest("#scr-detail")){ nlk.style.display="none"; benchHoldPen.appendChild(nlk); }
+    }
+    benchPrevRenderDetail_vc53();
+    if(can && seat){
+      if(isPro()){
+        if(nlk && nlk.closest("#scr-detail")){ nlk.style.display="none"; benchHoldPen.appendChild(nlk); }
+      } else {
+        benchSeatProLocks(f0, [[seat,"proNfaLock"]]);
+      }
+    }
+  };
+
   function benchSeatAttCard(){
     const host=document.getElementById("benchAttHost"); if(!host) return;
     const items=benchScopedAtt();
@@ -56870,8 +57226,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       const s=benchNfaSummary(x.f); const first=s.fls[0];
       nb+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.name)}</div><div class="bs">${esc(x.f.nfaItemType||"type unset")}${first?` · ${esc(benchFilingLabel(first))} · ${esc(first.entity)}`:""}${x.f.stamp?" · stamp photo attached":""}</div></div>${first?`<span class="statuschip ${first.status==="Approved"?"active":(first.status==="Denied"?"problem":"due")}">${esc(first.status.toUpperCase())}</span>`:""}</div>`;
     });
-    nb+=`<div class="lmsg" style="margin-top:10px">Pick an item — its NFA card opens below, exactly as it lived on the firearm page.</div>`;
-    benchScopedSafe().forEach(f=>{
+    const nfaSeatGuns=benchScopedSafe().filter(f=>!(typeof benchIsSuppressor==="function" && benchIsSuppressor(f)));
+    nb+=`<div class="lmsg" style="margin-top:10px">Pick a firearm — its NFA card opens below, exactly as it lived on the firearm page. A suppressor's NFA record lives on its own page.</div>`;
+    nfaSeatGuns.forEach(f=>{
       const fl=(f.nfaFilings||[]).length;
       nb+=`<div class="benchrow${benchNfaTargetId===f.id?" on":""}" data-nfasel="${f.id}" style="${benchNfaTargetId===f.id?"color:var(--amber)":""}"><div class="bi"><div class="bn">${esc(faInfo(f).name)}</div><div class="bs">${f.nfaItemType?esc(f.nfaItemType):"type unset"}${fl?` · ${fl} filing${fl===1?"":"s"}`:""}</div></div></div>`;
     });
@@ -57031,7 +57388,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const cbx=document.getElementById("careBox"), sbx=document.getElementById("svcBox");
     if(ch && cbx && benchCareTargetId){ ch.appendChild(cbx); cbx.style.display="block"; renderCare(byId(benchCareTargetId)); }
     if(svh && sbx && benchSvcTargetId){ svh.appendChild(sbx); sbx.style.display="block"; renderSvc(byId(benchSvcTargetId)); benchFillVendorSelect(document.getElementById("svcVendor"),"Self"); }
-    const nfaGuns=benchScopedSafe();
+    const nfaGuns=benchScopedSafe().filter(f=>!(typeof benchIsSuppressor==="function" && benchIsSuppressor(f)));
     if(!nfaGuns.some(f=>f.id===benchNfaTargetId)) benchNfaTargetId=nfaGuns.length?nfaGuns[0].id:null;
     const magSeatGuns=benchScopedSafe().filter(f=>typeof hasMags==="function" && hasMags(f));
     if(!magSeatGuns.some(f=>f.id===benchMagTargetId)) benchMagTargetId=magSeatGuns.length?magSeatGuns[0].id:null;
@@ -58496,8 +58853,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const isUser=!!s.userStep;
     const atStop = !isUser && WALK.mode==="strip" && stepIndex===WALK.published-1 && WALK.published>0;
     const fork = WALK.mode==="strip" && last && walkHasClean();
+    const atLaidOut = WALK.mode==="strip" && stepIndex===WALK.forkAt;
     bar.innerHTML=
-      (atStop?'<div class="fsStop">This is as far as the maker publishes. Anything past this is yours to record.</div>':"")
+      (atLaidOut?'<div class="fslaid"><div id="laidOutBox"></div></div>':"")
+      + (atStop?'<div class="fsStop">This is as far as the maker publishes. Anything past this is yours to record.</div>':"")
       + (isUser?'<div class="fsYours">Your own step &mdash; the app records it, it does not instruct it.</div>':"")
       + (fork?'<div class="fsFork">'
              +'<button class="btn primary fsClean" type="button">Clean it</button>'
@@ -58508,6 +58867,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       + (isUser?'<button class="btn sm fsDel" type="button">Remove this step</button>':"")
       + ((last && !fork && WALK.mode==="strip")?'<button class="btn sm fsLog" type="button">Log it</button>':"")
       + '</div>';
+    if(atLaidOut){
+      benchRenderStepSlot(f, activeGuide()||{}, benchLaidOutRec(f), {
+        host: bar.querySelector("#laidOutBox"),
+        under: benchLaidOutUnder(f),
+        set: ()=>{ const f2=byId(activeId); if(f2) benchSetLaidOutArt(f2); },
+        clr: ()=>{ const f2=byId(activeId); if(f2) benchClearLaidOutArt(f2); },
+      });
+    }
     const fc=bar.querySelector(".fsClean"); if(fc) fc.onclick=()=>walkCleanIt();
     const fr=bar.querySelector(".fsReasm"); if(fr) fr.onclick=()=>walkReassemble();
     bar.querySelector(".fsAdd").onclick=()=>fsAddUserStep(f, isUser ? s.userStep.after : origStepIndex(stepIndex));
@@ -58549,7 +58916,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(pl){
       const gk=fkey(f), gg=gk?GUNS[gk]:null;
       const hasArt=!!(gg && (gg.layerMode || (typeof LAYER_SETS!=="undefined" && LAYER_SETS[gk])));
-      pl.classList.toggle("fs-textguide", !hasArt);
+      pl.classList.toggle("fs-textguide", WALK_UNIFORM || !hasArt);
     }
     if(s && s.fsEmpty && pl){
       const a=pl.querySelector(".fsEmptyAdd"); if(a) a.onclick=()=>fsAddUserStep(f, origStepIndex(stepIndex));
