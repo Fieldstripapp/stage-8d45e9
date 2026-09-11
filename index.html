@@ -7274,6 +7274,41 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       reassembly:["Bolt into the carrier in the noted extractor/ejector orientation; cam pin in and rotated 90 degrees; firing pin seated fully forward; firing pin retainer in.","Charging handle into the upper, ears aligned with the notch, seated at the bottom of its slot, then slid forward about 1/4 inch.","Bolt fully extended, carrier into the upper using the charging handle slot as a guide, then both forward into battery together.","Line up the pivot pin holes and slide the front pivot pin into the locked position, then close the receivers and slide the takedown pin home.","Function test before the rifle goes away."],
       fncheck:"Magazine out, chamber cleared, muzzle safe. Pull the charging handle fully to the rear and release — the bolt assembly must return fully into battery on its own. Selector to SAFE and pull the trigger: the hammer must not fall. Selector to FIRE and pull: the hammer should fall. Anderson notes that dry firing this rifle does not damage it. Also confirm the takedown and pivot pins are fully seated and the cam pin is installed — Anderson warns a rifle fired without the cam pin can explode."
     },
+    "sg_angstadtarmsreticent22": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. (ABSENT — no copyright year line is printed.)",
+      sourceSha256:"474304a35fcecfaed0b579a2d7c410e0d5e0a2460f4e51518da459fef01fb8a4",
+      cleanIntro:"A sealed 2.5 oz titanium rimfire can, and sealed is Angstadt's own word for it — there is no end cap to unscrew and no baffle stack to push out. What a rimfire can still needs is the lead and carbon out of it, and this book publishes two ways to do that: thirty minutes in an ultrasonic cleaner, or a 12-to-24-hour standing soak with the exit hole plugged. ⛔ The interval is the maintenance: every 500–1,000 rounds on moderate use, every 300–500 on dirty ammunition.",
+      steps:[
+        tgStep("Clear","Host unloaded and open before the can comes off",
+          stA("Magazine out, action open, then look INTO the chamber and put a finger in it. Angstadt lists it as five numbered steps and ends the list with what happens if you skip them.")
+          +stAs("Visually and physically verify the chamber is empty."),
+          {"src":"RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — Angstadt Arms Reticent 22 Instruction Manual — GENERAL FIREARM SAFETY & WARNINGS, printed p.3"}),
+        tgStep("Strip","⛔ Let it cool before a hand goes near it",
+          stA("Several hundred degrees is the book's own figure. A rimfire can is small enough to look harmless and holds heat exactly as well as a big one.")
+          +stLimit("Angstadt Arms","Suppressors become extremely hot during firing. Temperatures may exceed several hundred degrees. Never touch a suppressor immediately after firing without protective equipment. Allow the suppressor to cool before handling.","RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — Angstadt Arms Reticent 22 Instruction Manual — SUPPRESSOR SAFETY WARNINGS, printed p.3"),
+          {"src":"RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — Angstadt Arms Reticent 22 Instruction Manual — SUPPRESSOR SAFETY WARNINGS, printed p.3"}),
+        tgStep("Strip","Off the muzzle — and that is the whole strip",
+          stA("Unscrew it counter-clockwise off the 1/2x28 threads by hand. There is nothing after this: the tube does not open, and Angstadt says so on its product overview page rather than leaving you to find out with a wrench.")
+          +stAs("Rimfire ammunition generates significant carbon and lead fouling. The Reticent 22 is designed to allow straightforward cleaning to maintain consistent performance over extended firing cycles."),
+          {"src":"RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — Angstadt Arms Reticent 22 Instruction Manual — PRODUCT OVERVIEW, printed p.4"}),
+        tgStep("Clean","Ultrasonic, thirty minutes, then dry",
+          stA("The whole can goes in — there is nothing to take out of it first. Half an hour in a proper firearms solution, then out and dried all the way through before it goes back on a barrel.")
+          +stAs("After the cycle is complete, remove the suppressor and allow it to fully dry."),
+          {"src":"RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — Angstadt Arms Reticent 22 Instruction Manual — CLEANING PROCEDURE, printed p.7"}),
+        tgStep("Clean","Or the standing soak, if there is no ultrasonic on the bench",
+          stA("Plug the exit hole, stand the can threads-up in a cup so nothing spills, fill it to the top with solvent and leave it overnight or longer. Then the plug comes out, it gets rinsed with water and it dries.")
+          +stAs("Leave solvent in suppressor for 12-24 hours"),
+          {"src":"RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — Angstadt Arms Reticent 22 Instruction Manual — CLEANING PROCEDURE, printed p.7"}),
+        tgStep("Clean","⛔ Wash your hands, and open a window",
+          stA("Rimfire fouling is lead. This is the one maintenance job in the app where the hazard is the residue itself rather than the firearm."),
+          {"src":"RETICENT 22 SUPPRESSOR INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — Angstadt Arms Reticent 22 Instruction Manual — SUPPRESSOR SAFETY WARNINGS, printed p.4"})
+      ],
+      deepAbsentReason:"ANGSTADT PUBLISHES NO TEARDOWN FOR THIS CAN BECAUSE THERE IS NONE: \"The Reticent 22 is a sealed titanium rimfire suppressor and does not permit user disassembly.\" The book's maintenance section is the cleaning procedure above and nothing else, and its warranty section sends a suppressor needing service back to the company — \"Contact Angstadt Arms before returning any suppressor for service.\" A deeper procedure authored here would be invention, and on a welded tube it would be an instruction to destroy the product.",
+      cleaning:[{"name":"THE TUBE (IT DOES NOT OPEN)","tasks":["Ultrasonic, ~30 minutes in a firearms cleaning solution","OR plugged and filled with solvent, standing, 12–24 hours","Rinsed with water and dried COMPLETELY either way","⛔ No harsh abrasives or solvents on the outside — the Cerakote is the finish"]},{"name":"MOUNT AND THREADS","tasks":["1/2x28 barrel threads cleaned and checked undamaged while the can is off","The can's own threads checked before it goes back","Seated fully against the barrel shoulder, hand tight, no tools"]},{"name":"⛔ THE INTERVAL IS THE MAINTENANCE","tasks":["Every 500–1,000 rounds on moderate use","Every 300–500 rounds on heavy use or dirty ammunition","Rimfire lead is what fouls it — the schedule is not optional on a .22 can"]},{"name":"AFTER THE JOB","tasks":["Hands washed thoroughly — the fouling is lead","Ventilation while cleaning, by the maker's own instruction"]}],
+      reassembly:["Nothing to reassemble — the can never opened.","Muzzle threads clean, undamaged, and free of any muzzle device or thread protector.","Thread the can on by hand, clockwise, until it contacts the barrel shoulder.","Hand tight. ⛔ No tools.","Look through the bore and check the can sits straight; if alignment is in doubt, do not fire it.","Re-check tightness periodically while shooting — thread mounts walk loose as they heat."],
+      fncheck:"Dry, and back on the host with the action open and clear: threaded on by hand until it contacts the barrel shoulder, hand tight, nothing used to tighten it. Sight through the bore and confirm it is clear and that the can looks straight relative to it — if it does not, stop, because a misaligned can is a baffle strike waiting to happen. Then check it is still tight after the first few shots and periodically after that."
+    },
     "sg_ar15": {
       textMode:true, parts:{}, origins:{},
       sourcedFrom:"Safety & Instruction Manual for\nCenterfire Semi-Automatic Rifles — p/n 3015611  S&W_M&P_CF_MSR_REV_022724 (2024)",
@@ -23443,6 +23478,41 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       reassembly:["Refit the magazine box into the receiver, open end to the rear and notched end first.","Seat the barrelled action in the stock with the trigger guard properly located, remembering the LONGER takedown screw goes behind the trigger guard.","Tighten both takedown screws alternately until snug, then tighten the front screw firmly, then the rear.","With the bolt OUT of the rifle for this step — never screw the trigger guard in with the bolt in the gun.","Orient the bolt handle up and to the right, lugs aligned with their races and the cocking piece projection at six o'clock, and push it in until the bolt stop snaps behind it.","Close the bolt and turn the handle down to its locked position."],
       fncheck:"Any time the bolt has been out, do this before ammunition goes anywhere near the rifle: \"Push the safety \"OFF\". Press the trigger. The firing pin should snap forward (\"dry-fire\"). Operate the bolt again a full cycle. It should close smoothly and turn down to lock easily, without impediment. If either does not, the bolt may be incorrectly assembled.\" (Reassembly, Warning, p.26). Also confirm the safety still locks the trigger in the ON position, and on a three-position lever that the fully rearward notch locks the bolt shut. A rifle that fails either check goes to LSI, not to the range."
     },
+    "sg_huxwrxflowrange36ti": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. (ABSENT — no copyright year line is printed.)",
+      sourceSha256:"680552e0f4d71fe15a4e2850b4e3415235b8701e488c6da3fe5176e5ea26b1dd",
+      cleanIntro:"A 3D-printed titanium Flow-Through can, and the printing is the reason the cleaning rule is a chemistry rule: HUXWRX names titanium-safe cleaners specifically. ⛔ It does not open — the book's own warning forbids going past what it shows, and what it shows is a mount, a torque figure and a solvent. The maintenance cycle is 2,500 rounds or less. And one thing worth knowing before the next range trip: after a wet clean, solvent and debris can come out of the muzzle end on the first shots.",
+      steps:[
+        tgStep("Clear","Unloaded, and the ammunition off the bench",
+          stA("HUXWRX prints the same warning at the head of BOTH its installation and its cleaning sections, word for word: magazine out, chamber checked by eye and by finger, and the ammunition moved out of the workspace entirely.")
+          +stAs("Use proper safety equipment before handling. Ensure firearm is not loaded before installing or removing the suppressor. Only operate the suppressor system with a serviceable firearm and ammunition of the correct caliber."),
+          {"src":"FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — SUPPRESSOR INSTALLATION, printed p.2"}),
+        tgStep("Strip","⛔ Cool before it is touched",
+          stA("A Flow-Through can vents gas forward and gets hot doing it. The book's warning is about skin and clothing, and it is the first thing on the page.")
+          +stLimit("HUXWRX","The suppressor system can reach extremely hot temperatures. Use caution before handling after use. Avoid contact with skin or clothing when hot.","FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — WARNING, printed p.1"),
+          {"src":"FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — WARNING, printed p.1"}),
+        tgStep("Strip","Lock nut loose, then the can off the QD device",
+          stA("The lock nut at the base of the HUB QD adapter comes loose by hand first — that is what frees the can to turn. Then reverse the mounting direction to run it off the muzzle device. The lock/unlock icons on the can and on the nut tell you which way is which, so there is no guessing.")
+          +stAs("Reverse this process to remove the suppressor from the barrel."),
+          {"src":"FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — SUPPRESSOR INSTALLATION, printed p.2"}),
+        tgStep("Strip","⛔ And that is as far as it opens",
+          stA("There is no end cap procedure and no baffle stack in this book, and the warning page says outright not to go past the level it shows. On a printed titanium core there is nothing behind that instruction to find.")
+          +stLimit("HUXWRX","Do not disassemble the suppressor system beyond required level, as shown in this manual, for standard maintenance.","FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — WARNING, printed p.1"),
+          {"src":"FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — WARNING, printed p.1"}),
+        tgStep("Clean","Titanium-safe chemistry, and nothing else",
+          stA("The material decides the solvent here. HUXWRX names its own Suppressor Sauce as the standard for Flow-Through geometries, and whatever you use, it has to be safe on titanium.")
+          +stAs("Recommended maintenance cycle for the suppressor is 2500 rounds or less."),
+          {"src":"FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — SUPPRESSOR CLEANING AND MAINTENANCE, printed p.2"}),
+        tgStep("Clean","Threads and taper faces clean before it goes back",
+          stA("Every mounting surface — the barrel threads, the taper, the HUB interface — gets cleaned while the can is off. A dirty taper is what stops a QD can seating square, and a can that does not seat square is a baffle strike."),
+          {"src":"FLOW RANGE 36 Ti INSTRUCTION MANUAL — ABSENT — no revision or edition code is printed in the document. — HUXWRX FLOW Range 36 Ti Instruction Manual — SUPPRESSOR INSTALLATION, printed p.2"})
+      ],
+      deepAbsentReason:"HUXWRX PUBLISHES NO TEARDOWN FOR THIS CAN AND FORBIDS ONE IN ITS OWN WARNING: \"Do not disassemble the suppressor system beyond required level, as shown in this manual, for standard maintenance.\" There is no end-cap step, no baffle count and no internal torque figure anywhere in the manual — the only torque it prints is 25 ft-lbf for the HUB adapter onto the housing and 35 ft-lbf for a flash hider onto the barrel, both of which are mounting figures. A deeper procedure authored here would be invention, and on a single printed titanium core it would be an instruction to destroy the product.",
+      cleaning:[{"name":"THE CAN (IT DOES NOT OPEN)","tasks":["⛔ Titanium-safe cleaners ONLY — it is 3D-printed titanium","HUXWRX names Suppressor Sauce as its own standard for Flow-Through geometry","No abrasives, no wire, nothing driven through the bore"]},{"name":"MOUNT AND THREADS","tasks":["All threads and taper mounting surfaces cleaned while the can is off","HUB adapter torqued to the housing at 25 ft-lbf","A flash hider / comp / brake torqued to the barrel at 35 ft-lbf where it applies","Lock nut hand tight, 50 in-lbf minimum"]},{"name":"⛔ THE CYCLE IS THE MAINTENANCE","tasks":["2,500 rounds or less, by the maker's own figure","Expect solvent and debris to blow out on the first shots after a wet clean"]}],
+      reassembly:["Nothing to reassemble — the can never opened.","Threads and taper mounting surfaces clean and dry.","Lock nut at the base of the HUB QD adapter backed off by hand.","Can onto the QD muzzle device in the direction its lock/unlock icon shows, until hand tight and firmly seated.","Lock nut tightened firmly by hand — 50 in-lbf minimum — in the direction ITS icon shows.","HUB adapter at 25 ft-lbf to the housing; muzzle device at 35 ft-lbf to the barrel where one is fitted.","⛔ Solvent and debris may shoot out on the first shots after cleaning."],
+      fncheck:"Back on the host with the action open and clear: threads and taper clean, the can run on in the direction its own lock icon shows until it is hand tight and firmly seated, then the lock nut tightened by hand to at least 50 in-lbf. Confirm the HUB adapter is still at 25 ft-lbf on the housing and that any muzzle device is still torqued to the barrel — HUXWRX makes both a before-firing check, not an install-day one. ⛔ And expect the first few rounds after a wet clean to throw solvent out of the muzzle: stand clear and do not read it as a fault."
+    },
     "sg_ithacamodel37": {
       textMode:true, parts:{}, origins:{},
       sourcedFrom:"Model 37 Owners Manual — UNDATED — no edition or revision code is printed in the document (undated — no copyright line is printed)",
@@ -24756,6 +24826,47 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       cleaning:[{"name":"BORE","tasks":["Bolt out first, so the bore can be worked from the breech end","Patch on a good quality cleaning rod, breech to muzzle, repeated until the patches come out clean","Barrel solvent on the patch only if fouling calls for it — non-corrosive and non-abrasive, followed by dry patches","Wire brush with powder solvent if necessary","One slightly oiled patch through in the same direction to finish"]},{"name":"BOLT AND EXTERNAL METAL","tasks":["Wipe the bolt, the breech and all external metal surfaces with a light coat of oil","Clean and oil the extractor area if empty cases are not being removed","A very light film of oil on all metal parts, no more"]},{"name":"CHEMISTRY","tasks":["Non-acid, resinous, recognised quality gun oil only","No other chemicals, especially in the barrel bore","Follow the directions of the cleaning rod manufacturer"]},{"name":"INTERVAL AND STORAGE","tasks":["Clean the rifle each time it has been used","At least monthly in a humid climate","Before storing, be sure the rifle is uncocked and unloaded","Store the rifle and the ammunition separately"]}],
       reassembly:["Place the bolt into the receiver while pulling the trigger, exactly as it came out.","Move the bolt all the way forward and rotate the handle down to lock.","If the stock was removed, refit it and tighten the takedown screw.","Examine the barrel and confirm it is clean and free of heavy oil, grease or any other obstruction before the rifle is fired."],
       fncheck:"With the chamber empty, work the bolt several times and confirm it closes and locks with the handle down. Check the cocking piece pulls back to its stop and that the action will not open while the rifle is cocked. Confirm the rifle is not loose in the stock. Look through the bore one last time for patch material or oil. Do not dry fire to test it — use a spent case in the chamber if a trigger check is needed."
+    },
+    "sg_kgmrf22": {
+      textMode:true, parts:{}, origins:{},
+      sourcedFrom:"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. (2025 — ©2025 on the title page.)",
+      sourceSha256:"9cb776f35935e895479393edd2adee4237be2f0bdb451869f83a7cd5691b85d6",
+      cleanIntro:"A 5 oz .22 can that KGM designed to come apart — the spec table says \"User Serviceable: Yes\" and the book prints the teardown with its own tool. It is rated up to 5.7x28, which is why the interval is short: basic cleaning every 150–200 rounds, a full submerged clean at a thousand or once a year. ⛔ The internals are ALUMINIUM, so the chemistry matters — an aluminium-friendly solvent or nothing. And the one part that has an orientation is the steel blast baffle: its engraved arrow faces the muzzle.",
+      steps:[
+        tgStep("Clear","Host unloaded before the can is touched",
+          stA("KGM's first safety line covers mounting, removing, cleaning, storage and shipping in one sentence — the gun is unloaded for all five. Magazine out, action open, chamber checked by eye and by finger."),
+          {"src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Safety Precautions, printed p.2"}),
+        tgStep("Strip","⛔ Cool before it comes off",
+          stA("A .22 can run on 5.7x28 gets hotter than its size suggests. The book puts the wait in its own warning box above the removal procedure."),
+          {"src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Removing Direct Thread Suppressor, printed p.5"}),
+        tgStep("Strip","Off the muzzle by the grasping grooves",
+          stA("Hold the can by the knurled grasping grooves, hold the gun, and unscrew counter-clockwise. If carbon has locked it on, KGM's own answer is a 7/8 inch wrench on the REAR MOUNT — not on the tube, and not on the front cap.")
+          +stAs("After extensive firing, carbon buildup can make the suppressor hard to remove. Use a 7/8” wrench on the rear mount to get additional leverage for removal."),
+          {"src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Removing Direct Thread Suppressor, printed p.5"}),
+        tgStep("Strip","Front cap off with the male end of the tool",
+          stA("The RF22 ships with its own assembly/disassembly tool and it is double-ended. The male end goes into the front cap; unscrew counter-clockwise until the cap is off. Everything from here is what the cap was holding in."),
+          {"src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Disassembly of RF22 Suppressor, printed p.7"}),
+        tgStep("Strip","Baffles out — and catch them",
+          stA("Tip it and they may simply fall out. Fouled, they stay put, and the fix is a WOOD OR DELRIN rod from the back end and a gentle push — soft rod, soft push, because the baffles are aluminium. Expect them to separate and come free as they clear the tube, so work over the bench, not over the floor.")
+          +stAs("The baffles may freely fall out, or if heavily fouled may stay in place.")
+          +stLimit("KGM","If the baffles do not freely fall out, insert a wood or delrin rod from the back end. A gentle push will push the baffles out","USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Disassembly of RF22 Suppressor, printed p.7"),
+          {"src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Disassembly of RF22 Suppressor, printed p.7"}),
+        tgStep("Strip","Rear mount off with the female end",
+          stA("The other end of the same tool takes the rear mount off, counter-clockwise. That is the whole can: tube, front cap, baffle stack, steel blast baffle and rear mount."),
+          {"src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Disassembly of RF22 Suppressor, printed p.7"}),
+        tgStep("Clean","⛔ Aluminium-friendly chemistry, nylon brush",
+          stA("The baffles and front cap are aluminium and the wrong solvent will eat them. Nylon brush on the accessible surfaces, wipe everything down, then rinse and dry. That is the 150-to-200-round job.")
+          +stAs("KGM recommends basic cleaning every 150-200 rounds depending on the host firearm and ammunition."),
+          {"src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Regular Maintenance, printed p.10"}),
+        tgStep("Clean","The heavy clean: submerged, rinsed, blown dry",
+          stA("At a thousand rounds, once a year, or whenever it stops working as well: the parts go into a chemically resistant container and get submerged in an aluminium-friendly suppressor chemical. Then out, rinsed, brushed, rinsed again, and dried with compressed air before anything is reassembled.")
+          +stAs("Use compressed air to dry suppressor internals."),
+          {"warn":"Perform a more thorough cleaning cycle for the suppressor after one thousand rounds (1,000), on an annual basis, or as necessary due to fouling or loss of effectiveness.","warnSrc":"maker","src":"USER MANUAL FOR KGM RF22 SUPPRESSOR — Rev: 1/25 — printed on the title page. — KGM RF22 Suppressor User Manual — Heavy Cleaning, printed p.10"})
+      ],
+      deepAbsentReason:"THE PUBLISHED TEARDOWN IS ALREADY THE WHOLE CAN, so there is nothing deeper to publish. KGM's field procedure takes the RF22 down to tube, front cap, baffle stack, blast baffle and rear mount — five parts and a tool — and a baffle does not itself come apart. The book's only escalation past that is the warranty route: an RMA number from Customer Service before anything is shipped. Inventing a deeper step would mean inventing a joint the product does not have.",
+      cleaning:[{"name":"BAFFLE STACK AND FRONT CAP (ALUMINIUM)","tasks":["⛔ Aluminium-friendly chemicals ONLY — the wrong solvent eats them","Nylon brush on the accessible surfaces, carbon and copper","Submerged for the heavy clean, then rinsed with water","Compressed air through the internals before reassembly"]},{"name":"BLAST BAFFLE (STEEL) AND REAR MOUNT (TITANIUM)","tasks":["Blast baffle cleaned and its ENGRAVED ARROW found before it goes back","Rear mount threads cleaned — this is the part a wrench is allowed on"]},{"name":"MOUNT AND THREADS","tasks":["1/2x28 barrel threads cleaned and checked undamaged","⛔ Mount fully contacting the barrel shoulder, no visible gap"]},{"name":"⛔ THE INTERVALS ARE THE MAINTENANCE","tasks":["Basic clean every 150–200 rounds","Heavy clean at 1,000 rounds, annually, or on loss of effectiveness","Weigh it new and weigh it again periodically — KGM's own fouling measure"]}],
+      reassembly:["Rear mount onto the rear of the tube, clockwise, snug with the female end of the tool.","⛔ Blast baffle first, closest to the rear mount, engraved ARROW FACING THE MUZZLE.","The aluminium baffles after it, cone end facing the rear — they need no indexing and no fixed order.","Front cap on with the male end of the tool, snug. It may not sit flush on a low-round can; that is by design.","Onto the host with the action open and clear: clockwise until it completely stops, then hand-checked for a firm seat.","A 7/8 inch or strap wrench on the REAR MOUNT only, if extra force is wanted.","First fitting on a new host: verify alignment with a bore rod, and REMOVE THE ROD BEFORE FIRING."],
+      fncheck:"Back together: rear mount snug with the tool, blast baffle nearest it with its engraved arrow pointing at the muzzle, the rest of the stack cone-end rearward, front cap snug. ⛔ A front cap that does not sit flush with the tube is NORMAL on a new or low-round can — KGM designs the stack to compress — so do not force it. Sight through the bore for one clear channel. On the host, screw it down until it stops and then try to turn it further by hand: it must be firmly seated, with the mount fully against the barrel shoulder and no visible gap. First time on a new host, check it with a bore alignment rod — and take the rod out before you fire."
     },
     "sg_kimber2k11": {
       textMode:true, parts:{}, origins:{},
@@ -54139,6 +54250,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "americantacticalfx45": "sg_americantacticalfx45",
     "andersonkiger9c": "sg_andersonkiger9c",
     "andersonmanufacturingam15": "sg_andersonmanufacturingam15",
+    "angstadtarmsreticent22": "sg_angstadtarmsreticent22",
     "ar15": "sg_ar15",
     "armalitear10": "sg_armalitear10",
     "armalitear50a1": "sg_armalitear50a1",
@@ -54368,6 +54480,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "hkmr556": "sg_hkmr556",
     "hkmr762": "sg_hkmr762",
     "howa1500": "sg_howa1500",
+    "huxwrxflowrange36ti": "sg_huxwrxflowrange36ti",
     "ithacamodel37": "sg_ithacamodel37",
     "iverjohnson1911a1": "sg_iverjohnson1911a1",
     "iwijericho941": "sg_iwijericho941",
@@ -54391,6 +54504,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     "keltecsu16": "sg_keltecsu16",
     "keltecsub2000": "sg_keltecsub2000",
     "keystonecrickettyouth": "sg_keystonecrickettyouth",
+    "kgmrf22": "sg_kgmrf22",
     "kimber2k11": "sg_kimber2k11",
     "kimberaegiselite": "sg_kimberaegiselite",
     "kimbercarboncompact": "sg_kimbercarboncompact",
