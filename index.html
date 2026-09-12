@@ -421,9 +421,14 @@
     #scr-player .controls{grid-column:2;grid-row:4}
 
     #scr-player.fs-textguide .player{grid-template-columns:1fr;grid-template-rows:auto auto auto 1fr auto auto}
-    #scr-player.fs-textguide .stage{grid-column:1;grid-row:1;display:block;height:auto;min-height:0;
+    #scr-player.fs-textguide .stage{grid-column:1;grid-row:1;display:flex;flex-direction:column;height:auto;min-height:0;
       max-height:32svh;overflow:hidden;padding:8px 0 2px;
       border-right:none;border-bottom:1px solid var(--edge)}
+    #scr-player.fs-textguide #textArtPane:not([hidden]){display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+    #scr-player.fs-textguide #textArtLine{flex:0 0 auto}
+    #scr-player.fs-textguide #textArtBox{flex:0 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center}
+    #scr-player.fs-textguide #textArtBox .heroart:not(.empty){flex:0 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center}
+    #scr-player.fs-textguide #textArtBox .heroart:not(.empty)>img{flex:0 1 auto;min-height:0}
     #scr-player.fs-textguide .expbtn{grid-column:1;grid-row:2}
     #scr-player.fs-textguide .progress{grid-column:1;grid-row:3}
     #scr-player.fs-textguide .step-info{grid-column:1;grid-row:4}
@@ -538,7 +543,7 @@
   .hiddenrow{border:1px dashed var(--edge);border-radius:12px;padding:4px 12px 8px;margin-top:2px}
   .hiddenrow-head{width:100%;background:none;border:none;color:var(--muted);font-family:var(--display);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 0;cursor:pointer;text-align:center}
   .uartwrap{position:relative;border:1px solid var(--edge);border-radius:12px;overflow:hidden;background:#0e1013}
-  .uartwrap img{display:block;width:100%;max-height:220px;object-fit:cover;cursor:pointer}
+  .uartwrap img{display:block;width:100%;height:auto;max-height:220px;object-fit:contain;cursor:pointer}
   .uartbtn{position:absolute;right:8px;top:8px;background:rgba(12,14,17,.85);border:1px solid var(--edge);border-radius:7px;color:var(--text);font-size:13px;line-height:1;padding:6px 9px;cursor:pointer}
   .uartbtn.del{right:auto;left:8px;color:var(--safe-red)}
   .heroinvitebar{position:absolute;left:0;right:0;bottom:0;padding:7px 10px;
@@ -564,85 +569,90 @@
   #textArtPane .refill img{display:block;width:100%;max-height:230px;object-fit:contain;cursor:default}
   .artadd-line{background:none;border:none;color:var(--amber);font-family:var(--body);font-size:11.5px;font-style:normal;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
   .uarttag{position:absolute;left:8px;bottom:8px;font-family:var(--display);font-size:8.5px;letter-spacing:1.2px;color:var(--muted);background:rgba(12,14,17,.82);border-radius:4px;padding:2px 7px;text-transform:uppercase}
-  #safeDoor{position:fixed;inset:0;z-index:220;background:#04050a;display:flex;padding:0;transition:background .4s ease .5s}
+  #safeDoor{position:fixed;inset:0;z-index:220;background:#04050a;display:flex;padding:0;transition:background .4s ease .5s;
+    --dpad:clamp(14px,2.8vmin,34px);
+    --dw:min(calc(100vw - 2 * var(--dpad)), 440px, calc((100svh - 2 * var(--dpad)) * 362 / 816));
+    --dh:calc(var(--dw) * 816 / 362);
+    --du:calc(var(--dw) / 362)}
   #safeDoor.opening{pointer-events:none;background:transparent}
-  .sd-frame{position:absolute;inset:0;padding:clamp(14px,2.8vmin,34px);border-radius:0;
+  .sd-frame{position:absolute;inset:0;padding:var(--dpad);border-radius:0;
+    display:flex;align-items:center;justify-content:center;
     background:
       linear-gradient(150deg,#3b434f,#232830 55%,#2f3742);
     border:none;
     box-shadow:inset 0 3px 12px rgba(255,255,255,.06),inset 0 -8px 24px rgba(0,0,0,.65);
     transition:opacity .3s ease .55s}
   #safeDoor.opening .sd-frame{opacity:.55}
-  .sd-scene{position:relative;width:100%;height:100%;perspective:2000px;
+  .sd-scene{position:relative;width:var(--dw);height:var(--dh);flex:0 0 auto;perspective:2000px;
     background:#030408;border-radius:8px;
     box-shadow:inset 0 0 0 3px #0b0e13,inset 0 0 70px rgba(0,0,0,.95)}
-  .sd-door{position:absolute;inset:clamp(5px,1vmin,12px);border-radius:10px;transform-origin:left center;
+  .sd-door{position:absolute;inset:clamp(4px,calc(5 * var(--du)),12px);border-radius:10px;transform-origin:left center;
     background:
       radial-gradient(130% 95% at 28% 10%,rgba(255,255,255,.075),transparent 55%),
       linear-gradient(148deg,#2e343e 0%,#1d2127 55%,#262c35 100%);
     border:1px solid #414a56;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.08),inset 0 -3vmin 8vmin rgba(0,0,0,.5),0 2.4vmin 6vmin rgba(0,0,0,.7);
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.08),inset 0 calc(-11.7 * var(--du)) calc(31.2 * var(--du)) rgba(0,0,0,.5),0 calc(9.36 * var(--du)) calc(23.4 * var(--du)) rgba(0,0,0,.7);
     transition:transform .62s cubic-bezier(.45,0,.18,1)}
   .sd-door::after{content:"";position:absolute;inset:0;border-radius:10px;pointer-events:none;
     background:repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 2px,transparent 2px 6px)}
-  .sd-door::before{content:"";position:absolute;inset:clamp(10px,2vmin,24px);border-radius:8px;pointer-events:none;
+  .sd-door::before{content:"";position:absolute;inset:calc(10 * var(--du));border-radius:8px;pointer-events:none;
     border:1px solid rgba(255,255,255,.05);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),inset 0 0 3vmin rgba(0,0,0,.35)}   
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),inset 0 0 calc(11.7 * var(--du)) rgba(0,0,0,.35)}   
   .sd-door.open{transform:rotateY(-104deg)}
-  .sd-screws i{position:absolute;width:clamp(10px,1.6vmin,18px);height:clamp(10px,1.6vmin,18px);border-radius:50%;
+  .sd-screws i{position:absolute;width:calc(10 * var(--du));height:calc(10 * var(--du));border-radius:50%;
     background:radial-gradient(circle at 34% 30%,#6a7482,#3a424d 60%,#232830);border:1px solid #1a1f26;
     box-shadow:0 1px 2px rgba(0,0,0,.6),inset 0 1px 1px rgba(255,255,255,.25)}
   .sd-screws i:nth-child(1){left:3.2%;top:2.4%}.sd-screws i:nth-child(2){right:3.2%;top:2.4%}
   .sd-screws i:nth-child(3){left:3.2%;bottom:2.4%}.sd-screws i:nth-child(4){right:3.2%;bottom:2.4%}
-  .sd-hinge{position:absolute;left:calc(-1 * clamp(6px,1.1vmin,13px));top:12%;bottom:12%;width:clamp(12px,2vmin,24px);display:flex;flex-direction:column;justify-content:space-between}
-  .sd-hinge i{display:block;height:16%;width:100%;border-radius:clamp(5px,1vmin,11px);
+  .sd-hinge{position:absolute;left:calc(-6 * var(--du));top:12%;bottom:12%;width:calc(12 * var(--du));display:flex;flex-direction:column;justify-content:space-between}
+  .sd-hinge i{display:block;height:16%;width:100%;border-radius:calc(5 * var(--du));
     background:linear-gradient(90deg,#525c6a,#2a3039 55%,#3d4550);border:1px solid #1e242c;
     box-shadow:0 2px 5px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.16)}
   .sd-brand{position:absolute;top:5.5%;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;
-    font-size:clamp(21px,3.6vmin,36px);letter-spacing:.42em;text-indent:.42em;color:#DFE6F0;
+    font-size:calc(21 * var(--du));letter-spacing:.42em;text-indent:.42em;color:#DFE6F0;
     text-shadow:0 -1px 1px rgba(0,0,0,.85),0 1px 1px rgba(255,255,255,.09),0 0 22px rgba(213,220,230,.16)}
   .sd-brand span{color:#F0AC3F;text-shadow:0 -1px 1px rgba(0,0,0,.85),0 1px 1px rgba(255,255,255,.06),0 0 26px rgba(232,163,61,.4)}
-  .sd-sub{position:absolute;top:calc(5.5% + clamp(26px,4.6vmin,46px));left:0;right:0;text-align:center;
-    font-family:var(--display);font-size:clamp(8.5px,1.15vmin,11px);letter-spacing:.3em;text-indent:.3em;
+  .sd-sub{position:absolute;top:calc(5.5% + 26 * var(--du));left:0;right:0;text-align:center;
+    font-family:var(--display);font-size:calc(8.5 * var(--du));letter-spacing:.3em;text-indent:.3em;
     text-transform:uppercase;color:#8b93a0;text-shadow:0 -1px 1px rgba(0,0,0,.8)}
-  .sd-bolts{position:absolute;right:calc(-1 * clamp(7px,1.3vmin,15px));top:15%;bottom:15%;width:clamp(30px,4.6vmin,54px);display:flex;flex-direction:column;justify-content:space-between}
-  .sd-bolts i{display:block;height:clamp(16px,2.6vmin,30px);border-radius:clamp(8px,1.3vmin,15px);
+  .sd-bolts{position:absolute;right:calc(-7 * var(--du));top:15%;bottom:15%;width:calc(30 * var(--du));display:flex;flex-direction:column;justify-content:space-between}
+  .sd-bolts i{display:block;height:calc(16 * var(--du));border-radius:calc(8 * var(--du));
     background:linear-gradient(180deg,#7b8494,#454d59 55%,#5b6472);border:1px solid #232a33;
     box-shadow:0 2px 6px rgba(0,0,0,.6),inset 0 2px 1px rgba(255,255,255,.3),inset 0 -2px 3px rgba(0,0,0,.35);
     transition:transform .24s ease-in}
   .sd-bolts i:nth-child(2){transition-delay:.05s}.sd-bolts i:nth-child(3){transition-delay:.1s}.sd-bolts i:nth-child(4){transition-delay:.15s}
-  .sd-door.unbolted .sd-bolts i{transform:translateX(calc(-1 * clamp(26px,4vmin,48px)))}
-  .sd-plate{position:absolute;left:50%;top:28%;width:min(44vw,33vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  .sd-door.unbolted .sd-bolts i{transform:translateX(calc(-26 * var(--du)))}
+  .sd-plate{position:absolute;left:50%;top:28%;width:calc(171.6 * var(--du));aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
     background:linear-gradient(155deg,#333a45,#20252d 60%,#2a313b);border:1px solid #444d5a;
-    box-shadow:0 1vmin 2vmin rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.09),inset 0 -1vmin 2.4vmin rgba(0,0,0,.4)}
-  .sd-handle{position:absolute;left:50%;top:57.2%;width:min(33.75vw,21vh);aspect-ratio:1;
+    box-shadow:0 calc(3.9 * var(--du)) calc(7.8 * var(--du)) rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.09),inset 0 calc(-3.9 * var(--du)) calc(9.36 * var(--du)) rgba(0,0,0,.4)}
+  .sd-handle{position:absolute;left:50%;top:57.2%;width:calc(131.625 * var(--du));aspect-ratio:1;
     transform:translate(-50%,-50%);pointer-events:none;z-index:0;
-    filter:drop-shadow(0 1.2vmin 2vmin rgba(0,0,0,.65))}
+    filter:drop-shadow(0 calc(4.68 * var(--du)) calc(7.8 * var(--du)) rgba(0,0,0,.65))}
   .sd-handle svg{width:100%;height:100%;display:block;transform:rotate(0deg)}
   #sdDoor.spin .sd-handle svg{transform:rotate(-1080deg);
     transition:transform .95s cubic-bezier(.25,.7,.2,1)}
-  .sd-dial{position:absolute;left:50%;top:28%;width:min(40vw,30vh);transform:translate(-50%,-50%);
-    filter:drop-shadow(0 1.6vmin 2.4vmin rgba(0,0,0,.6))}
+  .sd-dial{position:absolute;left:50%;top:28%;width:calc(156 * var(--du));transform:translate(-50%,-50%);
+    filter:drop-shadow(0 calc(6.24 * var(--du)) calc(9.36 * var(--du)) rgba(0,0,0,.6))}
   .sd-dial.shudder{animation:sdshake .34s linear}
   @keyframes sdshake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 4px),-50%) rotate(-1.2deg)}40%{transform:translate(calc(-50% + 4px),-50%) rotate(1.2deg)}60%{transform:translate(calc(-50% - 3px),-50%)}80%{transform:translate(calc(-50% + 2px),-50%)}}
   #sdDisc{transition:transform .5s cubic-bezier(.35,0,.25,1);transform-origin:100px 100px}
-  .sd-dots{position:absolute;bottom:calc(3.5% + 4*clamp(46px,6.8vmin,62px) + 3*clamp(7px,1.2vmin,12px) + 1.6vmin);left:0;right:0;text-align:center;font-size:clamp(14px,2vmin,20px);letter-spacing:.7em;text-indent:.7em;color:var(--muted)}
+  .sd-dots{position:absolute;bottom:calc(3.5% + 4 * 46 * var(--du) + 3 * 7 * var(--du) + 6.24 * var(--du));left:0;right:0;text-align:center;font-size:calc(14 * var(--du));letter-spacing:.7em;text-indent:.7em;color:var(--muted)}
   .sd-dots b{color:var(--amber)}
   .sd-pad{position:absolute;left:50%;bottom:3.5%;transform:translateX(-50%);display:grid;
-    grid-template-columns:repeat(3,clamp(64px,10vmin,92px));gap:clamp(7px,1.2vmin,12px)}
-  .sd-pad button{height:clamp(46px,6.8vmin,62px);border-radius:clamp(9px,1.4vmin,14px);font-family:var(--display);font-weight:600;
-    font-size:clamp(17px,2.4vmin,23px);color:var(--text);cursor:pointer;
+    grid-template-columns:repeat(3,calc(64 * var(--du)));gap:calc(7 * var(--du))}
+  .sd-pad button{height:calc(46 * var(--du));border-radius:calc(9 * var(--du));font-family:var(--display);font-weight:600;
+    font-size:calc(17 * var(--du));color:var(--text);cursor:pointer;
     background:linear-gradient(180deg,#2a303a,#1b1f26);border:1px solid #39424e;
     box-shadow:0 3px 7px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07)}
   .sd-pad button:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(0,0,0,.4)}
   .sd-pad button.sd-pro{color:var(--amber);border-color:#5a4a2a;
-    background:linear-gradient(180deg,#2f2a20,#1d1a14);letter-spacing:1px;font-size:clamp(12px,1.7vmin,16px)}
+    background:linear-gradient(180deg,#2f2a20,#1d1a14);letter-spacing:1px;font-size:calc(12 * var(--du))}
   .sd-pad button.sd-pro:active{transform:translateY(1px)}
   .prosheet.abovedoor{z-index:240}
   #safeDoor.fadeout{opacity:0;transition:opacity .28s ease .34s}
   .sd-setcombo{position:absolute;bottom:11%;left:50%;transform:translateX(-50%);white-space:nowrap;
     background:linear-gradient(180deg,#2a303a,#1b1f26);border:1px solid #3a424d;border-radius:11px;
-    color:var(--amber);font-family:var(--display);font-weight:600;font-size:clamp(11px,1.6vmin,15px);letter-spacing:1.8px;padding:clamp(9px,1.4vmin,14px) clamp(14px,2.2vmin,22px);cursor:pointer;
+    color:var(--amber);font-family:var(--display);font-weight:600;font-size:calc(11 * var(--du));letter-spacing:1.8px;padding:calc(9 * var(--du)) calc(14 * var(--du));cursor:pointer;
     box-shadow:0 3px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
   .sd-pad[hidden]{display:none!important}
   .herocard{padding:10px 10px 12px;background:linear-gradient(180deg,#272d36,#1d2127);border-color:#3d4754;box-shadow:0 6px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06)}
@@ -652,7 +662,7 @@
     radial-gradient(ellipse 90% 75% at 50% 45%, #5A616B 0%, #474D56 55%, #2E333A 100%);
     background-size:28px 28px,28px 28px,100% 100%;
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),inset 0 -14px 30px rgba(0,0,0,.3)}
-  .heroart>img{display:block;width:100%;max-height:260px;object-fit:cover}
+  .heroart>img{display:block;width:100%;height:auto;max-height:260px;object-fit:contain;margin-inline:auto}
   .heroart.empty{border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 12px;cursor:pointer;min-height:120px}
   .heroart.empty svg{width:30%;max-height:74px}
   .heroinvite{font-family:var(--display);font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--amber)}
@@ -56289,8 +56299,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchAttachBox(host, f){
     const rec=benchUserArtRec(f);
     const example=rec?null:benchOwnerExamplePath(f);
-    const plate=rec?null:benchHeroPlate(f);
-    const ph=(rec||plate||example)?null:benchHeroArt(f);
+    const ph=(rec||example)?null:benchHeroArt(f);
     const canFS=BenchEnv.hasFS();
     const attach=canFS?'<button class="uartbtn abAttach" title="Attach your piece">＋</button>':"";
     const invite=canFS?'<div class="heroinvitebar">Attach your piece here.</div>'
@@ -56303,9 +56312,6 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           <button class="btn sm primary abReplace">Replace</button>
           <button class="btn sm abRemove">Remove</button>
         </div></div>`;
-    } else if(plate){
-      state="plate";
-      art=`<div class="heroart abBox">${plate}${attach}${invite}</div>`;
     } else if(example){
       state="example";
       art=`<div class="heroart abBox"><img src="${example}" alt="Example photo">
