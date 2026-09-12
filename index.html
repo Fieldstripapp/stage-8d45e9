@@ -629,7 +629,7 @@
     transform:translate(-50%,-50%);pointer-events:none;z-index:0;
     filter:drop-shadow(0 calc(4.68 * var(--du)) calc(7.8 * var(--du)) rgba(0,0,0,.65))}
   .sd-handle svg{width:100%;height:100%;display:block;transform:rotate(0deg)}
-  #sdDoor.spin .sd-handle svg{transform:rotate(-1080deg);
+  #sdDoor.spin .sd-handle svg{transform:rotate(-360deg);
     transition:transform .95s cubic-bezier(.25,.7,.2,1)}
   .sd-dial{position:absolute;left:50%;top:28%;width:calc(156 * var(--du));transform:translate(-50%,-50%);
     filter:drop-shadow(0 calc(6.24 * var(--du)) calc(9.36 * var(--du)) rgba(0,0,0,.6))}
@@ -55480,8 +55480,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     document.getElementById("layerViewport").hidden=true;
     document.querySelectorAll(".gun-svg").forEach(s=>s.classList.remove("active"));
-    benchRenderStepSlot(fSlot, gun, stepRec);
-    if(pane) pane.hidden=false;
+    if(walkAtLaidOut()){
+      const box=document.getElementById("textArtBox"); if(box) box.innerHTML="";
+      const line=document.getElementById("textArtLine"); if(line) line.innerHTML="";
+      if(pane) pane.hidden=true;
+    } else {
+      benchRenderStepSlot(fSlot, gun, stepRec);
+      if(pane) pane.hidden=false;
+    }
     const steps=curSteps();
     const s=steps[stepIndex];
     document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
@@ -56047,7 +56053,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function sdFinish(){
     const doorEl=document.getElementById("safeDoor");
     if(doorEl){ doorEl.style.display="none"; doorEl.classList.remove("opening","fadeout","brand-open"); }
-    document.getElementById("sdDoor").classList.remove("open","unbolted","spin");
+    const slab=document.getElementById("sdDoor");
+    if(slab) slab.classList.remove("open","unbolted","spin");
     sdState.open=false;
   }
   function sdOpenSequence(fast){
@@ -56273,9 +56280,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     return `<div class="heroplate" style="aspect-ratio:${aw} / ${ah};width:min(100%,${wCap}px)">${imgs}</div>`;
   }
   function benchLaidOutUnder(f){
-    const tm=benchTmPlateFigure(f);
-    if(tm) return tm;
-    return benchPlateFigure(benchPlateKey(f));
+    return benchTmPlateFigure(f);
   }
   function benchTmPlateFigure(f){
     if(!f || !f.model || typeof TM_PLATE_FOR==="undefined") return null;
@@ -56560,6 +56565,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchStepArtRec(f, i){
     if(!f || !f.stepArt) return null;
     return benchArtRecByKey(f, benchStepArtKey(f,i));
+  }
+  function walkAtLaidOut(){
+    return !!(typeof WALK!=="undefined" && WALK && WALK.mode==="strip"
+              && typeof WALK.forkAt==="number" && stepIndex===WALK.forkAt);
   }
   function benchLaidOutKey(f){
     const k=(typeof fkey==="function" && fkey(f))||"guide";
@@ -59044,7 +59053,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const isUser=!!s.userStep;
     const atStop = !isUser && WALK.mode==="strip" && stepIndex===WALK.published-1 && WALK.published>0;
     const fork = WALK.mode==="strip" && last && walkHasClean();
-    const atLaidOut = WALK.mode==="strip" && stepIndex===WALK.forkAt;
+    const atLaidOut = walkAtLaidOut();
     bar.innerHTML=
       (atLaidOut?'<div class="fslaid"><div id="laidOutBox"></div></div>':"")
       + (atStop?'<div class="fsStop">This is as far as the maker publishes. Anything past this is yours to record.</div>':"")
@@ -59103,7 +59112,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(f && s) fsRenderNote(f, stepIndex, s);
     walkRenderChrome();
     const pl=document.getElementById("scr-player");
-    if(pl) pl.classList.toggle("fs-noart", !!(s && (s.userStep || s.fsEmpty)));
+    if(pl) pl.classList.toggle("fs-noart", !!(s && (s.userStep || s.fsEmpty)) || walkAtLaidOut());
     if(pl){
       const gk=fkey(f), gg=gk?GUNS[gk]:null;
       const hasArt=!!(gg && (gg.layerMode || (typeof LAYER_SETS!=="undefined" && LAYER_SETS[gk])));
