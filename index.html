@@ -509,6 +509,8 @@
   #textArtPane .refill svg{width:72%;max-height:96px;display:block}
   #textArtPane .refill .rtag{position:absolute;right:8px;top:8px;font-family:var(--display);font-size:8px;letter-spacing:1px;color:var(--muted);border:1px solid var(--edge);border-radius:4px;padding:2px 6px;text-transform:uppercase}
   .textartline{color:var(--muted);font-size:11.5px;line-height:1.5;text-align:center;padding:7px 22px 0;font-style:italic}
+  .webkeep{color:var(--muted);font-family:var(--body);font-size:11px;line-height:1.45;text-align:center;padding:6px 10px 2px;font-style:normal;letter-spacing:0;text-transform:none}
+  .heroart.empty .webkeep{padding:2px 6px 0;max-width:34em}
   .pickref{flex:none;width:52px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--edge);border-radius:8px;background:#0e1013;overflow:hidden}
   .pickref svg{width:88%;height:auto}
   .gun-card .tag.textg{color:var(--text);border-color:var(--muted)}
@@ -3167,7 +3169,7 @@
     if(document.getElementById("webNote")) return;
     const n=document.createElement("div");
     n.id="webNote"; n.className="webnote";
-    n.innerHTML='<span><b>This browser isn\'t a safe.</b> Clear its data and your collection goes with it — the Android app keeps it on the phone.</span><button class="btn sm" id="webNoteOk">Got it</button>';
+    n.innerHTML='<span><b>This browser isn\'t a safe.</b> Clear its data and your collection goes with it — the Android app keeps it on the phone. Photos too: saved in this browser only. Clear its data and it\'s gone. The Android app keeps it.</span><button class="btn sm" id="webNoteOk">Got it</button>';
     document.body.appendChild(n);
     n.querySelector("#webNoteOk").addEventListener("click",()=>{ store.set("fs_web_seen","1"); n.remove(); });
   }
@@ -3768,7 +3770,7 @@
         await saveStampB64(f,b64);
         addLog(f,"nfa","Tax stamp photo "+(f.log.some(l=>l.msg&&l.msg.indexOf("stamp photo")>-1)?"replaced":"attached"));
         saveSafe(); renderStamp(f);
-      }catch(err){ alert("Couldn't save the photo — device storage may be full."); }
+      }catch(err){ alert(benchSaveFail(err, "Couldn't save the photo — device storage may be full.")); }
     }, ()=> alert("Couldn't read that image. Use a JPG or PNG — if your camera saves HEIF, switch it to 'most compatible' or screenshot the stamp instead."));
   });
   document.getElementById("stampRemove").addEventListener("click",async ()=>{
@@ -5279,14 +5281,69 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       setRaw(k,v){ localStorage.setItem(k,String(v)); try{ const p=P(); if(p) p.set({key:k, value:String(v)}); }catch(e){} },
       remove(k){ localStorage.removeItem(k); try{ const p=P(); if(p) p.remove({key:k}); }catch(e){} }
     };
+    const IDB_NAME="fieldstrip-files", IDB_STORE="files";
+    const KEEP_LINE="Saved in this browser only. Clear its data and it's gone. The Android app keeps it.";
+    const KEEP_FULL="This browser is out of room for photos.";
+    let idbOpen=null;
+    function idb(){
+      if(idbOpen) return idbOpen;
+      idbOpen=new Promise((res,rej)=>{
+        let r;
+        try{ r=indexedDB.open(IDB_NAME, 1); }catch(e){ idbOpen=null; rej(e); return; }
+        r.onupgradeneeded=()=>{ try{ r.result.createObjectStore(IDB_STORE); }catch(e){} };
+        r.onsuccess=()=>res(r.result);
+        r.onerror=()=>{ idbOpen=null; rej(r.error||new Error("indexedDB open failed")); };
+        r.onblocked=()=>{ idbOpen=null; rej(new Error("indexedDB blocked")); };
+      });
+      return idbOpen;
+    }
+    function idbRun(mode, fn){
+      return idb().then(db=>new Promise((res,rej)=>{
+        let tx;
+        try{ tx=db.transaction(IDB_STORE, mode); }catch(e){ rej(e); return; }
+        const st=tx.objectStore(IDB_STORE);
+        let q=null;
+        try{ q=fn(st); }catch(e){ rej(e); return; }
+        tx.oncomplete=()=>res(q ? q.result : undefined);
+        tx.onerror=()=>rej(tx.error||(q&&q.error)||new Error("indexedDB "+mode+" failed"));
+        tx.onabort=()=>rej(tx.error||(q&&q.error)||new Error("indexedDB "+mode+" aborted"));
+      }));
+    }
+    const isQuota=e=>!!(e && (e.name==="QuotaExceededError" || (e.inner&&e.inner.name==="QuotaExceededError") || /quota/i.test(String(e.name||"")+" "+String(e.message||""))));
+    const b64ToBytes=b=>{ const s=atob(b); const u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; };
+    const bytesToB64=u=>{ let s=""; const CH=0x8000; for(let i=0;i<u.length;i+=CH) s+=String.fromCharCode.apply(null, u.subarray(i, i+CH)); return btoa(s); };
+    let filesB_=null;
+    function filesB(){
+      if(!window.indexedDB) return null;
+      if(filesB_) return filesB_;
+      filesB_={
+        backend:"browser",
+        async writeB64(p,b){
+          try{ await idbRun("readwrite", st=>st.put(b64ToBytes(String(b)), p)); }
+          catch(e){ if(isQuota(e)){ const q=new Error(KEEP_FULL); q.quota=true; q.cause=e; throw q; } throw e; }
+        },
+        async readB64(p){
+          const v=await idbRun("readonly", st=>st.get(p));
+          if(v==null) throw new Error("ENOENT: "+p);
+          return bytesToB64(v instanceof Uint8Array ? v : new Uint8Array(v));
+        },
+        async removeFile(p){ await idbRun("readwrite", st=>st.delete(p)); },
+        async wipeAll(){ await idbRun("readwrite", st=>st.clear()); },
+        async listPaths(){ return await idbRun("readonly", st=>st.getAllKeys()); }
+      };
+      return filesB_;
+    }
     function filesA(){
-      const fs=FS(); if(!fs) return null;
+      const fs=FS(); if(!fs) return filesB();
       return {
+        backend:"native",
         async writeB64(p,b){ await fs.writeFile({path:p, data:b, directory:"DATA", recursive:true}); },
         async readB64(p){ const r=await fs.readFile({path:p, directory:"DATA"}); return r && r.data; },
         async removeFile(p){ await fs.deleteFile({path:p, directory:"DATA"}); }
       };
     }
+    function filesBackend(){ return FS() ? "native" : (window.indexedDB ? "browser" : null); }
+    function keepLine(){ return filesBackend()==="browser" ? `<div class="webkeep">${KEEP_LINE}</div>` : ""; }
     function thumbnailer(b64, maxDim, quality){
       return new Promise((res, rej)=>{
         const img=new Image();
@@ -5317,8 +5374,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         img.src=url;
       });
     }
-    return {store:storeA, files:filesA, share:SH, thumbnailer, fileToB64, fileDims, hasFS:()=>!!FS()};
+    return {store:storeA, files:filesA, share:SH, thumbnailer, fileToB64, fileDims,
+            hasFS:()=>!!(FS()||window.indexedDB), filesBackend, keepLine, KEEP_LINE, KEEP_FULL};
   })();
+  function benchSaveFail(e, fallback){ return (e && e.quota) ? String(e.message) : fallback; }
 
   const benchThumbCache = {};
   async function benchLoadThumb(imgEl, rec){
@@ -5488,7 +5547,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     };
     const addOf=type=>benchPickPhoto(async (b64,dims)=>{
       try{ await benchImport(parent,b64,dims,type); if(opts.onchange) opts.onchange(); }
-      catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
+      catch(e){ console.error("attach:",e); alert(benchSaveFail(e, "Couldn't save that file. Try again.")); }
     });
     const grid=document.createElement("div"); grid.className="attgrid";
     items.forEach(a=>{
@@ -5520,6 +5579,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       grid.appendChild(add);
     }
     container.appendChild(grid);
+    if(BenchEnv.hasFS()) container.insertAdjacentHTML("beforeend", BenchEnv.keepLine());
     if(BenchEnv.hasFS() && opts.types){
       const list=document.createElement("div"); list.className="attlist";
       const byType=new Map();
@@ -6002,6 +6062,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         benchPickPhoto((b64,dims)=>{ benchZeroStage[which]={b64,dims}; benchZeroSlots(); });
       };
     });
+    (function(){
+      const row=document.getElementById("zeroPhotoRow"); if(!row) return;
+      let k=document.getElementById("zeroKeepLine");
+      const html=BenchEnv.keepLine();
+      if(!html){ if(k) k.remove(); return; }
+      if(!k){ k=document.createElement("div"); k.id="zeroKeepLine"; row.insertAdjacentElement("afterend", k); }
+      k.innerHTML=html;
+    })();
   }
   renderZero = function(f){
     if(!Array.isArray(f.zeros)) f.zeros=[];
@@ -6078,7 +6146,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           try{
             const rec=await benchImport({kind:"zero", id:z.id}, st.b64, st.dims, "target", which);
             if(which==="before") z.photoBefore=rec.id; else z.photoAfter=rec.id;
-          }catch(e){ console.error("attach:",e); alert("Couldn't save the "+which+" target photo. Try again."); }
+          }catch(e){ console.error("attach:",e); alert(benchSaveFail(e, "Couldn't save the "+which+" target photo. Try again.")); }
         }
       }
       benchZeroStage={before:null, after:null};
@@ -55631,7 +55699,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         try{
           await benchImport({kind:"firearm", id:f.id}, b64, dims, "work");
           document.getElementById("logPhotoMsg").textContent="Photo attached ✓";
-        }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
+        }catch(e){ console.error("attach:",e); alert(benchSaveFail(e, "Couldn't save that file. Try again.")); }
       });
     });
     benchFillVendorSelect(document.getElementById("svcVendor"), "Self");
@@ -55802,7 +55870,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         f.userArt=rec.id;
         addLog(f,"note","Photo set as this firearm's art");
         saveSafe(); benchArtChanged();
-      }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
+      }catch(e){ console.error("attach:",e); alert(benchSaveFail(e, "Couldn't save that file. Try again.")); }
     });
   }
   async function benchRemoveUserArt(f){
@@ -56257,6 +56325,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       art=`<div class="heroart empty abBox" style="cursor:${canFS?"pointer":"default"}">${FS_LOGO_WM}`
         + `<div class="heroartline">${esc(canFS?ART_LINE_APP:ART_LINE_WEB)}</div>`
         + (canFS?`<button class="btn sm primary abAdd" type="button">Add a photo of yours</button>`:"")
+        + (canFS?BenchEnv.keepLine():"")   
         + `</div>`;
     }
     host.innerHTML=art;
@@ -56509,12 +56578,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       <h3 style="text-transform:none;letter-spacing:0">Your own photo, your own bench.</h3>
       <p class="pp">Snap the part as it looks in front of you. Next time you walk this guide, your photo is the picture.</p>
       <p class="pp">Lay parts on a plain surface. Good overhead light, no flash. Fill the frame with the part.</p>
-      <p class="pp">Stays on this phone. Never uploaded, never shared.</p>
+      <p class="pp">${BenchEnv.filesBackend()==="browser" ? "Stays in this browser. Never uploaded, never shared." : "Stays on this phone. Never uploaded, never shared."}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
         <button class="btn sm primary" id="slotCam">Take photo</button>
         <button class="btn sm" id="slotPick">Choose from phone</button>
         <button class="btn sm" id="slotNo">Not now</button>
-      </div></div>`;
+      </div>${BenchEnv.keepLine()}</div>`;
     const done=()=>{ BenchEnv.store.setRaw("fs_slot_seen","1"); sh.classList.remove("open"); };
     sh.querySelector("#slotCam").onclick=()=>{ done(); go("camera"); };
     sh.querySelector("#slotPick").onclick=()=>{ done(); go(null); };
@@ -56533,7 +56602,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           if(!f.stepArt) f.stepArt={};
           f.stepArt[key]=rec.id;
           saveSafe(); renderStep(false);
-        }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
+        }catch(e){ console.error("attach:",e); alert(benchSaveFail(e, "Couldn't save that file. Try again.")); }
       }, mode);
     });
   }
@@ -56555,9 +56624,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchRenderStepSlot(f, gun, stepRec, opts){
     opts=opts||{};
     const host=opts.host||document.getElementById("textArtBox");
-    if(!opts.host){ const line=document.getElementById("textArtLine"); if(line) line.innerHTML=""; }
+    if(!opts.host){ const line=document.getElementById("textArtLine"); if(line) line.innerHTML=BenchEnv.keepLine(); }
     if(!host) return;
     const canFS=BenchEnv.hasFS();
+    const keepUnder=opts.host ? BenchEnv.keepLine() : "";
     const doSet=opts.set||(()=>benchSetStepArt(f, stepIndex));
     const doClr=opts.clr||(()=>benchClearStepArt(f, stepIndex));
     if(stepRec){
@@ -56578,14 +56648,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     if(opts.under){
       const plus=canFS?'<button class="uartbtn abAttach" title="Your own laid-out photo">＋</button>':"";
-      host.innerHTML=`<div class="heroart abBox" style="cursor:${canFS?"pointer":"default"}">${opts.under}${plus}</div>`;
+      host.innerHTML=`<div class="heroart abBox" style="cursor:${canFS?"pointer":"default"}">${opts.under}${plus}</div>${keepUnder}`;
       if(canFS) host.querySelector(".abBox").onclick=()=>doSet();
       const ab0=host.querySelector(".abAttach");
       if(ab0) ab0.onclick=e=>{ e.stopPropagation(); doSet(); };
       return;
     }
     const attach=canFS?'<button class="uartbtn abAttach" title="Photo for this step">＋</button>':"";
-    host.innerHTML=`<div class="heroart empty abBox" style="cursor:${canFS?"pointer":"default"}">${FS_LOGO_WM}${attach}</div>`;
+    host.innerHTML=`<div class="heroart empty abBox" style="cursor:${canFS?"pointer":"default"}">${FS_LOGO_WM}${attach}</div>${keepUnder}`;
     if(canFS) host.querySelector(".abBox").onclick=()=>doSet();
     const ab=host.querySelector(".abAttach");
     if(ab) ab.onclick=e=>{ e.stopPropagation(); doSet(); };
@@ -56683,6 +56753,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
   async function benchBurnFiles(){
     try{
+      try{ const fB=BenchEnv.files(); if(fB && fB.wipeAll) await fB.wipeAll(); }catch(e){}
       const FSp=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
       if(!FSp) return;
       for(const d of ["bench","stamps"]){
@@ -57677,7 +57748,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         <button class="btn sm primary" id="phCam">Take photo</button>
         <button class="btn sm" id="phPick">Choose from phone</button>
         <button class="btn sm" id="phNo">Not now</button>
-      </div></div>`;
+      </div>${BenchEnv.keepLine()}</div>`;
     const done=(mode)=>{ sh.classList.remove("open"); if(mode!==undefined) onPick(mode); };
     sh.querySelector("#phX").onclick=()=>done();
     sh.querySelector("#phNo").onclick=()=>done();
@@ -57697,7 +57768,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           if(!f.stepArt) f.stepArt={};
           f.stepArt[key]=rec.id;
           saveSafe(); renderStep(false);
-        }catch(e){ console.error("attach:",e); alert("Couldn't save that file. Try again."); }
+        }catch(e){ console.error("attach:",e); alert(benchSaveFail(e, "Couldn't save that file. Try again.")); }
       }, mode);
     });
   }
@@ -57715,7 +57786,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     })();
     if(stepIndex===0 && canFS && !benchStepArtRec(f,0)){
       if(pane && !pane.hidden && line){
-        line.innerHTML=`<button class="artadd-line" id="stepPromptBtn">＋ Add a photo of your own gun — see how</button>`;
+        line.insertAdjacentHTML("afterbegin", `<button class="artadd-line" id="stepPromptBtn">＋ Add a photo of your own gun — see how</button>`);
         const b=document.getElementById("stepPromptBtn");
         if(b) b.onclick=()=>benchStepArtViaExample(byId(activeId), 0);
       } else {
