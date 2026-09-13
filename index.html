@@ -464,6 +464,10 @@
     flex-direction:column;gap:4px;padding:6px 5px;text-align:center;line-height:1.3}
   .attthumb.add .apl{font-size:21px;line-height:1;color:var(--amber);font-weight:600}
   .attthumb.add:active{background:rgba(232,163,61,.13);border-color:var(--amber)}
+  .stagerow{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:7px}
+  .stagerow .attthumb.staged{border-style:solid;border-color:var(--green)}
+  .stagerow .attthumb.staged .atag{color:var(--green)}
+  .stagerow .sthumb{width:100%;height:100%;object-fit:cover;display:block}
   .attrow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
     background:#0e1013;border:1px solid var(--edge);border-radius:11px;
     padding:10px 12px;margin-top:8px;color:var(--text);cursor:pointer}
@@ -1214,6 +1218,21 @@
         <label for="ammoNote">Extra notes (optional)</label>
         <input type="text" id="ammoNote" placeholder="e.g. 2 FTFs in first 50, none after break-in">
       </div>
+      <div class="field" id="ammoPhotoField">
+        <label>Photos (optional)</label>
+        <div class="stagerow" id="ammoPhotoRow"></div>
+      </div>
+      <div class="field" id="chronoField">
+        <label>Chronograph (optional)</label>
+        <button type="button" class="btn sm" id="chronoImport">Import chronograph file</button>
+        <input type="file" id="chronoFile" accept=".csv,.txt,.xfr,text/csv,text/plain" hidden>
+        <div class="lmsg" id="chronoMsg"></div>
+        <div class="nfagrid" id="chronoPickWrap" hidden style="margin-top:8px">
+          <div class="nf wide"><label for="chronoCol">Which column holds the velocity?</label><select id="chronoCol"></select></div>
+          <div class="nf"><label for="chronoUnit">Units in that file</label><select id="chronoUnit"><option value="fps">fps</option><option value="mps">m/s</option></select></div>
+        </div>
+        <div id="chronoSummary"></div>
+      </div>
       <div class="field" id="ammoHistWrap" hidden>
         <label>History — this firearm</label>
         <div id="ammoHist"></div>
@@ -1236,6 +1255,8 @@
             <div class="nf wide"><label for="malfLot">Ammo — lot or load</label><input type="text" id="malfLot" maxlength="40" list="malfLotList" placeholder="On the box flap — e.g. FC26-114A"><datalist id="malfLotList"></datalist></div>
             <div class="nf"><label for="malfRounds">Round count at the time</label><input type="number" id="malfRounds" min="0" max="10000000" inputmode="numeric"></div>
             <div class="nf wide"><label for="malfNote">Note (optional)</label><input type="text" id="malfNote" maxlength="120" placeholder="e.g. Third one today, all from the same mag"></div>
+            <div class="nf wide" id="malfPhotoField"><label>Photos (optional)</label>
+              <div class="stagerow" id="malfPhotoRow"></div></div>
           </div>
           <button class="btn sm primary" id="malfSave" style="margin-top:10px">Save Malfunction</button>
           <button class="btn sm" id="malfCancel" style="margin-left:8px;margin-top:10px">Cancel</button>
@@ -2238,7 +2259,7 @@
 
   const KEY = "fs_attachments";
   const DIR = "bench/att";
-  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp","att","gear","malf"];  
+  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp","att","gear","malf","sess"];  
   const IMPORT_MAX_DIM = 2600;
   const THUMB_DIM = 320;
 
@@ -2636,12 +2657,22 @@
     const label = typeof opts.malfLabel==="function"
       ? opts.malfLabel : (m=>(m.type==="other"?(m.customType||"Other"):(m.type||"Malfunction")));
     const safe=parse(store,"fs_safe",[]);
+    const reg=parse(store,"fs_attachments",[]);   
     const rows=[["firearm_id","firearm","date","kind","entry","chemicals","condition_note","performed_by","cost"]];
     safe.forEach(f=>{
       (f.log||[]).slice().reverse().forEach(e=>{
+        const c=e.chrono;
+        const nFiles=e.id ? reg.filter(a=>a&&a.parent&&a.parent.kind==="sess"&&a.parent.id===e.id).length : 0;
+        const extra=[
+          c ? `chrono ${c.n} shots, avg ${c.avg==null?"":Math.round(c.avg*10)/10} ${c.unit==="mps"?"m/s":"fps"}`
+              + `, ES ${c.es==null?"":Math.round(c.es*10)/10}, SD ${c.sd==null?"":Math.round(c.sd*10)/10}`
+              + (c.src?` (${c.src})`:"") : "",
+          c && c.countNote ? `file ${c.countNote.file} shots vs ${c.countNote.logged} logged` : "",
+          nFiles ? `${nFiles} file${nFiles===1?"":"s"}` : ""
+        ].filter(Boolean).join(" — ");
         rows.push([f.id, fName(f,catalog),
           e.ts?new Date(e.ts).toISOString().slice(0,10):"",
-          e.type||"", e.msg||"", e.chems||"", e.note||"", e.by||e.vendor||"", e.cost||""]);
+          e.type||"", (e.msg||"")+(extra?" — "+extra:""), e.chems||"", e.note||"", e.by||e.vendor||"", e.cost||""]);
       });
       (f.service||[]).slice().sort((a,b)=>a.ts-b.ts).forEach(sv=>{
         rows.push([f.id, fName(f,catalog),
@@ -2770,6 +2801,143 @@
   return {buildCsv, parseCsv, INV_HEADERS, ATT_HEADERS, buildAttachmentsCsv,
           buildInventoryCsv, buildHistoryCsv, buildLockerCsv, buildInventoryTemplate,
           previewInventoryCsv, runInventoryImport};
+});
+
+(function(root, factory){
+  if(typeof module!=="undefined" && module.exports) module.exports = factory();
+  else root.BenchChrono = factory();
+})(typeof self!=="undefined" ? self : this, function(){
+  "use strict";
+
+  const MPS_PER_FPS = 0.3048;            
+
+  const VEL_NAME = /(^|[^a-z])(velocity|veloc|speed|vel|muzzle\s*vel)([^a-z]|$)/i;
+  const VEL_UNIT_IN_NAME = /(f\s*p\s*s|ft\s*\/\s*s|feet\s*per\s*second|m\s*\/\s*s|mps|metres?\s*per\s*second|meters?\s*per\s*second)/i;
+  const VEL_GATE = /^v\s*[-_]?\s*\d+$/i;
+
+  function unitFromText(t){
+    if(!t) return null;
+    if(/(m\s*\/\s*s|(^|[^a-z])mps([^a-z]|$)|met(re|er)s?\s*per\s*second)/i.test(t)) return "mps";
+    if(/(f\s*p\s*s|ft\s*\/\s*s|feet\s*per\s*second)/i.test(t)) return "fps";
+    return null;
+  }
+
+  function sniffDelim(lines){
+    const cands = [",", "\t", ";"];
+    let best = ",", bestN = 0;
+    cands.forEach(d=>{
+      const counts = lines.slice(0, 40).map(l=>l.split(d).length);
+      const n = counts.length ? Math.max.apply(null, counts) : 0;
+      if(n > bestN){ bestN = n; best = d; }
+    });
+    return best;
+  }
+
+  function splitRow(line, d){
+    const out=[]; let cur="", q=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(q){ if(c==='"'){ if(line[i+1]==='"'){ cur+='"'; i++; } else q=false; } else cur+=c; }
+      else if(c==='"') q=true;
+      else if(c===d){ out.push(cur); cur=""; }
+      else cur+=c;
+    }
+    out.push(cur);
+    return out.map(s=>s.trim());
+  }
+
+  const num = s => {
+    if(s===null||s===undefined) return null;
+    const m = String(s).replace(/,(?=\d{3}\b)/g, "").match(/-?\d+(\.\d+)?/);
+    return m ? parseFloat(m[0]) : null;
+  };
+
+  function velocityColumn(names){
+    for(let i=0;i<names.length;i++) if(VEL_NAME.test(names[i])) return i;
+    for(let i=0;i<names.length;i++) if(VEL_UNIT_IN_NAME.test(names[i])) return i;
+    for(let i=0;i<names.length;i++) if(VEL_GATE.test(names[i])) return i;
+    return -1;
+  }
+
+  function runFrom(lines, d, h, col){
+    const vals=[];
+    for(let r=h+1; r<lines.length; r++){
+      const row = splitRow(lines[r], d);
+      if(row.length <= col) break;
+      const v = num(row[col]);
+      if(v===null || !isFinite(v)) break;
+      vals.push(v);
+    }
+    return vals;
+  }
+  function findTable(lines, d, forcedCol){
+    let best=null;
+    for(let h=0; h<lines.length; h++){
+      const names = splitRow(lines[h], d);
+      if(names.length < 2) continue;
+      const col = (forcedCol!==null && forcedCol!==undefined) ? forcedCol : velocityColumn(names);
+      if(col < 0 || col >= names.length) continue;
+      const vals = runFrom(lines, d, h, col);
+      if(vals.length < 1) continue;
+      if(!best || vals.length > best.shots.length) best = {headerRow:h, names, col, shots:vals};
+    }
+    return best;
+  }
+
+  function stats(shots){
+    const n = shots.length;
+    if(!n) return {n:0, avg:null, es:null, sd:null};
+    let sum=0, lo=shots[0], hi=shots[0];
+    for(const v of shots){ sum+=v; if(v<lo) lo=v; if(v>hi) hi=v; }
+    const avg = sum/n;
+    const es = hi-lo;
+    let sd = null;
+    if(n>1){
+      let ss=0; for(const v of shots) ss += (v-avg)*(v-avg);
+      sd = Math.sqrt(ss/(n-1));
+    }
+    return {n, avg, es, sd, lo, hi};
+  }
+
+  function convert(v, from, to){
+    if(v===null||v===undefined) return null;
+    if(!from || !to || from===to) return v;
+    if(from==="fps" && to==="mps") return v*MPS_PER_FPS;
+    if(from==="mps" && to==="fps") return v/MPS_PER_FPS;
+    return v;
+  }
+
+  function parse(text, opts){
+    opts = opts || {};
+    const raw = String(text||"");
+    const lines = raw.split(/\r\n|\r|\n/).filter(l=>l.trim()!=="");
+    if(!lines.length) return {ok:false, reason:"empty", columns:[]};
+    const d = sniffDelim(lines);
+    const t = findTable(lines, d, opts.col);
+    if(!t){
+      let widest = [], wi = 0;
+      lines.slice(0, 40).forEach((l,i)=>{ const r=splitRow(l,d); if(r.length>widest.length){ widest=r; wi=i; } });
+      return {ok:false, reason:"no-velocity-column", delimiter:d, headerRow:wi, columns:widest};
+    }
+    const unit = opts.unit || unitFromText(t.names[t.col]) || unitFromText(lines.slice(0, t.headerRow+1).join(" ")) || null;
+    const s = stats(t.shots);
+    return {ok:true, delimiter:d, headerRow:t.headerRow, columns:t.names, velCol:t.col,
+            velName:t.names[t.col], unit, shots:t.shots,
+            n:s.n, avg:s.avg, es:s.es, sd:s.sd, lo:s.lo, hi:s.hi};
+  }
+
+  function inUnit(res, to){
+    if(!res || !res.ok || !res.unit || !to) return res;
+    const f = res.unit;
+    return Object.assign({}, res, {
+      unit: to,
+      shots: res.shots.map(v=>convert(v, f, to)),
+      avg: convert(res.avg, f, to), es: convert(res.es, f, to), sd: convert(res.sd, f, to),
+      lo: convert(res.lo, f, to), hi: convert(res.hi, f, to)
+    });
+  }
+
+  return {MPS_PER_FPS, parse, stats, convert, inUnit, velocityColumn, unitFromText, splitRow, sniffDelim};
 });
 
   (function(){
@@ -4378,13 +4546,25 @@
     const wrap=document.getElementById("ammoHistWrap"), hist=document.getElementById("ammoHist");
     const entries=f.log.filter(e=>(e.type==="ammo"||e.type==="session")&&e.load).slice(0,10);
     wrap.hidden=!entries.length;
-    hist.innerHTML=entries.map(e=>`
-      <div class="ammoitem">
+    const one=v=>v===null||v===undefined ? "—" : (Math.round(v*10)/10).toLocaleString();
+    hist.innerHTML=entries.map(e=>{
+      const c=e.chrono;
+      return `<div class="ammoitem">
         <div class="am-top">${esc(e.load||e.msg)}${e.lot?` · lot ${esc(e.lot)}`:""}</div>
         ${e.perf?`<div class="am-perf${PERF_BAD.has(e.perf)?" bad":""}">${esc(e.perf)}</div>`:""}
         ${e.anote?`<div class="am-note">${esc(e.anote)}</div>`:""}
+        ${c?`<div class="am-note">${c.n} shot${c.n===1?"":"s"} · avg ${one(c.avg)} ${esc(chronoUnitLabel(c.unit))} · ES ${one(c.es)} · SD ${one(c.sd)}${c.src?` · ${esc(c.src)}`:""}</div>`:""}
+        ${c&&c.countNote?`<div class="am-note" style="color:var(--amber)">The file holds ${c.countNote.file} shot${c.countNote.file===1?"":"s"}; ${fmtN(c.countNote.logged)} round${c.countNote.logged===1?"":"s"} were logged. Both are kept as they are.</div>`:""}
+        ${e.id?`<div class="attwrap" data-sessid="${escAttr(e.id)}"></div>`:""}
         <div class="am-date">${fmtDate(e.ts)}</div>
-      </div>`).join("");
+      </div>`;
+    }).join("");
+    if(typeof benchAttGrid==="function"){
+      hist.querySelectorAll(".attwrap[data-sessid]").forEach(w=>{
+        benchAttGrid(w, {kind:"sess", id:w.dataset.sessid},
+          {kind:"work", addLabel:"PHOTO / FILE", onchange:()=>renderAmmoHist(byId(activeId))});
+      });
+    }
   }
   function openSession(prefRounds){
     const f=byId(activeId); if(!f) return;
@@ -4402,8 +4582,11 @@
     document.getElementById("ammoLotList").innerHTML=lockerLots(cal).map(l=>`<option value="${esc(l)}">`).join("");
     renderAmmoHist(f);
     updateStockHint();
+    photoStageClear("sess");
+    chronoReset();
     malfFormOpen=false; malfDelArm=null;
     show("scr-ammo");
+    photoStageRow("sess","ammoPhotoRow");
     renderMalfunctions(f);
     malfApplyCard();
   }
@@ -4414,7 +4597,8 @@
     if(n>0) logRounds(n);
     show("scr-detail");
   });
-  document.getElementById("ammoSave").addEventListener("click",()=>{
+  const sessId = () => "sess_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6);
+  document.getElementById("ammoSave").addEventListener("click",async ()=>{
     const f=byId(activeId); if(!f) return;
     const n=Math.floor(+document.getElementById("ammoRounds").value||0);
     const mk=ammoMkSel.value, cal=ammoCalSel.value, gr=ammoGrSel.value, bt=ammoBtSel.value,
@@ -4422,17 +4606,122 @@
           lot=document.getElementById("ammoLot").value.trim();
     f.lastAmmo={mk,cal,gr,bt,lot};
     const load=`${mk} ${gr} ${bt} · ${cal}`;
+    const id=sessId();
+    const chrono=chronoForSave(n);
     if(n>0){
       f.totalRounds+=n; f.roundsSinceClean+=n; f.roundsSinceSpring+=n;
       let stockNote="";
       const took=drawDown(mk,cal,gr,bt,lot,n);            
       if(took) stockNote=` · ${fmtN(loadQty(mk,cal,gr,bt))} left in locker`;
-      addLog(f,"session",`Fired ${fmtN(n)} rounds — ${load}${lot?` · lot ${lot}`:""}${stockNote}`,{load, perf, anote:note, lot});
+      addLog(f,"session",`Fired ${fmtN(n)} rounds — ${load}${lot?` · lot ${lot}`:""}${stockNote}`,{id, load, perf, anote:note, lot, chrono});
     } else {
-      addLog(f,"ammo",`Ammo logged — ${load}${lot?` · lot ${lot}`:""}`,{load, perf, anote:note, lot});
+      addLog(f,"ammo",`Ammo logged — ${load}${lot?` · lot ${lot}`:""}`,{id, load, perf, anote:note, lot, chrono});
     }
-    saveSafe(); show("scr-detail");
+    saveSafe();
+    await photoStageCommit("sess", {kind:"sess", id}, "work");
+    chronoReset();
+    show("scr-detail");
   });
+
+  let chronoState=null;      
+  function chronoOwnerUnit(){
+    return (benchOwnerGet().units==="m") ? "mps" : "fps";
+  }
+  const chronoUnitLabel = u => u==="mps" ? "m/s" : "fps";
+  function chronoReset(){
+    chronoState=null;
+    const w=document.getElementById("chronoPickWrap"); if(w) w.hidden=true;
+    const m=document.getElementById("chronoMsg"); if(m){ m.textContent=""; m.style.color=""; }
+    const s=document.getElementById("chronoSummary"); if(s) s.innerHTML="";
+    const inp=document.getElementById("chronoFile"); if(inp) inp.value="";
+  }
+  function chronoForSave(roundsLogged){
+    if(!chronoState || !chronoState.res || !chronoState.res.ok) return undefined;
+    const to=chronoOwnerUnit();
+    const r=BenchChrono.inUnit(chronoState.res, to);
+    const out={ n:r.n, avg:r.avg, es:r.es, sd:r.sd, unit:to,
+                src:chronoState.name||"", shots:r.shots.slice(0, 500) };
+    if(roundsLogged>0 && r.n!==roundsLogged) out.countNote={file:r.n, logged:roundsLogged};
+    return out;
+  }
+  function chronoRender(){
+    const msg=document.getElementById("chronoMsg"), sum=document.getElementById("chronoSummary"),
+          wrap=document.getElementById("chronoPickWrap");
+    if(!msg||!sum||!wrap) return;
+    if(!chronoState){ chronoReset(); return; }
+    const res=chronoState.res;
+    if(!res.ok && res.reason==="no-velocity-column"){
+      wrap.hidden=false;
+      const sel=document.getElementById("chronoCol");
+      sel.innerHTML=(res.columns||[]).map((c,i)=>`<option value="${i}">${esc(c||("column "+(i+1)))}</option>`).join("");
+      msg.textContent="Couldn't tell which column holds the velocity in "+(chronoState.name||"that file")+" — point at it and the numbers follow.";
+      msg.style.color="var(--amber)";
+      sum.innerHTML="";
+      return;
+    }
+    if(!res.ok){
+      wrap.hidden=true;
+      msg.textContent = res.reason==="empty" ? "That file is empty." : "Couldn't read that file.";
+      msg.style.color="var(--amber)";
+      sum.innerHTML="";
+      return;
+    }
+    if(!res.unit && !chronoState.picked){
+      wrap.hidden=false;
+      const sel=document.getElementById("chronoCol");
+      sel.innerHTML=(res.columns||[]).map((c,i)=>`<option value="${i}"${i===res.velCol?" selected":""}>${esc(c||("column "+(i+1)))}</option>`).join("");
+      msg.textContent=(chronoState.name||"That file")+" doesn't say what units it is in — say which, and the numbers follow.";
+      msg.style.color="var(--amber)";
+      sum.innerHTML="";
+      return;
+    }
+    wrap.hidden = !chronoState.picked;   
+    const to=chronoOwnerUnit();
+    const r=BenchChrono.inUnit(res, to);
+    const u=chronoUnitLabel(to);
+    const one=v=>v===null||v===undefined ? "—" : (Math.round(v*10)/10).toLocaleString();
+    msg.textContent=(chronoState.name||"file")+" · read from the “"+(res.velName||"chosen")+"” column"
+      + (res.unit? " ("+chronoUnitLabel(res.unit)+(res.unit!==to?" → "+u:"")+")" : "");
+    msg.style.color="";
+    const logged=Math.floor(+document.getElementById("ammoRounds").value||0);
+    const mismatch = logged>0 && r.n!==logged;
+    sum.innerHTML=`<div class="lifebox" style="margin-top:8px"><div class="lrow"><span class="lt">Chronograph</span><span class="lv">${r.n} shot${r.n===1?"":"s"}</span></div>`
+      + `<div class="statgrid" style="margin-top:8px">`
+      + `<div class="stat"><div class="sv">${one(r.avg)}</div><div class="sl">AVG ${esc(u)}</div></div>`
+      + `<div class="stat"><div class="sv">${one(r.es)}</div><div class="sl">ES</div></div>`
+      + `<div class="stat"><div class="sv">${one(r.sd)}</div><div class="sl">SD</div></div></div>`
+      + (mismatch
+          ? `<div class="lmsg" style="color:var(--amber);margin-top:8px">The file holds ${r.n} shot${r.n===1?"":"s"}; you logged ${fmtN(logged)} round${logged===1?"":"s"}. Both are kept as they are.</div>`
+          : "")
+      + `</div>`;
+  }
+  function chronoReparse(){
+    if(!chronoState) return;
+    const sel=document.getElementById("chronoCol"), us=document.getElementById("chronoUnit");
+    const col=sel && sel.value!=="" ? +sel.value : undefined;
+    const unit=us ? us.value : undefined;
+    chronoState.picked=true;
+    chronoState.res=BenchChrono.parse(chronoState.text, {col, unit});
+    chronoRender();
+  }
+  (function(){
+    const btn=document.getElementById("chronoImport"), inp=document.getElementById("chronoFile");
+    if(btn && inp) btn.addEventListener("click",()=>{
+      inp.onchange=async ()=>{
+        const file=inp.files && inp.files[0]; inp.value="";
+        if(!file) return;
+        let text="";
+        try{ text=await file.text(); }catch(e){ alert("Couldn't read that file."); return; }
+        chronoState={text, name:file.name, picked:false, res:BenchChrono.parse(text)};
+        chronoRender();
+      };
+      inp.click();
+    });
+    const sel=document.getElementById("chronoCol"); if(sel) sel.addEventListener("change", chronoReparse);
+    const us=document.getElementById("chronoUnit"); if(us) us.addEventListener("change", chronoReparse);
+    const rounds=document.getElementById("ammoRounds");
+    if(rounds) rounds.addEventListener("input",()=>{ if(chronoState && chronoState.res && chronoState.res.ok) chronoRender(); });
+  })();
 
   const MALF_TYPES=[
     {id:"feed",     label:"Failure to feed",            short:"FTF"},
@@ -4474,6 +4763,68 @@
     return out;
   }
   let malfFormOpen=false, malfDelArm=null;
+
+  const photoStage={};        
+  const photoStageRows={};    
+  function photoStageGet(key){ if(!photoStage[key]) photoStage[key]=[]; return photoStage[key]; }
+  function photoStageClear(key){
+    delete photoStage[key];
+    const rowId=photoStageRows[key];
+    if(rowId && document.getElementById(rowId)) photoStageRow(key, rowId);
+  }
+  function photoStageRow(key, rowId){
+    photoStageRows[key]=rowId;      
+    const row=document.getElementById(rowId); if(!row) return;
+    const staged=photoStageGet(key);
+    row.innerHTML="";
+    staged.forEach((st,i)=>{
+      const cell=document.createElement("div");
+      cell.className="attthumb staged";
+      const img=document.createElement("img");
+      img.className="sthumb"; img.alt="staged photo";
+      img.src="data:image/jpeg;base64,"+st.b64;
+      cell.appendChild(img);
+      const tag=document.createElement("span");
+      tag.className="atag"; tag.textContent="staged"; cell.appendChild(tag);
+      const del=document.createElement("button");
+      del.type="button"; del.className="attdel"; del.textContent="×";
+      del.setAttribute("aria-label","Remove this staged photo");
+      del.addEventListener("click",e=>{ e.stopPropagation(); staged.splice(i,1); photoStageRow(key,rowId); });
+      cell.appendChild(del);
+      row.appendChild(cell);
+    });
+    if(BenchEnv.hasFS()){
+      const add=document.createElement("div");
+      add.className="attthumb add";
+      add.innerHTML='<span class="apl">＋</span><span>ADD PHOTO</span>';
+      add.addEventListener("click",()=>{
+        benchPickPhoto((b64,dims)=>{ photoStageGet(key).push({b64,dims}); photoStageRow(key,rowId); });
+      });
+      row.appendChild(add);
+    }
+    (function(){
+      const html=BenchEnv.keepLine();
+      let k=document.getElementById(rowId+"KeepLine");
+      if(!html){ if(k) k.remove(); return; }
+      if(!k){ k=document.createElement("div"); k.id=rowId+"KeepLine"; row.insertAdjacentElement("afterend", k); }
+      k.innerHTML=html;
+    })();
+  }
+  async function photoStageCommit(key, parent, kind){
+    const staged=photoStageGet(key);
+    const ids=[];
+    for(const st of staged){
+      try{
+        const rec=await benchImport(parent, st.b64, st.dims, kind||"work");
+        ids.push(rec.id);
+      }catch(e){
+        console.error("attach:",e);
+        alert(benchSaveFail(e, "Couldn't save that photo. The record was kept."));
+      }
+    }
+    photoStageClear(key);
+    return ids;
+  }
   const malfDateStr=ts=>{ const d=new Date(ts); const p=n=>String(n).padStart(2,"0");
     return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); };
   function malfFillForm(f){
@@ -4493,6 +4844,8 @@
     magWrap.hidden=!hasMags(f);
     magSel.innerHTML=`<option value="">No magazine / not sure</option>`
       + mags.map(m=>`<option value="${escAttr(m.id||"")}">#${m.num||"?"} · ${m.cap}-rd${m.model?" · "+esc(m.model):""} · ${esc(m.role||"")}</option>`).join("");
+    photoStageClear("malf");
+    photoStageRow("malf","malfPhotoRow");
   }
   function renderMalfunctions(f){
     const box=document.getElementById("malfBox"); if(!box||!f) return;
@@ -4549,6 +4902,7 @@
     });
     const cancel=document.getElementById("malfCancel");
     if(cancel) cancel.addEventListener("click",()=>{
+      photoStageClear("malf");
       malfFormOpen=false; const f=byId(activeId); if(f) renderMalfunctions(f);
     });
     const t=document.getElementById("malfType");
@@ -4556,7 +4910,7 @@
       document.getElementById("malfOtherWrap").hidden = t.value!=="other";
     });
     const save=document.getElementById("malfSave");
-    if(save) save.addEventListener("click",()=>{
+    if(save) save.addEventListener("click",async ()=>{
       const f=byId(activeId); if(!f) return;
       const type=document.getElementById("malfType").value;
       const customType=(document.getElementById("malfOther").value||"").trim().slice(0,40);
@@ -4581,6 +4935,7 @@
         + (mag?` · mag #${mag.num||"?"}`:"") + (rec.lot?` · lot ${rec.lot}`:""));
       malfFormOpen=false; malfDelArm=null;
       saveSafe();
+      await photoStageCommit("malf", {kind:"malf", id:rec.id}, "work");
       renderMalfunctions(f);
     });
   })();
@@ -6423,7 +6778,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       safeList.innerHTML = `<div class="empty"><div class="big">YOUR SAFE IS EMPTY</div><p>Add a firearm to start tracking rounds and maintenance.</p>
         <button class="btn sm" id="emptyRestore" style="margin-top:10px">Restore from Backup</button></div>`;
       const er=document.getElementById("emptyRestore");
-      if(er) er.onclick=()=>benchRestoreFlow();
+      if(er) er.onclick=()=>benchRestoreDoor();
       return;
     }
     safe.forEach(f=>{
@@ -6962,7 +7317,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     });
     document.getElementById("benchExport").onclick=()=>benchDoExport("local");
     { const bs=document.getElementById("benchShare"); if(bs) bs.onclick=()=>benchDoExport("share"); }
-    document.getElementById("benchRestore").onclick=()=>benchRestoreFlow();   
+    document.getElementById("benchRestore").onclick=()=>benchRestoreDoor();   
   }
   async function benchDeliverBackup(json, fname, mode){
     const LS=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalSave;
@@ -56940,6 +57295,86 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const ok=await benchPickerHintHonoured();
     el.textContent = ok===false ? "Your backups are in Downloads." : "";
   }
+
+  const BACKUP_HEAD_BYTES=240;      
+  function benchBackupLister(){
+    const LS=benchLocalSave();
+    return (LS && typeof LS.listBackups==="function" && typeof LS.readBackup==="function") ? LS : null;
+  }
+  function benchBackupHeadPhotos(head){
+    if(!head) return null;                         
+    const m=String(head).match(/"photos"\s*:\s*(true|false)/);
+    return m ? m[1]==="true" : null;
+  }
+  function benchBackupHeadValid(head){
+    return !!(head && String(head).indexOf('"format":"'+BenchExport.FORMAT+'"')>=0);
+  }
+  const benchFmtBytes=n=>{
+    n=+n||0;
+    if(n<1024) return n+" B";
+    if(n<1024*1024) return (n/1024).toFixed(n<10240?1:0)+" KB";
+    return (n/1048576).toFixed(n<10485760?1:0)+" MB";
+  };
+  const benchFmtWhen=ts=>{
+    const d=new Date(+ts||0);
+    return fmtDate(d.getTime())+" · "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+  };
+  function benchBackupSort(list){
+    return (list||[]).slice().sort((a,b)=>(+b.modified||0)-(+a.modified||0));
+  }
+  async function benchBackupList(){
+    const LS=benchBackupLister();
+    if(!LS) return null;                            
+    try{
+      const r=await LS.listBackups({namePrefix:benchPickBackupOpts.namePrefix, headBytes:BACKUP_HEAD_BYTES});
+      return benchBackupSort(r && r.backups);
+    }catch(e){ console.error("listBackups:",e); return null; }
+  }
+  function benchRestoreSheet(list){
+    let sh=document.getElementById("restorePickSheet");
+    if(!sh){
+      sh=document.createElement("div");
+      sh.id="restorePickSheet"; sh.className="prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="restorePickSheet") sh.classList.remove("open"); });
+    }
+    const rows=(list||[]).map((b,i)=>{
+      const photos=benchBackupHeadPhotos(b.head);
+      const bits=[benchFmtBytes(b.size), photos===true?"with photos":""].filter(Boolean).join(" · ");
+      return `<div class="benchrow" data-bkpick="${i}"><div class="bi">`
+        + `<div class="bn">${esc(benchFmtWhen(b.modified))}</div>`
+        + `<div class="bs">${esc(bits)}</div></div><span class="lv">Restore</span></div>`;
+    }).join("");
+    sh.innerHTML=`<div class="sheet"><button class="sheetx" id="rpX">×</button>
+      <h3>RESTORE FROM BACKUP</h3>
+      ${(list||[]).length
+        ? `<p class="pp">Backups this app wrote to this device, newest first. Tap one to restore it.</p>${rows}`
+        : `<p class="pp">No backups found here.</p>`}
+      <button class="btn full" id="rpOther" style="margin-top:12px">Choose another file…</button>
+      <div class="lmsg" id="rpWhere"></div></div>`;
+    sh.querySelector("#rpX").onclick=()=>sh.classList.remove("open");
+    benchRestoreWhereLine(sh.querySelector("#rpWhere"));
+    sh.querySelector("#rpOther").onclick=()=>{ sh.classList.remove("open"); benchRestoreFlow(); };
+    sh.querySelectorAll("[data-bkpick]").forEach(row=>row.addEventListener("click",async ()=>{
+      const b=(list||[])[+row.dataset.bkpick]; if(!b) return;
+      sh.classList.remove("open");
+      const LS=benchBackupLister(); if(!LS) return;
+      try{
+        const res=await LS.readBackup({uri:b.uri});
+        if(!res || res.canceled) return;
+        await benchRestoreApply(String(res.data||""));
+      }catch(e){
+        console.error("readBackup:",e);
+        alert("Couldn't read that backup. Try Choose another file…");
+      }
+    }));
+    sh.classList.add("open");
+  }
+  async function benchRestoreDoor(){
+    const list=await benchBackupList();
+    if(list===null){ benchRestoreFlow(); return; }   
+    benchRestoreSheet(list);
+  }
   async function benchRestoreApply(text){
     let archive=null;
     try{ archive=JSON.parse(text); }catch(e){}
@@ -57868,7 +58303,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     benchSeatAttCard();
     const be=document.getElementById("benchExport"), br=document.getElementById("benchRestore");
     if(be) be.onclick=benchDoExport;
-    if(br) br.onclick=()=>benchRestoreFlow();
+    if(br) br.onclick=()=>benchRestoreDoor();
     benchAmmoChips();
   };
   const benchPrevRenderBench_v16locked=(function(){ const prev=benchPrevRenderBench_v14; return function(){ prev(); benchAmmoChips(); }; })();
@@ -58417,12 +58852,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         <button class="btn sm primary" id="bkSave">Save to Device</button>
         <button class="btn sm" id="bkRestore">Restore from Backup</button>
       </div>
-      <div class="lmsg" id="bkWhere"></div>
       <div class="lmsg" id="bkMsg"></div></div>`;
-    benchRestoreWhereLine(sh.querySelector("#bkWhere"));
     sh.querySelector("#bkX").onclick=()=>sh.classList.remove("open");
     sh.querySelector("#bkSave").onclick=()=>benchDoExport("local",{msg:sh.querySelector("#bkMsg"), photos:sh.querySelector("#bkPhotos")});
-    sh.querySelector("#bkRestore").onclick=()=>benchRestoreFlow();
+    sh.querySelector("#bkRestore").onclick=()=>benchRestoreDoor();
     sh.classList.add("open");
   }
   const benchPrevLockRow_v18=benchLockRow;
