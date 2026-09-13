@@ -523,12 +523,12 @@
   .benchlocked{cursor:pointer}
   .benchlocked .benchrow{cursor:pointer}
   .lifebox{position:relative}
-  #scr-detail .bccard > :first-child{cursor:pointer;user-select:none}
-  #scr-detail .bccard .bcchev{display:inline-block;width:15px;color:var(--muted);font-size:10px;transition:transform .18s ease}
-  #scr-detail .bccard.bcclosed .bcchev{transform:rotate(-90deg)}
-  #scr-detail .bccard.bcclosed > *{display:none!important}
-  #scr-detail .bccard.bcclosed > :first-child{display:block!important}
-  #scr-detail .bccard.bcclosed > .lrow:first-child{display:flex!important}
+  .bccard > :first-child{cursor:pointer;user-select:none}
+  .bccard .bcchev{display:inline-block;width:15px;color:var(--muted);font-size:10px;transition:transform .18s ease}
+  .bccard.bcclosed .bcchev{transform:rotate(-90deg)}
+  .bccard.bcclosed > *{display:none!important}
+  .bccard.bcclosed > :first-child{display:block!important}
+  .bccard.bcclosed > .lrow:first-child{display:flex!important}
   .boxhide{position:absolute;right:8px;top:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14);border:1px solid var(--muted);border-radius:50%;color:var(--text);opacity:1;font-size:16px;line-height:1;padding:0;cursor:pointer;z-index:3}
   .boxhide:hover{opacity:1;background:rgba(255,255,255,.12)}
   .bchide{display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid var(--edge)}
@@ -1222,6 +1222,25 @@
       <div class="row">
         <button class="btn" id="ammoRoundsOnly">Rounds Only</button>
         <button class="btn primary" id="ammoSave">Save Session</button>
+      </div>
+      <div class="lifebox" id="malfBox" style="margin-top:16px">
+        <div class="lrow"><span class="lt">Malfunctions</span><span class="lv" id="malfSummary"></span></div>
+        <div class="lmsg" id="malfMsg"></div>
+        <div id="malfList"></div>
+        <div id="malfFormWrap" hidden>
+          <div class="nfagrid">
+            <div class="nf"><label for="malfDate">Date</label><input type="date" id="malfDate"></div>
+            <div class="nf"><label for="malfType">What happened</label><select id="malfType"></select></div>
+            <div class="nf wide" id="malfOtherWrap" hidden><label for="malfOther">Name it</label><input type="text" id="malfOther" maxlength="40" placeholder="e.g. Bolt override"></div>
+            <div class="nf wide" id="malfMagWrap"><label for="malfMag">Magazine</label><select id="malfMag"></select></div>
+            <div class="nf wide"><label for="malfLot">Ammo — lot or load</label><input type="text" id="malfLot" maxlength="40" list="malfLotList" placeholder="On the box flap — e.g. FC26-114A"><datalist id="malfLotList"></datalist></div>
+            <div class="nf"><label for="malfRounds">Round count at the time</label><input type="number" id="malfRounds" min="0" max="10000000" inputmode="numeric"></div>
+            <div class="nf wide"><label for="malfNote">Note (optional)</label><input type="text" id="malfNote" maxlength="120" placeholder="e.g. Third one today, all from the same mag"></div>
+          </div>
+          <button class="btn sm primary" id="malfSave" style="margin-top:10px">Save Malfunction</button>
+          <button class="btn sm" id="malfCancel" style="margin-left:8px;margin-top:10px">Cancel</button>
+        </div>
+        <button class="btn sm" id="malfAdd" style="margin-top:10px">Log a malfunction</button>
       </div>
     </div>
   </section>
@@ -2219,7 +2238,7 @@
 
   const KEY = "fs_attachments";
   const DIR = "bench/att";
-  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp","att","gear"];  
+  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp","att","gear","malf"];  
   const IMPORT_MAX_DIM = 2600;
   const THUMB_DIM = 320;
 
@@ -2612,7 +2631,10 @@
     });
     return buildCsv(rows);
   }
-  function buildHistoryCsv(store, catalog){
+  function buildHistoryCsv(store, catalog, opts){
+    opts=opts||{};
+    const label = typeof opts.malfLabel==="function"
+      ? opts.malfLabel : (m=>(m.type==="other"?(m.customType||"Other"):(m.type||"Malfunction")));
     const safe=parse(store,"fs_safe",[]);
     const rows=[["firearm_id","firearm","date","kind","entry","chemicals","condition_note","performed_by","cost"]];
     safe.forEach(f=>{
@@ -2625,6 +2647,18 @@
         rows.push([f.id, fName(f,catalog),
           sv.ts?new Date(sv.ts).toISOString().slice(0,10):"",
           "service", (sv.type?sv.type+" — ":"")+(sv.work||""), "", "", sv.vendor||"", sv.cost||""]);
+      });
+      (f.malfunctions||[]).slice().sort((a,b)=>a.ts-b.ts).forEach(m=>{
+        const mag=(f.mags||[]).find(x=>x.id===m.magId);
+        const num=mag?mag.num:m.magNum;
+        rows.push([f.id, fName(f,catalog),
+          m.ts?new Date(m.ts).toISOString().slice(0,10):"",
+          "malfunction",
+          label(m)
+            + (num?" — mag #"+num:"")
+            + (m.lot?" — lot "+m.lot:"")
+            + ((m.rounds||m.rounds===0)?" — at "+m.rounds+" rds":""),
+          "", m.note||"", "", ""]);
       });
     });
     return buildCsv(rows);
@@ -3248,6 +3282,24 @@
   const fmtN = n => n.toLocaleString();
   const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
+  const CARD_OPEN = Object.create(null);        
+  function cardOpenSet(screen){
+    if(!CARD_OPEN[screen]) CARD_OPEN[screen]=Object.create(null);
+    return CARD_OPEN[screen];
+  }
+  function cardIsOpen(screen, id){ return cardOpenSet(screen)[id]===true; }
+  function cardSetOpen(screen, id, open){
+    const s=cardOpenSet(screen);
+    if(open) s[id]=true; else delete s[id];
+  }
+  function cardToggleOpen(screen, id){
+    const now=!cardIsOpen(screen,id);
+    cardSetOpen(screen,id,now);
+    return now;
+  }
+  function cardOpenIds(screen){ return Object.keys(cardOpenSet(screen)); }
+  function cardsResetScreen(screen){ delete CARD_OPEN[screen]; }
+
   const screens=["scr-safe","scr-pick","scr-detail","scr-logclean","scr-ammo","scr-ammoinv","scr-bench","scr-gate","scr-player","scr-clean","scr-done"];
   const parents={"scr-pick":"scr-safe","scr-detail":"scr-safe","scr-logclean":"scr-detail","scr-ammo":"scr-detail","scr-ammoinv":"scr-detail","scr-bench":"scr-detail","scr-gate":"scr-detail","scr-player":"scr-gate","scr-clean":"scr-player","scr-done":"scr-clean"};
   const backBtn=document.getElementById("backBtn");
@@ -3256,6 +3308,7 @@
 
   function show(id, push=true){
     const prev=current;
+    cardsResetScreen(id);
     screens.forEach(s=>document.getElementById(s).classList.toggle("active",s===id));
     current=id;
     if(prev==="scr-pick" && id!=="scr-pick") resetPicker();
@@ -4349,7 +4402,10 @@
     document.getElementById("ammoLotList").innerHTML=lockerLots(cal).map(l=>`<option value="${esc(l)}">`).join("");
     renderAmmoHist(f);
     updateStockHint();
+    malfFormOpen=false; malfDelArm=null;
     show("scr-ammo");
+    renderMalfunctions(f);
+    malfApplyCard();
   }
   ammoCalSel.addEventListener("change",()=> fillSel(ammoGrSel,grainOpts(ammoCalSel.value)));
   document.getElementById("ammoBtn").addEventListener("click",()=> openSession(0));
@@ -4377,6 +4433,170 @@
     }
     saveSafe(); show("scr-detail");
   });
+
+  const MALF_TYPES=[
+    {id:"feed",     label:"Failure to feed",            short:"FTF"},
+    {id:"extract",  label:"Failure to extract",         short:"FTE"},
+    {id:"eject",    label:"Failure to eject / stovepipe", short:"stovepipe"},
+    {id:"double",   label:"Double feed",                short:"double feed"},
+    {id:"strike",   label:"Light strike / misfire",     short:"light strike"},
+    {id:"lockback", label:"Failed to lock back",        short:"no lock-back"},
+    {id:"other",    label:"Other (name it)",            short:"other"}
+  ];
+  function malfList(f){ if(!Array.isArray(f.malfunctions)) f.malfunctions=[]; return f.malfunctions; }
+  function malfTypeDef(id){ return MALF_TYPES.find(t=>t.id===id)||null; }
+  function malfLabel(m){
+    if(m.type==="other") return (m.customType||"").trim()||"Other";
+    const t=malfTypeDef(m.type); return t?t.label:(m.type||"Malfunction");
+  }
+  function malfShort(m){
+    if(m.type==="other") return (m.customType||"").trim()||"other";
+    const t=malfTypeDef(m.type); return t?t.short:(m.type||"malfunction");
+  }
+  function malfSummaryLine(entries){
+    const n=entries.length;
+    if(!n) return "";
+    const by={};
+    entries.forEach(m=>{ const s=malfShort(m); by[s]=(by[s]||0)+1; });
+    const parts=Object.keys(by).sort((a,b)=>by[b]-by[a]||a.localeCompare(b)).map(k=>by[k]+" "+k);
+    return n+" malfunction"+(n===1?"":"s")+(parts.length?" · "+parts.join(" · "):"");
+  }
+  function malfForMag(f, magId){
+    if(!magId) return [];
+    return malfList(f).filter(m=>m.magId===magId);
+  }
+  const malfLotKey=s=>String(s||"").trim().toLowerCase();
+  function malfForLot(lot){
+    const k=malfLotKey(lot);
+    if(!k) return [];
+    const out=[];
+    safe.forEach(f=>malfList(f).forEach(m=>{ if(malfLotKey(m.lot)===k) out.push(m); }));
+    return out;
+  }
+  let malfFormOpen=false, malfDelArm=null;
+  const malfDateStr=ts=>{ const d=new Date(ts); const p=n=>String(n).padStart(2,"0");
+    return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); };
+  function malfFillForm(f){
+    const typeSel=document.getElementById("malfType");
+    typeSel.innerHTML=MALF_TYPES.map(t=>`<option value="${t.id}">${esc(t.label)}</option>`).join("");
+    document.getElementById("malfDate").value=malfDateStr(Date.now());
+    document.getElementById("malfOther").value="";
+    document.getElementById("malfOtherWrap").hidden=true;
+    document.getElementById("malfNote").value="";
+    document.getElementById("malfRounds").value=f.totalRounds||0;
+    const last=f.lastAmmo||{};
+    document.getElementById("malfLot").value=last.lot||"";
+    const lots=[...new Set(lockerLots(last.cal).concat(lockerLots()))];
+    document.getElementById("malfLotList").innerHTML=lots.map(l=>`<option value="${esc(l)}">`).join("");
+    const magWrap=document.getElementById("malfMagWrap"), magSel=document.getElementById("malfMag");
+    const mags=hasMags(f)?(f.mags||[]):[];
+    magWrap.hidden=!hasMags(f);
+    magSel.innerHTML=`<option value="">No magazine / not sure</option>`
+      + mags.map(m=>`<option value="${escAttr(m.id||"")}">#${m.num||"?"} · ${m.cap}-rd${m.model?" · "+esc(m.model):""} · ${esc(m.role||"")}</option>`).join("");
+  }
+  function renderMalfunctions(f){
+    const box=document.getElementById("malfBox"); if(!box||!f) return;
+    const entries=malfList(f);
+    const sum=document.getElementById("malfSummary"), msg=document.getElementById("malfMsg"),
+          list=document.getElementById("malfList");
+    sum.textContent = entries.length ? malfSummaryLine(entries) : "None logged";
+    msg.textContent = entries.length ? ""
+      : "A stoppage is a fact about a gun, a magazine and a box of ammo at once. Log it here and each of those three carries it.";
+    msg.style.color="";
+    list.innerHTML="";
+    entries.slice().sort((a,b)=>b.ts-a.ts).forEach(m=>{
+      const mag=(f.mags||[]).find(x=>x.id===m.magId);
+      const bits=[
+        mag?`mag #${mag.num||"?"}`:(m.magNum?`mag #${m.magNum}`:""),
+        m.lot?`lot ${esc(m.lot)}`:"",
+        (m.rounds||m.rounds===0)?`at ${fmtN(m.rounds)} rds`:"",
+        m.note?esc(m.note):""
+      ].filter(Boolean).join(" · ");
+      const row=document.createElement("div"); row.className="benchrow";
+      row.innerHTML=`<div class="bi"><div class="bn">${esc(malfLabel(m))} · ${esc(fmtDate(m.ts))}</div>`
+        + (bits?`<div class="bs">${bits}</div>`:"")
+        + `<div class="attwrap" data-malfid="${escAttr(m.id)}"></div></div>`
+        + `<button class="magbtn del" data-malfdel="${escAttr(m.id)}">${malfDelArm===m.id?"Confirm":"×"}</button>`;
+      list.appendChild(row);
+    });
+    if(typeof benchAttGrid==="function"){
+      list.querySelectorAll(".attwrap").forEach(w=>{
+        benchAttGrid(w, {kind:"malf", id:w.dataset.malfid},
+          {kind:"work", addLabel:"PHOTO / FILE", onchange:()=>renderMalfunctions(byId(activeId))});
+      });
+    }
+    list.querySelectorAll("[data-malfdel]").forEach(b=>b.addEventListener("click",()=>{
+      const f2=byId(activeId); if(!f2) return;
+      const id=b.dataset.malfdel;
+      if(malfDelArm===id){
+        const i=malfList(f2).findIndex(x=>x.id===id);
+        if(i>=0){ addLog(f2,"malf","Malfunction removed — "+malfLabel(f2.malfunctions[i])); f2.malfunctions.splice(i,1); }
+        malfDelArm=null; saveSafe(); renderMalfunctions(f2);
+      } else {
+        malfDelArm=id; renderMalfunctions(f2);
+        setTimeout(()=>{ if(malfDelArm===id){ malfDelArm=null; const f3=byId(activeId); if(f3) renderMalfunctions(f3); } },4000);
+      }
+    }));
+    document.getElementById("malfFormWrap").hidden=!malfFormOpen;
+    document.getElementById("malfAdd").hidden=malfFormOpen;
+  }
+  (function(){
+    const add=document.getElementById("malfAdd");
+    if(add) add.addEventListener("click",()=>{
+      const f=byId(activeId); if(!f) return;
+      malfFormOpen=true; malfFillForm(f); renderMalfunctions(f);
+      cardSetOpen("scr-ammo","malfBox",true); malfApplyCard();
+    });
+    const cancel=document.getElementById("malfCancel");
+    if(cancel) cancel.addEventListener("click",()=>{
+      malfFormOpen=false; const f=byId(activeId); if(f) renderMalfunctions(f);
+    });
+    const t=document.getElementById("malfType");
+    if(t) t.addEventListener("change",()=>{
+      document.getElementById("malfOtherWrap").hidden = t.value!=="other";
+    });
+    const save=document.getElementById("malfSave");
+    if(save) save.addEventListener("click",()=>{
+      const f=byId(activeId); if(!f) return;
+      const type=document.getElementById("malfType").value;
+      const customType=(document.getElementById("malfOther").value||"").trim().slice(0,40);
+      const dv=document.getElementById("malfDate").value;
+      let ts=Date.now();
+      if(/^\d{4}-\d{2}-\d{2}$/.test(dv)){
+        const p=dv.split("-").map(Number);
+        ts=new Date(p[0], p[1]-1, p[2], 12, 0, 0).getTime();
+      }
+      const magId=hasMags(f)?(document.getElementById("malfMag").value||null):null;
+      const mag=magId?(f.mags||[]).find(x=>x.id===magId):null;
+      const rec={
+        id:"malf_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6),
+        ts, type, customType: type==="other"?customType:"",
+        magId: magId||null, magNum: mag?(mag.num||null):null,
+        lot: (document.getElementById("malfLot").value||"").trim().slice(0,40),
+        rounds: Math.max(0, Math.floor(+document.getElementById("malfRounds").value||0)),
+        note: (document.getElementById("malfNote").value||"").trim().slice(0,120)
+      };
+      malfList(f).push(rec);
+      addLog(f,"malf","Malfunction logged — "+malfLabel(rec)
+        + (mag?` · mag #${mag.num||"?"}`:"") + (rec.lot?` · lot ${rec.lot}`:""));
+      malfFormOpen=false; malfDelArm=null;
+      saveSafe();
+      renderMalfunctions(f);
+    });
+  })();
+  function malfApplyCard(){
+    const el=document.getElementById("malfBox"); if(!el) return;
+    el.classList.add("bccard");
+    const head=el.firstElementChild;
+    if(!head) return;
+    if(!head.querySelector(":scope > .bcchev")){
+      const chev=document.createElement("span");
+      chev.className="bcchev"; chev.textContent="▾";
+      head.insertBefore(chev, head.firstChild);
+    }
+    el.classList.toggle("bcclosed", !cardIsOpen("scr-ammo","malfBox"));
+    head.onclick=()=>{ cardToggleOpen("scr-ammo","malfBox"); malfApplyCard(); };
+  }
 
   const LN = ()=> window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
   let notifTimer=null;
@@ -4454,10 +4674,12 @@
       ammoInv.forEach((a,i)=>{
         if(a.cal!==cal) return;
         const ppr=rowPPR(a);
+        const lotMalf = (a.lot && typeof malfForLot==="function") ? malfForLot(a.lot) : [];
         const tags=[
           a.lot?`lot ${esc(a.lot)}`:"",
           a.loc?`▣ ${esc(a.loc)}`:"",
-          ppr!=null?`$${ppr.toFixed(ppr<1?3:2)}/rd`:""
+          ppr!=null?`$${ppr.toFixed(ppr<1?3:2)}/rd`:"",
+          lotMalf.length?esc(malfSummaryLine(lotMalf)):""
         ].filter(Boolean).join(" · ");
         if(!a.id){ a.id="ammo_"+i+"_"+Date.now().toString(36); saveAmmo(); }
         const row=document.createElement("div"); row.className="lkrow";
@@ -5244,12 +5466,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     cleanList.innerHTML="";
     (gun.cleaning||[]).forEach((comp,ci)=>{
       const wrap=document.createElement("div");
-      wrap.className="comp"+(ci===0?" open":"");
+      const cid="comp"+ci;
+      wrap.className="comp"+(cardIsOpen("scr-clean", cid)?" open":"");
       const doneCount=()=>wrap.querySelectorAll(".task.done").length;
       wrap.innerHTML=`
         <button class="comp-head"><span class="chev">▸</span><span class="cname">${comp.name}</span><span class="count">0 / ${comp.tasks.length}</span></button>
         <div class="comp-body">${comp.tasks.map(t=>`<button class="task"><span class="tbox">✓</span><span class="tt">${t}</span></button>`).join("")}</div>`;
-      wrap.querySelector(".comp-head").addEventListener("click",()=>wrap.classList.toggle("open"));
+      wrap.querySelector(".comp-head").addEventListener("click",()=>{
+        wrap.classList.toggle("open", cardToggleOpen("scr-clean", cid));
+      });
       wrap.querySelectorAll(".task").forEach(task=>task.addEventListener("click",()=>{
         task.classList.toggle("done");
         wrap.querySelector(".count").textContent=`${doneCount()} / ${comp.tasks.length}`;
@@ -5835,6 +6060,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           : `<span class="rot due">never rotated — log first rotation</span>`;
       }
       if(m.note) rot += `<span class="rot">${esc(m.note)}</span>`;
+      const mMalf = typeof malfForMag==="function" ? malfForMag(f, m.id) : [];
+      if(mMalf.length){
+        rot += `<span class="rot due">${esc(malfSummaryLine(mMalf))}</span>`;
+        if(status!=="problem") rot += `<span class="rot">logged against this mag — mark it a problem if that is what it is</span>`;
+      }
       const label = `<b>#${m.num||i+1}</b> · ${m.cap}-rd${m.model?` · ${esc(m.model)}`:""}${m.brand?` · ${esc(m.brand)}`:""} · ${esc(m.role)}`;
       row.innerHTML=`<input type="checkbox" class="magsel" data-i="${i}" aria-label="Select mag ${m.num||i+1}" style="width:auto;margin:0 8px 0 0;flex:0 0 auto">`
         + `<div class="maginfo">${label}${rot}<div class="attwrap" data-mid="${m.id||""}"></div></div>`
@@ -55757,22 +55987,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchShowBox(f, id){
     const h=benchHiddenList(f);
     const i=h.indexOf(id);
-    if(i>=0){ h.splice(i,1); if(!h.length && !benchExpandedList(f).length) delete f.layout; saveSafe(); }
+    if(i>=0){ h.splice(i,1);
+      if(!h.length && !(f.layout&&f.layout.order) && !(f.layout&&Array.isArray(f.layout.expanded)&&f.layout.expanded.length)) delete f.layout;
+      saveSafe(); }
     renderDetail();
   }
-  function benchExpandedList(f){ return (f.layout && Array.isArray(f.layout.expanded)) ? f.layout.expanded : []; }
+  function benchExpandedList(f){ return cardOpenIds("scr-detail"); }
   function benchCollapseBox(f, id){
-    if(benchExpandedList(f).indexOf(id)<0) return;   
+    if(!cardIsOpen("scr-detail", id)) return;   
     benchToggleCollapsed(f, id);
   }
   function benchToggleCollapsed(f, id){
-    if(!f.layout) f.layout={hidden:[]};
-    if(!Array.isArray(f.layout.expanded)) f.layout.expanded=[];
-    const c=f.layout.expanded, i=c.indexOf(id);
-    if(i>=0) c.splice(i,1); else c.push(id);
-    if(!c.length) delete f.layout.expanded;      
-    if(!benchExpandedList(f).length && !benchHiddenList(f).length && !(f.layout&&f.layout.order)) delete f.layout;
-    saveSafe(); renderDetail();
+    cardToggleOpen("scr-detail", id);
+    renderDetail();
   }
   let benchHiddenOpen=false;
   function benchStubFor(def, f){
@@ -55835,7 +56062,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
           chev.className="bcchev"; chev.textContent="▾";
           head.insertBefore(chev, head.firstChild);
         }
-        el.classList.toggle("bcclosed", benchExpandedList(f).indexOf(def.id)<0);
+        el.classList.toggle("bcclosed", !cardIsOpen("scr-detail", def.id));
         head.onclick=e=>{
           if(e.target.closest(".boxhide")) return;
           const f2=byId(activeId); if(!f2) return;
@@ -56689,29 +56916,70 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     b.onclick=e=>{ e.stopPropagation(); const f2=byId(activeId); if(f2) benchSetStepArt(f2, stepIndex); };
   }
 
+  const benchPickBackupOpts={
+    initialLocation:"Downloads",
+    mimeType:"application/json",
+    namePrefix:"fieldstrip-backup-"
+  };
+  const benchLocalSave=()=>{
+    const P=window.Capacitor && window.Capacitor.Plugins;
+    return (P && P.LocalSave) || null;
+  };
+  function benchNativePicker(){
+    const LS=benchLocalSave();
+    return (LS && typeof LS.pickBackup==="function") ? LS : null;
+  }
+  async function benchPickerHintHonoured(){
+    const LS=benchLocalSave();
+    if(!LS || typeof LS.pickerCaps!=="function") return null;   
+    try{ const caps=await LS.pickerCaps(); return !!(caps && caps.initialLocation); }
+    catch(e){ return null; }
+  }
+  async function benchRestoreWhereLine(el){
+    if(!el) return;
+    const ok=await benchPickerHintHonoured();
+    el.textContent = ok===false ? "Your backups are in Downloads." : "";
+  }
+  async function benchRestoreApply(text){
+    let archive=null;
+    try{ archive=JSON.parse(text); }catch(e){}
+    const bad=BenchImport.validate(archive);
+    if(bad){ alert(bad); return; }
+    if(BenchEnv.hasFS()){
+      try{
+        const fA=BenchEnv.files();
+        const textFiles={
+          write:async (p,t)=>fA.writeB64(p, btoa(unescape(encodeURIComponent(String(t))))),
+          read:async p=>decodeURIComponent(escape(atob(await fA.readB64(p))))
+        };
+        const snap=await BenchSnapshot.snapshotAndVerify(BenchEnv.store, textFiles, Date.now());
+        if(!snap.ok){ alert("Couldn't take the safety snapshot — nothing was imported."); return; }
+      }catch(e){ alert("Couldn't take the safety snapshot — nothing was imported."); return; }
+    }
+    const r=await BenchImport.runImport(BenchEnv.store, BenchEnv.hasFS()?BenchEnv.files():null, archive, {});
+    benchRestoreResult(r);
+  }
   function benchRestoreFlow(){
+    const LS=benchNativePicker();
+    if(LS){
+      LS.pickBackup(benchPickBackupOpts).then(res=>{
+        if(!res || res.canceled) return;
+        return benchRestoreApply(String(res.data||""));
+      }).catch(e=>{
+        console.error("restore picker:",e);
+        benchRestoreFileInput();          
+      });
+      return;
+    }
+    benchRestoreFileInput();
+  }
+  function benchRestoreFileInput(){
     const inp=document.getElementById("benchRestoreFile");
     if(!inp) return;
     inp.onchange=async ()=>{
       const file=inp.files && inp.files[0]; inp.value="";
       if(!file) return;
-      let archive=null;
-      try{ archive=JSON.parse(await file.text()); }catch(e){}
-      const bad=BenchImport.validate(archive);
-      if(bad){ alert(bad); return; }
-      if(BenchEnv.hasFS()){
-        try{
-          const fA=BenchEnv.files();
-          const textFiles={
-            write:async (p,t)=>fA.writeB64(p, btoa(unescape(encodeURIComponent(String(t))))),
-            read:async p=>decodeURIComponent(escape(atob(await fA.readB64(p))))
-          };
-          const snap=await BenchSnapshot.snapshotAndVerify(BenchEnv.store, textFiles, Date.now());
-          if(!snap.ok){ alert("Couldn't take the safety snapshot — nothing was imported."); return; }
-        }catch(e){ alert("Couldn't take the safety snapshot — nothing was imported."); return; }
-      }
-      const r=await BenchImport.runImport(BenchEnv.store, BenchEnv.hasFS()?BenchEnv.files():null, archive, {});
-      benchRestoreResult(r);
+      await benchRestoreApply(await file.text());
     };
     inp.click();
   }
@@ -57065,16 +57333,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchBHide(id){ const o=benchLayoutGet(); if(!Array.isArray(o.hidden)) o.hidden=[]; if(o.hidden.indexOf(id)<0) o.hidden.push(id); benchLayoutSave(o); renderBench(); }
   function benchBShow(id){ const o=benchLayoutGet(); const h=Array.isArray(o.hidden)?o.hidden:[]; const i=h.indexOf(id); if(i>=0){ h.splice(i,1); o.hidden=h; benchLayoutSave(o); } renderBench(); }
   let benchBOpen={};                     
-  function benchBExpanded(){ const o=benchLayoutGet(); return Array.isArray(o.expanded)?o.expanded:[]; }
-  function benchBSetCollapsed(id, closed){
-    const o=benchLayoutGet();
-    if(!Array.isArray(o.expanded)) o.expanded=[];
-    const i=o.expanded.indexOf(id);
-    if(!closed && i<0) o.expanded.push(id);
-    if(closed && i>=0) o.expanded.splice(i,1);
-    if(!o.expanded.length) delete o.expanded;   
-    benchLayoutSave(o);
-  }
+  function benchBExpanded(){ return cardOpenIds("scr-bench"); }
+  function benchBSetCollapsed(id, closed){ cardSetOpen("scr-bench", id, !closed); }
   let benchCareTargetId=null, benchSvcTargetId=null, benchNfaTargetId=null, benchMagTargetId=null;
   let benchZeroTargetId=null, benchRoundsTargetId=null;   
   function benchSelect(id){
@@ -57885,10 +58145,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }, true);
 
 
-  async function benchCsvShare(base, text){
+  async function benchCsvShare(base, text, opts){
     const msg=document.getElementById("csvMsg");
     try{
-      const fname=base+"-"+new Date().toISOString().slice(0,10)+".csv";
+      const fname=(opts&&opts.name) ? opts.name
+                : base+"-"+new Date().toISOString().slice(0,10)+".csv";
       const FSp=window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem;
       const SHp=BenchEnv.share();
       if(FSp && SHp){
@@ -58111,10 +58372,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const x=document.getElementById("dsX"); if(x) x.onclick=()=>sh.classList.remove("open");
     const csvBtn=(id,fn)=>{ const b=document.getElementById(id); if(b) b.onclick=fn; };
     csvBtn("csvInv",   ()=>benchCsvShare("fieldstrip-inventory", BenchCsv.buildInventoryCsv(BenchEnv.store, CATALOG)));
-    csvBtn("csvHist",  ()=>benchCsvShare("fieldstrip-history",   BenchCsv.buildHistoryCsv(BenchEnv.store, CATALOG)));
+    csvBtn("csvHist",  ()=>benchCsvShare("fieldstrip-history",   BenchCsv.buildHistoryCsv(BenchEnv.store, CATALOG, {malfLabel:malfLabel})));
     csvBtn("csvAtt",   ()=>benchCsvShare("fieldstrip-attachments", BenchCsv.buildAttachmentsCsv(BenchEnv.store)));
     csvBtn("csvLocker",()=>benchCsvShare("fieldstrip-locker",    BenchCsv.buildLockerCsv(BenchEnv.store)));
-    csvBtn("csvTemplate",()=>benchCsvShare("fieldstrip-template", BenchCsv.buildInventoryTemplate()));
+    csvBtn("csvTemplate",()=>benchCsvShare("fieldstrip-import-template", BenchCsv.buildInventoryTemplate(),
+                                           {name:"fieldstrip-import-template.csv"}));
     csvBtn("csvImport",()=>benchCsvImportFlow());
     sh.classList.add("open");
   }
@@ -58155,7 +58417,9 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         <button class="btn sm primary" id="bkSave">Save to Device</button>
         <button class="btn sm" id="bkRestore">Restore from Backup</button>
       </div>
+      <div class="lmsg" id="bkWhere"></div>
       <div class="lmsg" id="bkMsg"></div></div>`;
+    benchRestoreWhereLine(sh.querySelector("#bkWhere"));
     sh.querySelector("#bkX").onclick=()=>sh.classList.remove("open");
     sh.querySelector("#bkSave").onclick=()=>benchDoExport("local",{msg:sh.querySelector("#bkMsg"), photos:sh.querySelector("#bkPhotos")});
     sh.querySelector("#bkRestore").onclick=()=>benchRestoreFlow();
