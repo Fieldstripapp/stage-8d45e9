@@ -767,6 +767,14 @@
   .cardstub .csn{font-family:var(--display);font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
   .cardstub .css{font-size:11.5px;color:var(--muted);opacity:.8;margin-top:2px}
   .doorcard{border:1px solid var(--amber-dim);border-radius:14px;padding:15px 16px;margin-bottom:10px;background:rgba(232,163,61,.05)}
+.fsdoorwhy{margin:0 0 10px}
+.nfh{color:var(--text);font-size:15px;font-weight:700;line-height:1.35;margin:0 0 6px}
+.nfb{color:var(--muted);font-size:13px;line-height:1.55;margin:0 0 8px}
+.nfb:last-child{margin-bottom:0}
+.fsdoorwhy.deadend{border:1px solid var(--amber-dim);border-radius:12px;padding:14px 14px 12px;background:rgba(232,163,61,.05)}
+.nfacts{margin-top:10px}
+.pickmore.notfound{text-align:left}
+.pickmore.notfound .nfh{font-size:16px}
   .doorcard .dc-h{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.5px;color:var(--text)}
   .doorcard .dc-p{color:var(--muted);font-size:12.5px;line-height:1.5;margin:6px 0 11px}
   .doorcard .dc-row{display:flex;gap:8px}
@@ -1848,35 +1856,6 @@
       </div>
       <button class="btn primary full" id="cufAdd" style="margin-top:14px">Add to Safe</button>
       <button class="btn full" id="cufCancel" style="margin-top:8px">Cancel</button>
-    </div>
-  </div>
-  <div class="prosheet" id="reqSheet">
-    <div class="sheet">
-      <button class="sheetx" id="reqX" aria-label="Close">✕</button>
-      <div id="reqFormView">
-        <h3>Request a Firearm</h3>
-        <p class="pp">This opens your email app — Fieldstrip has no servers and sends nothing itself.</p>
-        <div class="nfagrid">
-          <div class="nf"><label for="reqMk">Manufacturer</label><input type="text" id="reqMk" maxlength="40" autocomplete="off"></div>
-          <div class="nf"><label for="reqMd">Model</label><input type="text" id="reqMd" maxlength="40" autocomplete="off"></div>
-          <div class="nf"><label for="reqCh">Caliber (optional)</label><input type="text" id="reqCh" maxlength="30" autocomplete="off"></div>
-          <div class="nf"><label for="reqCt">Action type (optional)</label><select id="reqCt"></select></div>
-          <div class="nf wide"><label for="reqNotes">Notes (optional)</label><input type="text" id="reqNotes" maxlength="120" autocomplete="off"></div>
-        </div>
-        <button class="btn primary full" id="reqBuild" style="margin-top:14px">Build Request</button>
-        <button class="btn full" id="reqCancel" style="margin-top:8px">Cancel</button>
-      </div>
-      <div id="reqResultView" hidden>
-        <h3>Opening your email app…</h3>
-        <p class="pp">Your request is ready to send from your own email app. Nothing has left your phone.</p>
-        <button class="btn full" id="reqShowFallback">Didn't open? Copy the request</button>
-        <div id="reqFallback" hidden style="margin-top:12px">
-          <pre class="reqtext" id="reqText"></pre>
-          <button class="btn primary full" id="reqCopy" style="margin-top:10px">Copy request</button>
-          <div class="pp" style="margin-top:10px">Send to: <b>contact@fieldstripllc.com</b></div>
-        </div>
-        <button class="btn full" id="reqDone" style="margin-top:8px">Done</button>
-      </div>
     </div>
   </div>
 <script>
@@ -3480,6 +3459,7 @@
     screens.forEach(s=>document.getElementById(s).classList.toggle("active",s===id));
     current=id;
     if(prev==="scr-pick" && id!=="scr-pick") resetPicker();
+    if(id==="scr-pick" && prev!=="scr-pick") renderPicker();
     const el=document.getElementById(id);
     el.scrollTop=0;
     el.querySelectorAll(".step-info").forEach(x=>x.scrollTop=0);
@@ -3523,16 +3503,10 @@
     if(A&&A.getInfo){ const i=await A.getInfo(); APP_INFO={version:i.version||APP_INFO.version, build:(i.build!=null&&i.build!=="")?String(i.build):APP_INFO.build, real:true}; if(typeof ctxLabel!=="undefined"&&current==="scr-safe") ctxLabel.textContent="My Safe · v"+APP_INFO.version+" ("+APP_INFO.build+")"; } }catch(e){} })();
 
   const custSheet=document.getElementById("customSheet");
-  const reqSheet=document.getElementById("reqSheet");
   function closeCustomSheet(){ custSheet.classList.remove("open"); }
-  function closeReqSheet(){ reqSheet.classList.remove("open"); }
   custSheet.addEventListener("click",e=>{ if(e.target.id==="customSheet") closeCustomSheet(); });
-  reqSheet.addEventListener("click",e=>{ if(e.target.id==="reqSheet") closeReqSheet(); });
   document.getElementById("cufCancel").addEventListener("click",closeCustomSheet);
   document.getElementById("cufX").addEventListener("click",closeCustomSheet);
-  document.getElementById("reqCancel").addEventListener("click",closeReqSheet);
-  document.getElementById("reqX").addEventListener("click",closeReqSheet);
-  document.getElementById("reqDone").addEventListener("click",closeReqSheet);
 
   function canAddCustom(){ if(isPro()) return true; if(safe.filter(x=>x.custom).length>=1) return false; if(safe.length>=FREE_MAX_GUNS) return false; return true; }
   function customGateReason(){
@@ -3574,57 +3548,8 @@
   });
 
   function openReqSheet(pref){
-    document.getElementById("reqFormView").hidden=false;
-    document.getElementById("reqResultView").hidden=true;
-    document.getElementById("reqFallback").hidden=true;
-    document.getElementById("reqMk").value=(pref&&pref.mk)||"";
-    document.getElementById("reqMd").value=(pref&&pref.md)||"";
-    document.getElementById("reqCh").value=(pref&&pref.ch)||"";
-    fillSel(document.getElementById("reqCt"),["— optional —"].concat(ACTION_TYPES),(pref&&pref.ct)||"— optional —");
-    document.getElementById("reqNotes").value="";
-    document.getElementById("reqCopy").textContent="Copy request";
-    reqSheet.classList.add("open");
+    alert("The request sheet is unavailable in this build.");
   }
-  function composeRequest(d){
-    const subject=("FS-REQ: "+((d.mk||"")+" "+(d.md||"")).trim()).trim();
-    const body=[
-      "Fieldstrip — firearm request",
-      "Manufacturer: "+((d.mk||"").trim()||"—"),
-      "Model: "+((d.md||"").trim()||"—"),
-      "Caliber: "+((d.ch||"").trim()||"—"),
-      "Action type: "+((d.ct||"").trim()||"—"),
-      "Notes: "+((d.notes||"").trim()||"—"),
-      "—",
-      "App: "+APP_INFO.version+" (build "+APP_INFO.build+")"
-    ].join("\n");
-    return {to:"contact@fieldstripllc.com", subject, body};
-  }
-  async function copyText(t){
-    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
-    try{ const ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); const ok=document.execCommand("copy"); ta.remove(); return ok; }catch(e){ return false; }
-  }
-  document.getElementById("reqBuild").addEventListener("click",()=>{
-    const btn=document.getElementById("reqBuild");
-    const d={ mk:document.getElementById("reqMk").value, md:document.getElementById("reqMd").value,
-      ch:document.getElementById("reqCh").value, notes:document.getElementById("reqNotes").value };
-    const ctv=document.getElementById("reqCt").value; d.ct=(ctv&&ctv!=="— optional —")?ctv:"";
-    if(!d.mk.trim() && !d.md.trim()){ btn.textContent="Enter a manufacturer or model"; setTimeout(()=>btn.textContent="Build Request",2200); return; }
-    const r=composeRequest(d);
-    document.getElementById("reqText").textContent="To: "+r.to+"\nSubject: "+r.subject+"\n\n"+r.body;
-    const href="mailto:"+r.to+"?subject="+encodeURIComponent(r.subject)+"&body="+encodeURIComponent(r.body);
-    try{ const a=document.createElement("a"); a.href=href; a.rel="noopener"; document.body.appendChild(a); a.click(); a.remove(); }
-    catch(e){ try{ window.location.href=href; }catch(_){}}
-    document.getElementById("reqFormView").hidden=true;
-    document.getElementById("reqResultView").hidden=false;
-    document.getElementById("reqFallback").hidden=true;
-  });
-  document.getElementById("reqShowFallback").addEventListener("click",()=>{ document.getElementById("reqFallback").hidden=false; });
-  document.getElementById("reqCopy").addEventListener("click",async()=>{
-    const btn=document.getElementById("reqCopy");
-    const ok=await copyText(document.getElementById("reqText").textContent);
-    btn.textContent= ok?"Copied ✓":"Copy failed — select the text above";
-    setTimeout(()=>{ btn.textContent="Copy request"; },2600);
-  });
 
   document.getElementById("reqSupportBtn").addEventListener("click",()=>{
     const f=byId(activeId); if(!f) return;
@@ -3652,6 +3577,7 @@
     searchInput.value="";
     pickGroup="All";
     [...chipsWrap.children].forEach(x=>x.classList.toggle("on", x.textContent==="All"));
+    libDeltaReset();
     renderPicker();
   }
 
@@ -3713,12 +3639,11 @@
   }
   function buildPickMore(){
     const wrap=document.createElement("div");
-    wrap.className="pickmore";
-    wrap.innerHTML=`<div class="pmhd">NOT IN THE CATALOG?</div>
-      <button class="btn primary full" data-pm="custom">+ Add it as a custom firearm</button>
-      <div class="pmsub">Track it now — logs, rounds, reminders, mags.</div>
-      <button class="btn full" data-pm="request">✉ Request we add it officially</button>
-      <div class="pmsub" style="margin-bottom:0">We'll build the guide + parts diagram.</div>`;
+    wrap.className="pickmore notfound";
+    wrap.innerHTML=`<div class="nfh">Not in the list yet.</div>
+      <div class="nfb">This one just hasn't been built.</div>
+      <button class="btn primary full" data-pm="request">Request it — requests get built first</button>
+      <button class="btn full" data-pm="custom" style="margin-top:8px">Add it as a custom firearm</button>`;
     wrap.querySelector('[data-pm="custom"]').addEventListener("click",()=> openCustomSheet(pickPrefill()));
     wrap.querySelector('[data-pm="request"]').addEventListener("click",()=> openReqSheet(pickPrefill()));   
     return wrap;
@@ -55991,7 +55916,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
   renderPicker = function(){
     const q=searchInput.value.trim().toLowerCase();
-    let list=CATALOG.filter(c=>pickGroup==="All"||c.gp===pickGroup);
+    let list=libCatalog().filter(c=>pickGroup==="All"||c.gp===pickGroup);
     if(q){
       const toks=q.split(/\s+/);
       list=list.filter(c=>{
@@ -55999,12 +55924,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         return toks.every(t=>hay.includes(t));
       });
     }
-    list.sort((a,b)=> (a.mk+" "+a.md).localeCompare(b.mk+" "+b.md));
+    const TR=c=>(typeof c.tr==="number"&&c.tr>0)?c.tr:99;
+    const byName=(a,b)=>(a.mk+" "+a.md).localeCompare(b.mk+" "+b.md);
+    list.sort(q ? ((a,b)=>(TR(a)-TR(b))||byName(a,b)) : byName);
     const shown=list;
+    const dnote=libNote();
     resultNote.textContent = list.length
       ? (q ? `${list.length} match${list.length===1?"":"es"}`
            : (pickGroup==="All" ? `All ${list.length} models — A to Z` : `${list.length} ${pickGroup.toLowerCase()} — A to Z`))
-      : "No matches — try just the model number, or check the spelling";
+      : (dnote || "No matches — try just the model number, or check the spelling");
     pickList.innerHTML="";
     shown.forEach(c=>{
       const b=document.createElement("button");
@@ -56018,11 +55946,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
                  mags:[], magRotDays:90, reminders:[], service:[], zeros:[]};
         safe.unshift(f); saveSafe();
         activeId=f.id; show("scr-detail");
+        libOffer(f, c.i);
       });
       pickList.appendChild(b);
     });
     if(list.length===0) pickList.appendChild(buildPickMore());
     else if(q.length>=2) pickList.appendChild(buildPickFooter());
+    if(q.length>=2 && list.length===0) libDeltaCheck(renderPicker);
   };
 
   searchInput.addEventListener("input",()=>renderPicker());
@@ -57717,7 +57647,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       <div class="fo-brand">FIELD<span>STRIP</span></div>
       <div class="fo-tag">Your safe, your bench, your records</div>
       <div class="fo-body">Guided field-stripping and cleaning for your firearms. A running record of everything you do — rounds, cleanings, service, ammo, filings.</div>
-      <div class="fo-quiet">Everything stays on this phone. No account. No cloud. No tracking.</div>
+      <div class="fo-quiet">Everything stays on this phone. No account. No cloud. No tracking. The app reaches the internet only when you ask it to — to see whether guns have been added since this build while you're searching, and to download a guide you've said yes to.</div>
       <div class="fo-sect">Before you start</div>
       <div id="foAcks" style="display:flex;flex-direction:column;gap:10px">${acks.map((a,i)=>`<button class="gate-item" data-fa="${i}"><span class="box">✓</span><span><div class="gt" style="font-size:13.5px">${a}</div></span></button>`).join("")}</div>
       <button class="btn primary full" id="foGo" disabled style="margin-top:16px">I understand — continue</button>
@@ -59845,6 +59775,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     b.textContent=fsDoorLabel(byId(activeId));
     row.appendChild(b);
+    fsMountDoorWhy(byId(activeId));
   }
   const fsPrevRenderDetail=renderDetail;
   renderDetail=function(){
@@ -59986,6 +59917,904 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
               layerMode:!!g.layerMode};
     }
   };
+
+
+  const LIBRARY_BASE = "https://library.fieldstripapp.com";
+  const RECEIVER_URL = "https://request.fieldstripapp.com/";
+
+  const LIBRARY_INDEX_VERSION = 16;
+
+  function libRead(k, dflt) {
+    try { const s = BenchEnv.store.getRaw(k); return s ? JSON.parse(s) : dflt; }
+    catch (e) { return dflt; }
+  }
+  function libWrite(k, o) { try { BenchEnv.store.setRaw(k, JSON.stringify(o)); } catch (e) {} }
+
+  function libState() { return libRead("fs_lib", { v: 0, rows: {} }); }
+  function libGuides() { return libRead("fs_lib_g", {}); }
+  function libVersion() { return Math.max(LIBRARY_INDEX_VERSION, Number(libState().v) || 0); }
+
+
+  function libRowToCat(r) {
+    return { i: r.id, mk: r.maker, md: r.model, ch: r.chambering || "",
+             ct: r.category || "", gp: r.group || "", fm: r.family || "",
+             tr: typeof r.tier === "number" ? r.tier : 5, lib: true };
+  }
+
+  function libCatalog() {
+    try {
+      const rows = libState().rows || {};
+      const extra = [];
+      Object.keys(rows).forEach(id => {
+        if (CATALOG.some(c => c.i === id)) return;
+        extra.push(libRowToCat(rows[id]));
+      });
+      return extra.length ? CATALOG.concat(extra) : CATALOG;
+    } catch (e) { return CATALOG; }
+  }
+
+  function libKeyForModel(id) {
+    try {
+      if (libGuides()[id]) return "sg_" + id;
+      return fkey({ model: id });
+    } catch (e) { return null; }
+  }
+
+  function libHasGuide(id) {
+    try {
+      if (!id) return false;
+      if (guideWalkable(libKeyForModel(id))) return true;
+      const r = (libState().rows || {})[id];
+      if (r && r.guide) return true;
+      const c = CATALOG.find(x => x.i === id);
+      return !!(c && c.lib);
+    } catch (e) { return false; }
+  }
+
+  const LIB_TIMEOUT_MS = 8000;
+  function libFetch(url, init) {
+    if (typeof fetch !== "function") return Promise.reject(new Error("offline"));
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return Promise.reject(new Error("offline"));
+    }
+    const ctl = (typeof AbortController === "function") ? new AbortController() : null;
+    const t = setTimeout(() => { try { ctl && ctl.abort(); } catch (e) {} }, LIB_TIMEOUT_MS);
+    const opt = Object.assign({ cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" },
+                              init || {});
+    if (ctl) opt.signal = ctl.signal;
+    return fetch(url, opt).then(r => {
+      clearTimeout(t);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r;
+    }, e => { clearTimeout(t); throw e; });
+  }
+  function libFetchJson(url) { return libFetch(url).then(r => r.json()); }
+
+  let libDeltaTried = false;
+  let libDeltaBusy = false;
+  let libDeltaNote = "";
+
+  function libDeltaReset() {
+    try { libDeltaTried = false; libDeltaBusy = false; libDeltaNote = ""; } catch (e) {}
+  }
+  function libNote() { try { return libDeltaNote || ""; } catch (e) { return ""; } }
+
+  function libDeltaCheck(rerender) {
+    try {
+      if (libDeltaTried || libDeltaBusy) return;
+      libDeltaTried = true;
+      libDeltaBusy = true;
+      libDeltaNote = "Checking for new guns…";
+      rerender();
+      libFetchJson(LIBRARY_BASE + "/delta/" + libVersion() + ".json").then(d => {
+        libDeltaBusy = false;
+        const rows = (d && d.rows) || [];
+        const st = libState();
+        st.rows = st.rows || {};
+        rows.forEach(r => { if (r && r.id) st.rows[r.id] = r; });
+        ((d && d.removed) || []).forEach(id => { delete st.rows[id]; });
+        if (d && typeof d.to === "number") st.v = Math.max(Number(st.v) || 0, d.to);
+        libWrite("fs_lib", st);
+        libReqReconcile();
+        libDeltaNote = "";
+        rerender();
+      }, () => {
+        libDeltaBusy = false;
+        libDeltaNote = "Couldn't check for new guns — no signal";
+        rerender();
+      });
+    } catch (e) {}
+  }
+
+
+  function libGuideSheetCopy() {
+    return "This is the one time the app talks to us about this firearm. Our server will see " +
+           "an internet address asking for this particular guide at this particular time. " +
+           "Nothing else is sent — no account, no name, no device id, nothing about your safe. " +
+           "You can skip it and add the steps yourself from the maker's manual instead.";
+  }
+
+  function libOffer(f, rowId) {
+    try {
+      if (!f || !rowId) return;
+      if (guideWalkable(libKeyForModel(rowId))) return;      
+      const r = (libState().rows || {})[rowId];
+      if (!(r && r.guide)) return;                            
+      libAskAndFetch(f, rowId, r);
+    } catch (e) {}
+  }
+
+  function libAskAndFetch(f, rowId, r) {
+    let sh = document.getElementById("libSheet");
+    if (!sh) {
+      sh = document.createElement("div");
+      sh.id = "libSheet"; sh.className = "prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click", e => { if (e.target.id === "libSheet") sh.classList.remove("open"); });
+    }
+    const name = ((r && r.maker) || "") + " " + ((r && r.model) || "");
+    sh.innerHTML = '<div class="sheet"><button class="sheetx" id="lgX">×</button>' +
+      '<h3>DOWNLOAD THIS GUIDE?</h3>' +
+      '<p class="pp">' + (name.trim() ? name.trim() + " — a" : "A") +
+      ' step-by-step strip guide is published for this firearm. It is in your safe either way.</p>' +
+      '<div class="proreason">' + libGuideSheetCopy() + '</div>' +
+      '<button class="btn primary full" id="lgYes">Download the guide</button>' +
+      '<button class="btn full" id="lgNo" style="margin-top:8px">Not now</button>' +
+      '<div class="hint" id="lgMsg" style="margin-top:8px"></div></div>';
+    const close = () => sh.classList.remove("open");
+    sh.querySelector("#lgX").onclick = close;
+    sh.querySelector("#lgNo").onclick = close;
+    sh.querySelector("#lgYes").onclick = () => {
+      const msg = sh.querySelector("#lgMsg");
+      msg.textContent = "Downloading…";
+      libFetchGuide(rowId).then(() => {
+        close();
+        if (typeof renderDetail === "function") renderDetail();
+      }, () => {
+        msg.textContent = "Couldn't download it — no signal. The firearm is in your safe; " +
+                          "you can try again from here later.";
+      });
+    };
+    sh.classList.add("open");
+  }
+
+  function libFetchGuide(rowId) {
+    const gid = ((libState().rows || {})[rowId] || {}).guideId || rowId;
+    return libFetchJson(LIBRARY_BASE + "/guides/" + gid + ".json").then(g => {
+      if (!g || !g.row || !Array.isArray(g.steps) || !g.steps.length) throw new Error("not a guide");
+      const held = libGuides();
+      held[rowId] = g;
+      libWrite("fs_lib_g", held);
+      libInstallGuide(rowId, g);
+      libReqReconcile();
+      return g;
+    });
+  }
+
+  function libStepFrom(g, st) {
+    if (st.box === "passage") {
+      return tgStep(st.phase, st.title, stPassage(st.quote, st.cite, st.gloss),
+                    { src: st.cite, passage: true });
+    }
+    let body = "";
+    if (st.action) body += stA(st.action);
+    if (st.prose) body += st.prose;
+    if (st.caution) body += stC(st.caution);
+    if (st.aside) body += stAs(st.aside);
+    if (st.box === "bilingual") body += stSrcX(st.quote, st.quoteEnglish, st.quoteLang, st.cite);
+    else if (st.box === "quote") body += stSrc(st.quote, st.cite);
+    else if (st.box === "limit") body += stLimit(g.make, st.quote, st.cite);
+    const extra = {};
+    if (st.warn) extra.warn = st.warn;
+    if (st.warn && st.warnSrc) extra.warnSrc = st.warnSrc;
+    if (st.branch) extra.branch = true;
+    if (st.quote) extra.src = st.cite;
+    return tgStep(st.phase, st.title, body, extra);
+  }
+
+  function libGuideObject(g) {
+    const o = { textMode: true, parts: {}, origins: {} };
+    if (g.sourcedFrom) o.sourcedFrom = g.sourcedFrom;
+    if (g.sourceSha256) o.sourceSha256 = g.sourceSha256;
+    if (g.sourceSha256_2) o.sourceSha256_2 = g.sourceSha256_2;
+    o.cleanIntro = g.cleanIntro;
+    o.steps = (g.steps || []).map(s => libStepFrom(g, s));
+    if (g.deepSteps && g.deepSteps.length) o.deepSteps = g.deepSteps.map(s => libStepFrom(g, s));
+    else o.deepAbsentReason = g.deepAbsentReason;
+    if (g.cleaning && g.cleaning.length) o.cleaning = g.cleaning;
+    if (g.reassembly && g.reassembly.length) o.reassembly = g.reassembly;
+    if (g.fncheck) o.fncheck = g.fncheck;
+    return o;
+  }
+
+  function libInstallGuide(rowId, g) {
+    const key = "sg_" + rowId;
+    GUNS[key] = libGuideObject(g);
+    SOURCED_FOR[rowId] = key;
+  }
+
+  (function libInstallHeld() {
+    const held = libGuides();
+    Object.keys(held).forEach(row => { try { libInstallGuide(row, held[row]); } catch (e) {} });
+  })();
+
+  const REQ_KINDS = [
+    { v: "firearm", label: "A firearm" },
+    { v: "suppressor", label: "A suppressor" },
+    { v: "other", label: "A bug, or something you'd like added" }
+  ];
+  function reqState() { return libRead("fs_req", { sent: {}, open: [] }); }
+  function reqSave(o) { libWrite("fs_req", o); }
+  function reqCap() { return isPro() ? safe.length : FREE_MAX_GUNS; }
+  function reqOpen() { return (reqState().open || []).filter(r => !r.closed); }
+  function reqKey(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+  function reqAlreadySent(text) { return !!(reqState().sent || {})[reqKey(text)]; }
+
+  function libReqReconcile() {
+    try {
+      const s = reqState();
+      let moved = 0;
+      (s.open || []).forEach(r => {
+        if (r.closed || !r.gunId) return;
+        const f = safe.find(x => x.id === r.gunId);
+        if (f && guideWalkable(fkey(f))) { r.closed = Date.now(); moved++; }
+      });
+      if (moved) reqSave(s);
+      return moved;
+    } catch (e) { return 0; }
+  }
+
+  function reqCompose(kind, text) {
+    return (kind === "other" ? "other: " : kind === "suppressor" ? "suppressor: " : "") +
+           String(text || "").replace(/[\r\n]+/g, " ").trim();
+  }
+  function reqSend(kind, text, gunId) {
+    const line = reqCompose(kind, text);
+    if (!line) return Promise.reject(new Error("empty"));
+    return libFetch(RECEIVER_URL, { method: "POST", body: line }).then(() => {
+      const s = reqState();
+      s.sent = s.sent || {}; s.open = s.open || [];
+      s.sent[reqKey(text)] = Date.now();
+      s.open.push({ id: Date.now().toString(36), kind, text: String(text).trim(),
+                    gunId: gunId || null, ts: Date.now(), closed: 0 });
+      reqSave(s);
+      return true;
+    });
+  }
+
+  function reqRemind(gunId, label) {
+    const f = safe.find(x => x.id === gunId);
+    if (!f) return false;
+    f.reminders = f.reminders || [];
+    f.reminders.push({ id: Date.now().toString(36), label: "Check for a guide: " + label,
+                       every: 30, unit: "days", last: Date.now() });
+    saveSafe();
+    if (typeof syncNotifications === "function") { try { syncNotifications(); } catch (e) {} }
+    return true;
+  }
+
+  const DOOR_VERDICT = {
+    "DPMS Oracle": "NO-MANUAL",
+    "DPMS Oracle .308": "NO-MANUAL",
+    "aac762sdn6": "FETCHED",
+    "aacelement2": "BLOCKED",
+    "aacjaeger30": "FETCHED",
+    "aacranger5": "BLOCKED",
+    "aacranger7": "BLOCKED",
+    "aactirant45m": "BLOCKED",
+    "accuracyinternationalas50": "MAKER-PUBLISHES-NOTHING",
+    "accuracyinternationalatx": "MAKER-PUBLISHES-NOTHING",
+    "accuracyinternationalaw50": "MAKER-PUBLISHES-NOTHING",
+    "accuracyinternationalax50": "MAKER-PUBLISHES-NOTHING",
+    "accuracyinternationalaxmc": "MAKER-PUBLISHES-NOTHING",
+    "accuracyinternationalaxsr": "MAKER-PUBLISHES-NOTHING",
+    "adamsarmsp2": "MAKER-PUBLISHES-NOTHING",
+    "aeroprecisionac15": "NO-MANUAL",
+    "aeroprecisionm4e1": "NO-MANUAL",
+    "aeroprecisionm5": "NO-MANUAL",
+    "alchemycustomweaponryprime": "MAKER-PUBLISHES-NOTHING",
+    "andersonkiger9c": "NO-MANUAL",
+    "andersonmanufacturingam15": "NO-MANUAL",
+    "angstadtarmsreticent360l": "BLOCKED",
+    "angstadtarmsvanquish22": "BLOCKED",
+    "anschutz1727apr": "MAKER-PUBLISHES-NOTHING",
+    "anschutz1761": "MAKER-PUBLISHES-NOTHING",
+    "anschutz1907": "MAKER-PUBLISHES-NOTHING",
+    "anschutz1913": "MAKER-PUBLISHES-NOTHING",
+    "anschutz5430": "MAKER-PUBLISHES-NOTHING",
+    "arexzero2tactical": "MAKER-PUBLISHES-NOTHING",
+    "arsenalsam7r": "MAKER-PUBLISHES-NOTHING",
+    "ashburysaberforsstmod1": "MAKER-PUBLISHES-NOTHING",
+    "ashburysaberm700": "MAKER-PUBLISHES-NOTHING",
+    "atiomnihybrid": "NO-MANUAL",
+    "atlasgunworksartemis": "MAKER-PUBLISHES-NOTHING",
+    "atlasgunworkserebus": "MAKER-PUBLISHES-NOTHING",
+    "atlasgunworkshyperion": "MAKER-PUBLISHES-NOTHING",
+    "atlasgunworksnyx": "MAKER-PUBLISHES-NOTHING",
+    "atlasgunworkstitan": "MAKER-PUBLISHES-NOTHING",
+    "barrettfieldcraft": "MAKER-PUBLISHES-NOTHING",
+    "barrettmrad": "MAKER-PUBLISHES-NOTHING",
+    "barrettmradcovert": "BLOCKED",
+    "bcmrecce16": "NO-MANUAL",
+    "benelli828usupersportai": "BLOCKED",
+    "benelliethossport": "MAKER-PUBLISHES-NOTHING",
+    "benellilupobest": "MAKER-PUBLISHES-NOTHING",
+    "benellilupohprbest": "MAKER-PUBLISHES-NOTHING",
+    "benellimp90s": "MAKER-PUBLISHES-NOTHING",
+    "benellimp95e": "MAKER-PUBLISHES-NOTHING",
+    "benellisupersport": "FETCHED",
+    "beretta1301tactical": "NO-MANUAL",
+    "beretta21abobcat": "NO-MANUAL",
+    "beretta3032tomcat": "NO-MANUAL",
+    "beretta486parallelo": "HAND-DOWNLOAD",
+    "beretta686silverpigeoni": "HAND-DOWNLOAD",
+    "beretta688performancesporting": "HAND-DOWNLOAD",
+    "beretta688performancetrapas": "HAND-DOWNLOAD",
+    "beretta694blackdlctrap": "HAND-DOWNLOAD",
+    "beretta694sporting": "HAND-DOWNLOAD",
+    "beretta80xcheetah": "NO-MANUAL",
+    "beretta92fs": "NO-MANUAL",
+    "beretta92x": "NO-MANUAL",
+    "berettaa300ultima": "NO-MANUAL",
+    "berettaa400xtremeplus": "NO-MANUAL",
+    "berettaapxa1": "NO-MANUAL",
+    "berettadt11sporting": "HAND-DOWNLOAD",
+    "berettadt11supersport": "HAND-DOWNLOAD",
+    "berettadt11trap": "HAND-DOWNLOAD",
+    "berettam9a4": "NO-MANUAL",
+    "berettapx4storm": "NO-MANUAL",
+    "berettasl3": "HAND-DOWNLOAD",
+    "berettaso10": "HAND-DOWNLOAD",
+    "berettaso5sporting": "HAND-DOWNLOAD",
+    "berettaultraleggero": "HAND-DOWNLOAD",
+    "bergarabti30": "MAKER-PUBLISHES-NOTHING",
+    "bergarapremiercimapro": "BLOCKED",
+    "bergarapremierhighlander": "BLOCKED",
+    "bergarapremierhmrpro": "BLOCKED",
+    "bergarapremiermglite": "BLOCKED",
+    "bergarapremierridgeback": "BLOCKED",
+    "bersathunder380": "NO-MANUAL",
+    "blaserf16gameintuition": "BLOCKED",
+    "blaserf16prosporting": "BLOCKED",
+    "blaserf3competitionsporting": "BLOCKED",
+    "blaserf3supersport": "MAKER-PUBLISHES-NOTHING",
+    "blaserf3vantage": "MAKER-PUBLISHES-NOTHING",
+    "blaserr8selous": "MAKER-PUBLISHES-NOTHING",
+    "blaserr8ultimate": "FETCHED",
+    "bowersuss22": "MAKER-PUBLISHES-NOTHING",
+    "browningbt99": "FETCHED",
+    "btghm9gen2": "BLOCKED",
+    "bularmory1911sofpro": "BLOCKED",
+    "bularmoryaxecleaver": "BLOCKED",
+    "bularmoryfireball": "MAKER-PUBLISHES-NOTHING",
+    "bularmorysasiiultralight": "BLOCKED",
+    "bushmasterxm15": "NO-MANUAL",
+    "cadexdefencecdxr7crbn": "MAKER-PUBLISHES-NOTHING",
+    "cadexdefencecdxr7fieldcomp": "MAKER-PUBLISHES-NOTHING",
+    "cadexdefencecdxr7lcp": "MAKER-PUBLISHES-NOTHING",
+    "caesargueriniellipseevo": "BLOCKED",
+    "caesargueriniinvictusiiisporting": "BLOCKED",
+    "caesargueriniinvictusisporting": "BLOCKED",
+    "caesargueriniinvictusvtrap": "BLOCKED",
+    "caesarguerinimagnussporting": "BLOCKED",
+    "caesarguerinimaxumsporting": "BLOCKED",
+    "caesarguerinirevenant": "BLOCKED",
+    "caesarguerinisummitimpact": "BLOCKED",
+    "caesarguerinisummitsporting": "BLOCKED",
+    "caesarguerinitempio": "BLOCKED",
+    "caesargueriniwoodlander": "BLOCKED",
+    "caniktp9sfelite": "MAKER-PUBLISHES-NOTHING",
+    "caracalcmp9": "MAKER-PUBLISHES-NOTHING",
+    "charterarmsbulldog": "NO-MANUAL",
+    "charterarmsmagpug": "HAND-DOWNLOAD",
+    "charterarmspathfinder": "HAND-DOWNLOAD",
+    "charterarmspitbull": "HAND-DOWNLOAD",
+    "charterarmsundercover": "NO-MANUAL",
+    "chiapparhino200ds": "HAND-DOWNLOAD",
+    "christensenarmsca10": "MAKER-PUBLISHES-NOTHING",
+    "christensenarmsca15": "NO-MANUAL",
+    "christensenarmsmesafft": "MAKER-PUBLISHES-NOTHING",
+    "christensenarmsmoderncarbonrifle": "FETCHED",
+    "christensenarmsmodernhuntingrifle": "BLOCKED",
+    "christensenarmsmodernprecisionrifle": "BLOCKED",
+    "christensenarmsridgeline": "MAKER-PUBLISHES-NOTHING",
+    "cimarronevilroy": "MAKER-PUBLISHES-NOTHING",
+    "cmmgbansheemk10": "MAKER-PUBLISHES-NOTHING",
+    "cmmgdissentbr47": "BLOCKED",
+    "cmmgdissentmk4": "BLOCKED",
+    "cmmgresolute": "NO-MANUAL",
+    "cmpm1911a1": "MAKER-PUBLISHES-NOTHING",
+    "cmpspringfieldm1garand": "MAKER-PUBLISHES-NOTHING",
+    "coltcompetition1911": "MAKER-PUBLISHES-NOTHING",
+    "coltgrizzly": "MAKER-PUBLISHES-NOTHING",
+    "coltm45a1": "MAKER-PUBLISHES-NOTHING",
+    "coltviper": "MAKER-PUBLISHES-NOTHING",
+    "coltwileyclappgovernment": "MAKER-PUBLISHES-NOTHING",
+    "cvacascade": "NO-MANUAL",
+    "cz52surplus": "MAKER-PUBLISHES-NOTHING",
+    "cz75tsczechmate": "MAKER-PUBLISHES-NOTHING",
+    "czbobwhiteg2": "BLOCKED",
+    "czczechmateparrot": "MAKER-PUBLISHES-NOTHING",
+    "czp09": "NO-MANUAL",
+    "czp10s": "BLOCKED",
+    "danieldefensesg30ti": "FETCHED",
+    "danieldefensesg556": "FETCHED",
+    "deadairghost45": "BLOCKED",
+    "deadairnomadlti": "BLOCKED",
+    "deadairnomadti": "MAKER-PUBLISHES-NOTHING",
+    "deadairsandmank": "BLOCKED",
+    "deltondtiecho316": "NO-MANUAL",
+    "deserttechhti": "HAND-DOWNLOAD",
+    "deserttechsrsa2": "HAND-DOWNLOAD",
+    "diligentdefensedtflti": "HAND-DOWNLOAD",
+    "diligentdefenseenticerl": "HAND-DOWNLOAD",
+    "diligentdefenseenticerlti": "HAND-DOWNLOAD",
+    "diligentdefenseenticersti": "HAND-DOWNLOAD",
+    "diligentdefensewolfhunter": "HAND-DOWNLOAD",
+    "eaabountyhunter": "MAKER-PUBLISHES-NOTHING",
+    "eaawindicator": "NO-MANUAL",
+    "edbrownspecialforces": "NO-MANUAL",
+    "energeticarmamentnyxmod2": "BLOCKED",
+    "energeticarmamentpeak30": "MAKER-PUBLISHES-NOTHING",
+    "energeticarmamentsonus9k": "MAKER-PUBLISHES-NOTHING",
+    "energeticarmamentvoxk2": "BLOCKED",
+    "extarep9": "MAKER-PUBLISHES-NOTHING",
+    "fabarmaxisrs12sporting": "BLOCKED",
+    "fabarmaxisrs12trap": "BLOCKED",
+    "fabarmelosn2rssporting": "MAKER-PUBLISHES-NOTHING",
+    "fabarmelosn2rstrap": "MAKER-PUBLISHES-NOTHING",
+    "fabarml4ssporting": "BLOCKED",
+    "falkorpetra": "MAKER-PUBLISHES-NOTHING",
+    "faxonfx19patriot": "HAND-DOWNLOAD",
+    "feinwerkbaup8x": "FETCHED",
+    "fightlitescr": "MAKER-PUBLISHES-NOTHING",
+    "foldar556": "HAND-DOWNLOAD",
+    "franchimomentumallterrainelite": "BLOCKED",
+    "franchimomentumelite": "BLOCKED",
+    "franklinarmoryf22": "FETCHED",
+    "franklinarmoryprevail": "MAKER-PUBLISHES-NOTHING",
+    "gaprecisiontemplar": "MAKER-PUBLISHES-NOTHING",
+    "geisselesuperduty": "NO-MANUAL",
+    "gemtechabyss556": "FETCHED",
+    "gemtechabyss762": "FETCHED",
+    "gemtechintegra1522": "FETCHED",
+    "gemtechnebula57": "MAKER-PUBLISHES-NOTHING",
+    "gemtechneutrino": "MAKER-PUBLISHES-NOTHING",
+    "gemtechneutron762": "FETCHED",
+    "girsanmc1911": "MAKER-PUBLISHES-NOTHING",
+    "girsanmcp35": "MAKER-PUBLISHES-NOTHING",
+    "girsanregardmc": "MAKER-PUBLISHES-NOTHING",
+    "glock44": "MAKER-PUBLISHES-NOTHING",
+    "grandpowerstribogsp9a3g": "BLOCKED",
+    "greyghostcombatpistol": "MAKER-PUBLISHES-NOTHING",
+    "griffinarmamentbushwhacker46": "HAND-DOWNLOAD",
+    "griffinarmamentduallok5am": "HAND-DOWNLOAD",
+    "griffinarmamentduallok7am": "HAND-DOWNLOAD",
+    "griffinarmamentduallokhrt5kam": "HAND-DOWNLOAD",
+    "griffinarmamentexplorr300": "HAND-DOWNLOAD",
+    "griffinarmamentoptimusmicro": "HAND-DOWNLOAD",
+    "griffinarmamentrecce7am": "HAND-DOWNLOAD",
+    "griffinarmamentsportsmanultralight": "HAND-DOWNLOAD",
+    "gunwerksnexus": "FETCHED",
+    "hammerliap20pro": "HAND-DOWNLOAD",
+    "heritageroscoe": "MAKER-PUBLISHES-NOTHING",
+    "heritageroughriderbigbore": "NO-MANUAL",
+    "horizonfirearmsvandal": "HAND-DOWNLOAD",
+    "howahcrchassisrifle": "MAKER-PUBLISHES-NOTHING",
+    "huxwrxflow45m": "BLOCKED",
+    "huxwrxflow556k": "MAKER-PUBLISHES-NOTHING",
+    "huxwrxflow556ti": "BLOCKED",
+    "huxwrxflow762ti": "MAKER-PUBLISHES-NOTHING",
+    "huxwrxflowrange36ti": "NO-MANUAL",
+    "huxwrxventum556": "BLOCKED",
+    "huxwrxventum762": "MAKER-PUBLISHES-NOTHING",
+    "ibiprecisiondeuce20": "MAKER-PUBLISHES-NOTHING",
+    "infinityfirearmssvi2011open": "MAKER-PUBLISHES-NOTHING",
+    "infinityfirearmssvisighttracker": "MAKER-PUBLISHES-NOTHING",
+    "jacobgreyhexpro2011": "MAKER-PUBLISHES-NOTHING",
+    "jkarmament155rpx46": "HAND-DOWNLOAD",
+    "jkarmament172prokor30ti": "HAND-DOWNLOAD",
+    "jkarmament172prokor556k": "HAND-DOWNLOAD",
+    "jkarmament172prokor9kti": "HAND-DOWNLOAD",
+    "kalashnikovusakr103": "MAKER-PUBLISHES-NOTHING",
+    "keltecp11": "MAKER-PUBLISHES-NOTHING",
+    "kgmr30": "MAKER-PUBLISHES-NOTHING",
+    "kgmr30a2": "MAKER-PUBLISHES-NOTHING",
+    "kgmr30k": "MAKER-PUBLISHES-NOTHING",
+    "kgmr338": "FETCHED",
+    "kgmr6": "MAKER-PUBLISHES-NOTHING",
+    "kimber8400caprivi": "HAND-DOWNLOAD",
+    "kimber84mmountainascent": "HAND-DOWNLOAD",
+    "kimberopenrangeprocarbon": "HAND-DOWNLOAD",
+    "kolaraaacompetition": "MAKER-PUBLISHES-NOTHING",
+    "kolarmaxclays": "MAKER-PUBLISHES-NOTHING",
+    "kolarmaxlitesporting": "MAKER-PUBLISHES-NOTHING",
+    "kolarmaxskeet": "MAKER-PUBLISHES-NOTHING",
+    "kolarmaxtrap": "MAKER-PUBLISHES-NOTHING",
+    "krieghoffk20parcours": "BLOCKED",
+    "krieghoffk20sporting": "BLOCKED",
+    "krieghoffk80acs": "BLOCKED",
+    "krieghoffk80parcoursx": "BLOCKED",
+    "krieghoffk80prosporter": "BLOCKED",
+    "krissusakymera": "HAND-DOWNLOAD",
+    "langdontacticallttimpact": "MAKER-PUBLISHES-NOTHING",
+    "laugoarmsalien": "FETCHED",
+    "laugoarmsalienremus": "FETCHED",
+    "leeenfieldno4mkisurplus": "DEAD-END",
+    "lesbaerultimatemastercombat": "BLOCKED",
+    "lmtdefender": "NO-MANUAL",
+    "lonewolfltd19": "HAND-DOWNLOAD",
+    "lwrcicdi": "NO-MANUAL",
+    "lwrciic9": "HAND-DOWNLOAD",
+    "makarovpmsurplus": "DEAD-END",
+    "masterpiecearmsbacomppro": "MAKER-PUBLISHES-NOTHING",
+    "masterpiecearmsbapmrprorifleii": "MAKER-PUBLISHES-NOTHING",
+    "masterpiecearmsmpads9hybrid": "FETCHED",
+    "masterpiecearmspmrcustommatchrifle": "MAKER-PUBLISHES-NOTHING",
+    "matadorarmsespada": "MAKER-PUBLISHES-NOTHING",
+    "mauser98surplussporter": "HAND-DOWNLOAD",
+    "mauserm12extreme": "HAND-DOWNLOAD",
+    "mauserm18": "HAND-DOWNLOAD",
+    "mauserm98magnum": "HAND-DOWNLOAD",
+    "mlcvaaccuraxt": "BLOCKED",
+    "mlcvaoptimav2": "NO-MANUAL",
+    "mlcvaoptimaxp": "BLOCKED",
+    "mlcvaparamount": "BLOCKED",
+    "mlcvawolfv2": "NO-MANUAL",
+    "mltcprohunterfs": "HAND-DOWNLOAD",
+    "mltradpapellet": "BLOCKED",
+    "mltradshedhorn": "FETCHED",
+    "mltradvortekldr": "BLOCKED",
+    "mlwby307mzy": "HAND-DOWNLOAD",
+    "molotvepr12": "HAND-DOWNLOAD",
+    "mosinnagant9130surplus": "DEAD-END",
+    "mossberg590r": "NO-MANUAL",
+    "mossberg590s": "NO-MANUAL",
+    "mossbergmc1sc": "NO-MANUAL",
+    "mossbergmc2c": "NO-MANUAL",
+    "mossbergmmr": "NO-MANUAL",
+    "nighthawkcustom1911": "NO-MANUAL",
+    "nighthawkcustomsandhawk": "MAKER-PUBLISHES-NOTHING",
+    "noslermodel21": "MAKER-PUBLISHES-NOTHING",
+    "noslermodel48longrangecarbon": "MAKER-PUBLISHES-NOTHING",
+    "noslermodel48mountaincarbon": "MAKER-PUBLISHES-NOTHING",
+    "noveskegen4": "NO-MANUAL",
+    "ottercreeklabshydrogen": "HAND-DOWNLOAD",
+    "ottercreeklabsinfinity556k": "HAND-DOWNLOAD",
+    "ottercreeklabslithium": "HAND-DOWNLOAD",
+    "ottercreeklabspolonium": "HAND-DOWNLOAD",
+    "ottercreeklabsuniverse36": "HAND-DOWNLOAD",
+    "palmettostatearmoryakv": "NO-MANUAL",
+    "palmettostatearmorydagger": "NO-MANUAL",
+    "palmettostatearmorypsakgf3": "HAND-DOWNLOAD",
+    "panzerarmsar12pro": "HAND-DOWNLOAD",
+    "perazzihightech2024": "BLOCKED",
+    "perazzihightechs": "BLOCKED",
+    "perazzimx10": "MAKER-PUBLISHES-NOTHING",
+    "perazzimx12": "MAKER-PUBLISHES-NOTHING",
+    "perazzimx15l": "MAKER-PUBLISHES-NOTHING",
+    "perazzimx20008": "MAKER-PUBLISHES-NOTHING",
+    "perazzimx2000s": "MAKER-PUBLISHES-NOTHING",
+    "perazzimx2005": "MAKER-PUBLISHES-NOTHING",
+    "perazzimx8": "MAKER-PUBLISHES-NOTHING",
+    "perazzimxssporting": "MAKER-PUBLISHES-NOTHING",
+    "perazzitm9x": "MAKER-PUBLISHES-NOTHING",
+    "pioneerarmssporter": "HAND-DOWNLOAD",
+    "pofrenegadeplus": "NO-MANUAL",
+    "pofrevolutiondi": "HAND-DOWNLOAD",
+    "polymer80pf940c": "MAKER-PUBLISHES-NOTHING",
+    "polymer80pf940sc": "MAKER-PUBLISHES-NOTHING",
+    "polymer80pf940v2": "MAKER-PUBLISHES-NOTHING",
+    "proofresearchconvictiontacii": "MAKER-PUBLISHES-NOTHING",
+    "psadaggermicro": "FETCHED",
+    "ptrindustries9ctmp": "MAKER-PUBLISHES-NOTHING",
+    "ptrindustriesptr91": "MAKER-PUBLISHES-NOTHING",
+    "pwsmk116": "HAND-DOWNLOAD",
+    "pwsmk118mod2": "HAND-DOWNLOAD",
+    "qtallboy": "HAND-DOWNLOAD",
+    "qthefix": "HAND-DOWNLOAD",
+    "qthelefty": "HAND-DOWNLOAD",
+    "qtheminifix": "HAND-DOWNLOAD",
+    "radicalfirearmsrf15": "NO-MANUAL",
+    "rizzinibr110sporterips": "MAKER-PUBLISHES-NOTHING",
+    "rizzinibr110sporterx": "MAKER-PUBLISHES-NOTHING",
+    "rockislandarmory1911tacticaliifs": "BLOCKED",
+    "rockriverarmslar15": "NO-MANUAL",
+    "rossirs22": "MAKER-PUBLISHES-NOTHING",
+    "rugerhawkeyealaskan": "FETCHED",
+    "rugersingleseven": "MAKER-PUBLISHES-NOTHING",
+    "rugervaquero": "NO-MANUAL",
+    "ruggedsuppressorssub9": "HAND-DOWNLOAD",
+    "ruggedsurge762": "HAND-DOWNLOAD",
+    "sakotrg22a1": "BLOCKED",
+    "sakotrg42a1": "BLOCKED",
+    "sakotrgm10": "BLOCKED",
+    "savage99legacy": "MAKER-PUBLISHES-NOTHING",
+    "savageimpulseeliteprecision": "BLOCKED",
+    "savageimpulsemountainhunter": "BLOCKED",
+    "savagetimbertacticalaseries": "MAKER-PUBLISHES-NOTHING",
+    "sccycpx1": "FETCHED",
+    "sccycpx2": "FETCHED",
+    "sct19": "MAKER-PUBLISHES-NOTHING",
+    "seekinsprecisionhavakbravo": "HAND-DOWNLOAD",
+    "seekinsprecisionhavakelement": "HAND-DOWNLOAD",
+    "seekinsprecisionhavakhit": "HAND-DOWNLOAD",
+    "seekinsprecisionhavakprohunter2": "HAND-DOWNLOAD",
+    "seekinssp10": "HAND-DOWNLOAD",
+    "sigsauer716": "FETCHED",
+    "sigsauerhexium300": "HAND-DOWNLOAD",
+    "sigsauerhexium556inc": "HAND-DOWNLOAD",
+    "sigsauerhexium556ti": "HAND-DOWNLOAD",
+    "sigsauerm400tread": "NO-MANUAL",
+    "sigsauerp211gto": "HAND-DOWNLOAD",
+    "sigsauerslh762": "HAND-DOWNLOAD",
+    "sigsauerslx": "HAND-DOWNLOAD",
+    "sigsauerslx556": "HAND-DOWNLOAD",
+    "silencercentralbanish46": "BLOCKED",
+    "silencercentralbanishbackcountryti": "BLOCKED",
+    "silencercentralbanishhnt30": "FETCHED",
+    "silencercooctane920": "HAND-DOWNLOAD",
+    "silencercos98": "HAND-DOWNLOAD",
+    "silencercoscythe": "FETCHED",
+    "smithwessonpccompetitorhd": "BLOCKED",
+    "smithwessonspecvimetalcompact": "MAKER-PUBLISHES-NOTHING",
+    "smithwessonspecvmetalhd": "MAKER-PUBLISHES-NOTHING",
+    "sonsoflibertym489": "NO-MANUAL",
+    "springfieldarmory1911garri": "BLOCKED",
+    "springfieldarmory1911operator": "BLOCKED",
+    "springfieldarmorymodel2020boundary": "BLOCKED",
+    "springfieldarmorymodel2020heatseeker": "BLOCKED",
+    "springfieldarmorymodel2020redline": "BLOCKED",
+    "springfieldarmoryrangeofficer": "BLOCKED",
+    "springfieldarmoryronin1911": "MAKER-PUBLISHES-NOTHING",
+    "springfieldarmorytrp": "FETCHED",
+    "staccatoc2": "NO-MANUAL",
+    "staccatocompacthdc36": "HAND-DOWNLOAD",
+    "staccatohd": "HAND-DOWNLOAD",
+    "staccatohdc4x": "HAND-DOWNLOAD",
+    "staccatoxl": "HAND-DOWNLOAD",
+    "stagarmsstag10": "HAND-DOWNLOAD",
+    "stagarmsstag15": "NO-MANUAL",
+    "steyrarmsprohunteriii": "MAKER-PUBLISHES-NOTHING",
+    "steyrarmsssg08": "FETCHED",
+    "steyrevo10e": "MAKER-PUBLISHES-NOTHING",
+    "stoegerm3k3gun": "MAKER-PUBLISHES-NOTHING",
+    "surefiresfryder22s": "HAND-DOWNLOAD",
+    "surefiresocom338ti": "HAND-DOWNLOAD",
+    "surefiresocom556mini4": "HAND-DOWNLOAD",
+    "surefiresocom556rc3": "HAND-DOWNLOAD",
+    "surefiresocom6mini4": "HAND-DOWNLOAD",
+    "surefiresocom762ti2": "HAND-DOWNLOAD",
+    "syrenelosn2elevate": "MAKER-PUBLISHES-NOTHING",
+    "syrenjuliasporting": "MAKER-PUBLISHES-NOTHING",
+    "syrenl4ssporting": "BLOCKED",
+    "syrentempiosporting": "MAKER-PUBLISHES-NOTHING",
+    "tanfogliodomina": "HAND-DOWNLOAD",
+    "tanfogliogoldcustomxtreme": "HAND-DOWNLOAD",
+    "tanfogliolimitedcustom": "HAND-DOWNLOAD",
+    "tanfogliostockii": "HAND-DOWNLOAD",
+    "tanfogliostockiiixtreme": "HAND-DOWNLOAD",
+    "taurusg2c": "NO-MANUAL",
+    "taurusg3x": "MAKER-PUBLISHES-NOTHING",
+    "taurusjudge": "MAKER-PUBLISHES-NOTHING",
+    "taurusjudgehomedefender": "BLOCKED",
+    "tauruspt111millenniumg2leg": "NO-MANUAL",
+    "thompsoncentercompassii": "HAND-DOWNLOAD",
+    "thunderbeast30p1": "BLOCKED",
+    "thunderbeastdominussr": "MAKER-PUBLISHES-NOTHING",
+    "thunderbeastmagnusk": "MAKER-PUBLISHES-NOTHING",
+    "thunderbeastmagnusrr": "MAKER-PUBLISHES-NOTHING",
+    "thunderbeastspiro": "MAKER-PUBLISHES-NOTHING",
+    "thunderbeastultra5": "MAKER-PUBLISHES-NOTHING",
+    "thunderbeastultra7": "MAKER-PUBLISHES-NOTHING",
+    "thunderbeastultra9": "MAKER-PUBLISHES-NOTHING",
+    "tikkat3xacetarget": "BLOCKED",
+    "tikkat3xsupervarmint": "BLOCKED",
+    "tikkat3xtaca1": "BLOCKED",
+    "tikkat3xupr": "BLOCKED",
+    "tisaspx9tacticalcomp": "BLOCKED",
+    "tokarevtt33surplus": "DEAD-END",
+    "traditions1873frontier": "BLOCKED",
+    "twoaarmamentxlr20": "HAND-DOWNLOAD",
+    "typhoondefencef12sport": "MAKER-PUBLISHES-NOTHING",
+    "varioussurplusm1carbine": "DEAD-END",
+    "varioussurplussks": "DEAD-END",
+    "volquartsenmambatf": "BLOCKED",
+    "vudoogunworksv22apparition": "BLOCKED",
+    "vudoogunworksv22priest": "BLOCKED",
+    "vudoogunworksv22three60": "BLOCKED",
+    "waltherccpm2": "NO-MANUAL",
+    "waltherlp500": "FETCHED",
+    "waltherpdpprofseries": "HAND-DOWNLOAD",
+    "waltherpdpsteelframe": "HAND-DOWNLOAD",
+    "waltherppqq5match": "HAND-DOWNLOAD",
+    "waltherq5matchsfpro": "HAND-DOWNLOAD",
+    "waltherq5matchsteelframe": "HAND-DOWNLOAD",
+    "waltherwmp": "HAND-DOWNLOAD",
+    "wbpjack": "MAKER-PUBLISHES-NOTHING",
+    "wilsoncombatcqb": "MAKER-PUBLISHES-NOTHING",
+    "wilsoncombatexperiordoublestack": "BLOCKED",
+    "wilsoncombatprotector": "NO-MANUAL",
+    "wilsoncombatrecontactical": "BLOCKED",
+    "wilsoncombatsfx9": "MAKER-PUBLISHES-NOTHING",
+    "yhmbadlarry": "MAKER-PUBLISHES-NOTHING",
+    "yhmmite": "MAKER-PUBLISHES-NOTHING",
+    "yhmresonatork": "BLOCKED",
+    "yhmsidewinderm2": "MAKER-PUBLISHES-NOTHING",
+    "yhmturbot3": "BLOCKED",
+    "zevoz9": "HAND-DOWNLOAD",
+    "zevtechnologiesoz9competition": "HAND-DOWNLOAD",
+    "zevtechnologiesoz9elitehypercomp": "HAND-DOWNLOAD",
+    "zolikronos": "MAKER-PUBLISHES-NOTHING",
+    "zolizbella": "MAKER-PUBLISHES-NOTHING",
+    "zolizsport": "MAKER-PUBLISHES-NOTHING",
+    "zolizsportextra": "MAKER-PUBLISHES-NOTHING"
+  };
+
+  const DOOR_DEAD_END = { "MAKER-PUBLISHES-NOTHING": 1, "DEAD-END": 1 };
+  function fsRowVerdict(f) {
+    if (!f || f.custom) return null;
+    return (typeof DOOR_VERDICT !== "undefined" && DOOR_VERDICT[f.model]) || null;
+  }
+  function fsIsDeadEnd(f) { return !!DOOR_DEAD_END[fsRowVerdict(f)]; }
+
+  function fsRowMakerModel(f) {
+    const c = catEntry(f && f.model);
+    return c ? { maker: c.mk, model: c.md } : null;
+  }
+
+
+  openReqSheet = function (pref) {
+    let sh = document.getElementById("reqSheet35");
+    if (!sh) {
+      sh = document.createElement("div");
+      sh.id = "reqSheet35"; sh.className = "prosheet";
+      document.body.appendChild(sh);
+      sh.addEventListener("click", e => { if (e.target.id === "reqSheet35") sh.classList.remove("open"); });
+    }
+    const guess = ((pref && pref.mk) || "") + " " + ((pref && pref.md) || "");
+    const open = reqOpen(), cap = reqCap();
+    const full = open.length >= cap;
+    const guns = safe.slice();
+
+    sh.innerHTML = '<div class="sheet"><button class="sheetx" id="rqX">×</button>' +
+      '<h3>REQUEST</h3>' +
+      '<p class="pp">Tell us what to build next. It is free, and it always will be.</p>' +
+      '<div class="field"><label for="rqKind">What is it?</label>' +
+        '<select id="rqKind">' + REQ_KINDS.map(k =>
+          '<option value="' + k.v + '">' + k.label + '</option>').join("") + '</select></div>' +
+      '<div class="field"><label for="rqText" id="rqLabel">Model name</label>' +
+        '<input type="text" id="rqText" autocomplete="off" value="' +
+        String(guess).trim().replace(/"/g, "&quot;") + '"></div>' +
+      (guns.length
+        ? '<div class="field"><label for="rqGun">Which firearm in your safe is this for?</label>' +
+          '<select id="rqGun">' + guns.map(f =>
+            '<option value="' + f.id + '">' + faInfo(f).name + '</option>').join("") + '</select></div>'
+        : '<div class="proreason">Add a firearm to your safe first — a request is tied to one of ' +
+          'your guns, which is also how many you can have open at once.</div>') +
+      '<div class="hint">' + open.length + ' of ' + cap + ' open — one per gun slot.</div>' +
+      '<button class="btn primary full" id="rqSend"' + (full || !guns.length ? " disabled" : "") + '>Send</button>' +
+      (full ? '<div class="proreason">You have a request open for every gun slot you have. ' +
+              'They close themselves when a guide arrives.</div>' : '') +
+      '<div class="hint" id="rqMsg" style="margin-top:8px"></div>' +
+      '<div class="proreason" style="margin-top:10px">We send the name and nothing else — ' +
+        'no account, no e-mail address, no device id, nothing about your safe.</div></div>';
+
+    const kindSel = sh.querySelector("#rqKind");
+    const label = sh.querySelector("#rqLabel");
+    kindSel.onchange = () => {
+      label.textContent = kindSel.value === "other" ? "What would you like?" : "Model name";
+    };
+    sh.querySelector("#rqX").onclick = () => sh.classList.remove("open");
+
+    const send = sh.querySelector("#rqSend");
+    if (send) send.onclick = () => {
+      const msg = sh.querySelector("#rqMsg");
+      const text = sh.querySelector("#rqText").value.trim();
+      const gunSel = sh.querySelector("#rqGun");
+      if (!text) { msg.textContent = "Type a name first."; return; }
+      if (reqAlreadySent(text)) { msg.textContent = "You've already asked for this one. It's on the list."; return; }
+      send.disabled = true; msg.textContent = "Sending…";
+      reqSend(kindSel.value, text, gunSel ? gunSel.value : null).then(() => {
+        sh.querySelector(".sheet").innerHTML =
+          '<button class="sheetx" id="rqX2">×</button>' +
+          '<div class="nfh">Request recorded.</div>' +
+          '<div class="nfb">Requested guns go to the front of the build queue, ahead of ' +
+            'everything we’d have picked ourselves.</div>' +
+          '<button class="btn primary full" id="rqRemind" style="margin-top:14px">' +
+            'Remind me to check</button>' +
+          '<div class="hint" id="rqRemindMsg" style="margin-top:8px"></div>';
+        sh.querySelector("#rqX2").onclick = () => sh.classList.remove("open");
+        const rm = sh.querySelector("#rqRemind");
+        rm.onclick = () => {
+          rm.disabled = true;
+          const ok = reqRemind(gunSel ? gunSel.value : null, text);
+          sh.querySelector("#rqRemindMsg").textContent = ok
+            ? "Reminder set — on this phone, nowhere else."
+            : "Add this firearm to your safe first — the reminder rides on the gun.";
+        };
+      }, () => {
+        send.disabled = false;
+        msg.textContent = "Couldn't send it — no signal. Try again when you have one.";
+      });
+    };
+    sh.classList.add("open");
+  };
+
+  function fsMountDoorWhy(f) {
+    const row = document.getElementById("heroDoorRow");
+    if (!row) return;
+    const existing = document.getElementById("fsDoorWhy");
+    const btn = document.getElementById("fieldstripBtn");
+    const show = f && fsDoorLabel(f) === "RECORD YOUR OWN STRIP";
+    if (!show) { if (existing) existing.remove(); return; }
+
+    const el = existing || document.createElement("div");
+    el.id = "fsDoorWhy"; el.className = "fsdoorwhy";
+
+    const mm = fsRowMakerModel(f);
+    if (fsIsDeadEnd(f) && mm) {
+      el.classList.add("deadend");
+      el.innerHTML =
+        '<div class="nfh">We looked. ' + esc(mm.maker) + " doesn't publish one.</div>" +
+        '<div class="nfb">We searched ' + esc(mm.maker) + "'s own site and support pages, " +
+          'public archives, and the published armorer references. There’s no disassembly ' +
+          'procedure for the ' + esc(mm.model) + ' in print anywhere we can reach.</div>' +
+        '<div class="nfb">We don’t guess. A wrong step on a gun nobody has documented is ' +
+          'worse than no step at all.</div>' +
+        '<div class="nfb">So build your own. Strip it, photograph each step, name it in your ' +
+          'words — and you’ll have a field strip record for this gun that exists ' +
+          'nowhere else.</div>';
+      if (btn) btn.textContent = "Build my own field strip.";
+    } else {
+      el.classList.remove("deadend");
+      el.innerHTML =
+        '<div class="nfh">Not in the list yet.</div>' +
+        '<div class="nfb">This one just hasn’t been built.</div>' +
+        '<div class="nfacts"><button class="btn sm" type="button" id="fsDoorReq">' +
+          'Request it — requests get built first</button></div>';
+    }
+    if (!existing) row.insertBefore(el, row.firstChild);
+
+    const rq = el.querySelector("#fsDoorReq");
+    if (rq) rq.onclick = () => {
+      const c = catEntry(f && f.model);
+      openReqSheet(c ? { mk: c.mk || "", md: c.md || "", ch: c.ch || "", ct: c.ct || "" }
+                     : { mk: (f && f.cmk) || "", md: (f && f.cmd) || "" });
+    };
+  }
+
+
+  window.FS_VC35 = {
+    libraryBase(){ return LIBRARY_BASE; },
+    receiverUrl(){ return RECEIVER_URL; },
+    buildVersion(){ return LIBRARY_INDEX_VERSION; },
+    heldVersion(){ return libVersion(); },
+    mergedRows(){ return Object.keys(libState().rows || {}).length; },
+    deltaNote(){ return libNote(); },
+    hasGuide(id){ return libHasGuide(id); },
+    guideKeyFor(id){ return libKeyForModel(id); },
+    fetchedRows(){ return Object.keys(libGuides()); },
+    reqCap(){ return reqCap(); },
+    reqOpenCount(){ return reqOpen().length; },
+    reqSentKeys(){ return Object.keys(reqState().sent || {}); },
+    reqAlreadySent(t){ return reqAlreadySent(t); },
+    reqComposed(kind, text){ return reqCompose(kind, text); },
+    doorVerdict(id){ return (typeof DOOR_VERDICT!=="undefined" && DOOR_VERDICT[id]) || null; },
+    doorScreen(f){ return fsIsDeadEnd(f) ? 3 : 1; },
+    rowMakerModel(f){ return fsRowMakerModel(f); },
+    deadEndVerdicts(){ return Object.keys(DOOR_DEAD_END).sort(); },
+    guideShapeOf(id){
+      const k = libKeyForModel(id), g = k ? GUNS[k] : null;
+      if(!g) return null;
+      return { key:k, steps:(g.steps||[]).length, deep:(g.deepSteps||[]).length,
+               cleaning:(g.cleaning||[]).length, branch:(g.steps||[]).some(s=>s.branch),
+               bodies:(g.steps||[]).map(s=>String(s.body||"")) };
+    }
+  };
+
+
+  libReqReconcile();
 
   renderSafe();
   BenchBoot.run();
