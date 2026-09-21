@@ -60205,7 +60205,6 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const REQ_MAX_CHARS = 120;
   const REQ_MIN_GAP_MS = 5000;
 
-  const REQ_OTHER_CAP = 5;
 
   function reqFailLine(e) {
     const nm = String((e && e.name) || "");
@@ -60219,42 +60218,71 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     return "Couldn’t send it. Nothing was recorded — try again later.";
   }
 
-  function reqCustomFor(text) {
-    const k = reqKey(text);
-    if (!k) return null;
-    return safe.find(f => f && f.custom &&
-      reqKey(((f.cmk || "") + " " + (f.cmd || "")).trim()) === k) || null;
-  }
-  function reqMakeCustom(text) {
-    const now = Date.now();
-    const f = { id: now.toString(36) + "_req", custom: true, model: null,
-      cmk: "", cmd: String(text).trim(), cch: "", cct: "", ccap: null, cfam: null,
-      totalRounds: 0, roundsSinceClean: 0, roundsSinceSpring: 0, lastClean: null, lastChems: "",
-      cleanInterval: 0, log: [{ ts: now, type: "note", msg: "Added by a guide request" }],
-      mags: [], magRotDays: 90, reminders: [], service: [], zeros: [] };
-    f.cleanInterval = defaultCleanIv(f);
-    safe.unshift(f); saveSafe();
-    try { renderSafe(); } catch (e) {}
-    return f;
-  }
-  function reqOpenGuns() { return reqOpen().filter(r => r.kind !== "other"); }
-  function reqOpenOther() { return reqOpen().filter(r => r.kind === "other"); }
-  function reqCap() { return isPro() ? safe.length : FREE_MAX_GUNS; }
+
+  const REQ_CAP = 5;
+
   function reqOpen() { return (reqState().open || []).filter(r => !r.closed); }
   function reqKey(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
   function reqAlreadySent(text) { return !!(reqState().sent || {})[reqKey(text)]; }
 
+  function reqMatchRow(text) {
+    const k = reqKey(text);
+    if (!k) return null;
+    try {
+      for (const c of CATALOG) {
+        if (reqKey((c.mk || "") + " " + (c.md || "")) !== k) continue;
+        return guideWalkable(libKeyForModel(c.i)) ? c : null;
+      }
+    } catch (e) {}
+    return null;
+  }
   function libReqReconcile() {
     try {
       const s = reqState();
       let moved = 0;
+      const arrived = [];
       (s.open || []).forEach(r => {
-        if (r.closed || !r.gunId) return;
-        const f = safe.find(x => x.id === r.gunId);
-        if (f && guideWalkable(fkey(f))) { r.closed = Date.now(); moved++; }
+        if (r.closed || r.kind === "other") return;   
+        const c = reqMatchRow(r.text);
+        if (!c) return;
+        r.closed = Date.now();
+        moved++;
+        arrived.push(((c.mk || "") + " " + (c.md || "")).trim());
       });
-      if (moved) reqSave(s);
+      if (moved) {
+        s.arrived = (s.arrived || []).concat(arrived);
+        reqSave(s);
+      }
       return moved;
+    } catch (e) { return 0; }
+  }
+
+  function reqArrivedNotice() {
+    try {
+      const s = reqState();
+      const names = (s.arrived || []).filter(Boolean);
+      if (!names.length) return 0;
+      let bar = document.getElementById("reqArrived");
+      if (!bar) {
+        bar = document.createElement("div");
+        bar.id = "reqArrived";
+        bar.className = "proreason";
+        bar.style.cssText = "margin:10px 12px;display:flex;gap:10px;align-items:flex-start";
+        const host = document.getElementById("scr-safe") || document.body;
+        host.insertBefore(bar, host.firstChild);
+      }
+      const one = names.length === 1
+        ? "The guide you asked for is here: " + names[0] + "."
+        : "The guides you asked for are here: " + names.join(", ") + ".";
+      bar.innerHTML = '<div style="flex:1"></div>' +
+        '<button class="btn" id="reqArrivedX" style="flex:0 0 auto">Got it</button>';
+      bar.firstChild.textContent = one;
+      const x = bar.querySelector("#reqArrivedX");
+      x.onclick = () => {
+        const st = reqState(); st.arrived = []; reqSave(st);
+        bar.remove();
+      };
+      return names.length;
     } catch (e) { return 0; }
   }
 
@@ -60277,16 +60305,6 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     });
   }
 
-  function reqRemind(gunId, label) {
-    const f = safe.find(x => x.id === gunId);
-    if (!f) return false;
-    f.reminders = f.reminders || [];
-    f.reminders.push({ id: Date.now().toString(36), label: "Check for a guide: " + label,
-                       every: 30, unit: "days", last: Date.now() });
-    saveSafe();
-    if (typeof syncNotifications === "function") { try { syncNotifications(); } catch (e) {} }
-    return true;
-  }
 
   const DOOR_VERDICT = {
     "DPMS Oracle": "NO-MANUAL",
@@ -60793,30 +60811,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     function syncKind() {
       const other = kindSel.value === "other";
       label.textContent = other ? "What would you like?" : "Model name";
-      if (other) {
-        const n = reqOpenOther().length;
-        tie.textContent = "No firearm is tied to this one. " + n + " of " + REQ_OTHER_CAP + " open.";
-        const full = n >= REQ_OTHER_CAP;
-        sendBtn.disabled = full;
-        capNote.hidden = !full;
-        capNote.textContent = full
-          ? "You have " + REQ_OTHER_CAP + " of these open already. They close when we answer them."
-          : "";
-        return;
-      }
       const typed = (sh.querySelector("#rqText").value || "").trim();
-      const match = typed ? reqCustomFor(typed) : null;
-      if (match) {
-        tie.textContent = "This requests a guide for " + faInfo(match).name + ", already in your safe.";
-        sendBtn.disabled = false; capNote.hidden = true; return;
-      }
-      const room = canAddCustom();
-      tie.textContent = room
-        ? "This adds it to your safe as a custom firearm and requests its guide."
-        : "Your safe is full, so this one cannot be added yet.";
-      sendBtn.disabled = !room;
-      capNote.hidden = room;
-      capNote.textContent = room ? "" : customGateReason();
+      const openN = reqOpen().length;
+      const full = openN >= REQ_CAP;
+      tie.textContent = other
+        ? "This asks us to build it. Nothing is added to your safe."
+        : (typed
+            ? "This asks for a guide for " + typed + ". Nothing is added to your safe."
+            : "This asks for a guide for the name you type. Nothing is added to your safe.");
+      sendBtn.disabled = full;
+      capNote.hidden = !full;
+      capNote.textContent = full
+        ? "You have " + REQ_CAP + " requests open. They close themselves when a guide arrives."
+        : "";
     }
     kindSel.onchange = syncKind;
     sh.querySelector("#rqText").addEventListener("input", syncKind);
@@ -60840,35 +60847,19 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
                           REQ_MAX_CHARS + " characters.";
         return;
       }
-      let tied = null;
-      if (kindSel.value !== "other") {
-        tied = reqCustomFor(text);
-        if (!tied) {
-          if (!canAddCustom()) { msg.textContent = customGateReason(); return; }
-          tied = reqMakeCustom(text);
-        }
+      if (reqOpen().length >= REQ_CAP) {
+        msg.textContent = "You have " + REQ_CAP + " requests open. They close themselves when a guide arrives.";
+        return;
       }
       send.disabled = true; msg.textContent = "Sending…";
-      reqSend(kindSel.value, text, tied ? tied.id : null).then(() => {
+      reqSend(kindSel.value, text, null).then(() => {
         sh.querySelector(".sheet").innerHTML =
           '<button class="sheetx" id="rqX2">×</button>' +
           '<div class="nfh">Request recorded.</div>' +
           '<div class="nfb">Requested guns go to the front of the build queue, ahead of ' +
             'everything we’d have picked ourselves.</div>' +
-          (tied
-            ? '<button class="btn primary full" id="rqRemind" style="margin-top:14px">' +
-              'Remind me to check</button>' +
-              '<div class="hint" id="rqRemindMsg" style="margin-top:8px"></div>'
-            : '');
+          '';
         sh.querySelector("#rqX2").onclick = () => sh.classList.remove("open");
-        const rm = sh.querySelector("#rqRemind");
-        if (rm) rm.onclick = () => {
-          rm.disabled = true;
-          const ok = reqRemind(tied ? tied.id : null, text);
-          sh.querySelector("#rqRemindMsg").textContent = ok
-            ? "Reminder set — on this phone, nowhere else."
-            : "Add this firearm to your safe first — the reminder rides on the gun.";
-        };
       }, (e) => {
         send.disabled = false;
         msg.textContent = reqFailLine(e);
@@ -60951,7 +60942,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     hasGuide(id){ return libHasGuide(id); },
     guideKeyFor(id){ return libKeyForModel(id); },
     fetchedRows(){ return Object.keys(libGuides()); },
-    reqCap(){ return reqCap(); },
+    reqCap(){ return REQ_CAP; },
     reqOpenCount(){ return reqOpen().length; },
     reqSentKeys(){ return Object.keys(reqState().sent || {}); },
     reqLastSentAt(){ return Number(reqState().lastSentAt || 0); },
@@ -60974,6 +60965,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   libReqReconcile();
 
   renderSafe();
+  reqArrivedNotice();   
   BenchBoot.run();
   if(FS_WEB_BUILD) webNotice();   
 })();
