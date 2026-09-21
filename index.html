@@ -60204,6 +60204,41 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function reqSave(o) { libWrite("fs_req", o); }
   const REQ_MAX_CHARS = 120;
   const REQ_MIN_GAP_MS = 5000;
+
+  const REQ_OTHER_CAP = 5;
+
+  function reqFailLine(e) {
+    const nm = String((e && e.name) || "");
+    const ms = String((e && e.message) || "");
+    const off = (ms === "offline") ||
+                (typeof navigator !== "undefined" && navigator.onLine === false);
+    if (off) return "Couldn’t send it — no signal. Try again when you have one.";
+    if (nm === "AbortError") return "That took too long to send. Nothing was recorded — try again in a moment.";
+    if (/^HTTP \d/.test(ms)) return "The receiver turned it away. Nothing was recorded — try again later.";
+    if (nm === "TypeError") return "Your connection is working, but the send did not get through. A content blocker, a VPN or a filtered DNS will do this. Nothing was recorded.";
+    return "Couldn’t send it. Nothing was recorded — try again later.";
+  }
+
+  function reqCustomFor(text) {
+    const k = reqKey(text);
+    if (!k) return null;
+    return safe.find(f => f && f.custom &&
+      reqKey(((f.cmk || "") + " " + (f.cmd || "")).trim()) === k) || null;
+  }
+  function reqMakeCustom(text) {
+    const now = Date.now();
+    const f = { id: now.toString(36) + "_req", custom: true, model: null,
+      cmk: "", cmd: String(text).trim(), cch: "", cct: "", ccap: null, cfam: null,
+      totalRounds: 0, roundsSinceClean: 0, roundsSinceSpring: 0, lastClean: null, lastChems: "",
+      cleanInterval: 0, log: [{ ts: now, type: "note", msg: "Added by a guide request" }],
+      mags: [], magRotDays: 90, reminders: [], service: [], zeros: [] };
+    f.cleanInterval = defaultCleanIv(f);
+    safe.unshift(f); saveSafe();
+    try { renderSafe(); } catch (e) {}
+    return f;
+  }
+  function reqOpenGuns() { return reqOpen().filter(r => r.kind !== "other"); }
+  function reqOpenOther() { return reqOpen().filter(r => r.kind === "other"); }
   function reqCap() { return isPro() ? safe.length : FREE_MAX_GUNS; }
   function reqOpen() { return (reqState().open || []).filter(r => !r.closed); }
   function reqKey(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
@@ -60733,9 +60768,6 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       sh.addEventListener("click", e => { if (e.target.id === "reqSheet35") sh.classList.remove("open"); });
     }
     const guess = ((pref && pref.mk) || "") + " " + ((pref && pref.md) || "");
-    const open = reqOpen(), cap = reqCap();
-    const full = open.length >= cap;
-    const guns = safe.slice();
 
     sh.innerHTML = '<div class="sheet"><button class="sheetx" id="rqX">×</button>' +
       '<h3>REQUEST</h3>' +
@@ -60746,32 +60778,55 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       '<div class="field"><label for="rqText" id="rqLabel">Model name</label>' +
         '<input type="text" id="rqText" autocomplete="off" maxlength="' + REQ_MAX_CHARS +
         '" value="' + String(guess).trim().replace(/"/g, "&quot;") + '"></div>' +
-      (guns.length
-        ? '<div class="field"><label for="rqGun">Which firearm in your safe is this for?</label>' +
-          '<select id="rqGun">' + guns.map(f =>
-            '<option value="' + f.id + '">' + faInfo(f).name + '</option>').join("") + '</select></div>'
-        : '<div class="proreason">Add a firearm to your safe first — a request is tied to one of ' +
-          'your guns, which is also how many you can have open at once.</div>') +
-      '<div class="hint">' + open.length + ' of ' + cap + ' open — one per gun slot.</div>' +
-      '<button class="btn primary full" id="rqSend"' + (full || !guns.length ? " disabled" : "") + '>Send</button>' +
-      (full ? '<div class="proreason">You have a request open for every gun slot you have. ' +
-              'They close themselves when a guide arrives.</div>' : '') +
+      '<div class="hint" id="rqTie"></div>' +
+      '<button class="btn primary full" id="rqSend">Send</button>' +
+      '<div class="proreason" id="rqCapNote" hidden></div>' +
       '<div class="hint" id="rqMsg" style="margin-top:8px"></div>' +
       '<div class="proreason" style="margin-top:10px">We send the name and nothing else — ' +
         'no account, no e-mail address, no device id, nothing about your safe.</div></div>';
 
     const kindSel = sh.querySelector("#rqKind");
     const label = sh.querySelector("#rqLabel");
-    kindSel.onchange = () => {
-      label.textContent = kindSel.value === "other" ? "What would you like?" : "Model name";
-    };
+    const tie = sh.querySelector("#rqTie");
+    const capNote = sh.querySelector("#rqCapNote");
+    const sendBtn = sh.querySelector("#rqSend");
+    function syncKind() {
+      const other = kindSel.value === "other";
+      label.textContent = other ? "What would you like?" : "Model name";
+      if (other) {
+        const n = reqOpenOther().length;
+        tie.textContent = "No firearm is tied to this one. " + n + " of " + REQ_OTHER_CAP + " open.";
+        const full = n >= REQ_OTHER_CAP;
+        sendBtn.disabled = full;
+        capNote.hidden = !full;
+        capNote.textContent = full
+          ? "You have " + REQ_OTHER_CAP + " of these open already. They close when we answer them."
+          : "";
+        return;
+      }
+      const typed = (sh.querySelector("#rqText").value || "").trim();
+      const match = typed ? reqCustomFor(typed) : null;
+      if (match) {
+        tie.textContent = "This requests a guide for " + faInfo(match).name + ", already in your safe.";
+        sendBtn.disabled = false; capNote.hidden = true; return;
+      }
+      const room = canAddCustom();
+      tie.textContent = room
+        ? "This adds it to your safe as a custom firearm and requests its guide."
+        : "Your safe is full, so this one cannot be added yet.";
+      sendBtn.disabled = !room;
+      capNote.hidden = room;
+      capNote.textContent = room ? "" : customGateReason();
+    }
+    kindSel.onchange = syncKind;
+    sh.querySelector("#rqText").addEventListener("input", syncKind);
+    syncKind();
     sh.querySelector("#rqX").onclick = () => sh.classList.remove("open");
 
     const send = sh.querySelector("#rqSend");
     if (send) send.onclick = () => {
       const msg = sh.querySelector("#rqMsg");
       const text = sh.querySelector("#rqText").value.trim();
-      const gunSel = sh.querySelector("#rqGun");
       if (!text) { msg.textContent = "Type a name first."; return; }
       if (reqAlreadySent(text)) { msg.textContent = "You've already asked for this one. It's on the list."; return; }
       const lastAt = Number(reqState().lastSentAt || 0);
@@ -60785,28 +60840,38 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
                           REQ_MAX_CHARS + " characters.";
         return;
       }
+      let tied = null;
+      if (kindSel.value !== "other") {
+        tied = reqCustomFor(text);
+        if (!tied) {
+          if (!canAddCustom()) { msg.textContent = customGateReason(); return; }
+          tied = reqMakeCustom(text);
+        }
+      }
       send.disabled = true; msg.textContent = "Sending…";
-      reqSend(kindSel.value, text, gunSel ? gunSel.value : null).then(() => {
+      reqSend(kindSel.value, text, tied ? tied.id : null).then(() => {
         sh.querySelector(".sheet").innerHTML =
           '<button class="sheetx" id="rqX2">×</button>' +
           '<div class="nfh">Request recorded.</div>' +
           '<div class="nfb">Requested guns go to the front of the build queue, ahead of ' +
             'everything we’d have picked ourselves.</div>' +
-          '<button class="btn primary full" id="rqRemind" style="margin-top:14px">' +
-            'Remind me to check</button>' +
-          '<div class="hint" id="rqRemindMsg" style="margin-top:8px"></div>';
+          (tied
+            ? '<button class="btn primary full" id="rqRemind" style="margin-top:14px">' +
+              'Remind me to check</button>' +
+              '<div class="hint" id="rqRemindMsg" style="margin-top:8px"></div>'
+            : '');
         sh.querySelector("#rqX2").onclick = () => sh.classList.remove("open");
         const rm = sh.querySelector("#rqRemind");
-        rm.onclick = () => {
+        if (rm) rm.onclick = () => {
           rm.disabled = true;
-          const ok = reqRemind(gunSel ? gunSel.value : null, text);
+          const ok = reqRemind(tied ? tied.id : null, text);
           sh.querySelector("#rqRemindMsg").textContent = ok
             ? "Reminder set — on this phone, nowhere else."
             : "Add this firearm to your safe first — the reminder rides on the gun.";
         };
-      }, () => {
+      }, (e) => {
         send.disabled = false;
-        msg.textContent = "Couldn't send it — no signal. Try again when you have one.";
+        msg.textContent = reqFailLine(e);
       });
     };
     sh.classList.add("open");
