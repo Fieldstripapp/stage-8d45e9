@@ -59979,7 +59979,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   const LIBRARY_BASE = "https://library.fieldstripapp.com";
   const RECEIVER_URL = "https://fieldstrip-receiver.fieldstrip.workers.dev/";
 
-  const LIBRARY_INDEX_VERSION = 16;
+  const LIBRARY_INDEX_VERSION = 17;
 
   function libRead(k, dflt) {
     try { const s = BenchEnv.store.getRaw(k); return s ? JSON.parse(s) : dflt; }
@@ -60896,8 +60896,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     } else {
       el.classList.remove("deadend");
       el.innerHTML =
-        '<div class="nfh">Not in the list yet.</div>' +
-        '<div class="nfb">This one just hasn’t been built.</div>' +
+        '<div class="nfh">In the list. No guide yet.</div>' +
+        '<div class="nfb">The row is here. The walk-through behind it hasn’t been built.</div>' +
         '<div class="nfacts"><button class="btn sm" type="button" id="fsDoorReq">' +
           'Request it — requests get built first</button></div>';
     }
