@@ -369,9 +369,9 @@
   .step-eyebrow .phase{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
   .step-info h2{font-family:var(--display);font-weight:600;font-size:18px;margin-top:4px;letter-spacing:.4px}
   .step-info p{font-size:13.5px;line-height:1.55;margin-top:6px}
-  .step-info .warn{margin-top:10px;padding:0;background:none;border:none;color:#E5A093;font-size:12.5px;line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+  .step-info .warn,#cleanList .warn{margin-top:10px;padding:0;background:none;border:none;color:#E5A093;font-size:12.5px;line-height:1.5;display:flex;gap:8px;align-items:flex-start}
   .step-info .warn[hidden]{display:none!important}
-  .step-info .warn::before{content:"⚠";flex-shrink:0;font-size:17px;line-height:1.1;color:var(--safe-red)}
+  .step-info .warn::before,#cleanList .warn::before{content:"⚠";flex-shrink:0;font-size:17px;line-height:1.1;color:var(--safe-red)}
   .progress{display:flex;gap:5px;padding:0 20px}
   .progress i{flex:1;height:3px;border-radius:2px;background:var(--edge);transition:background .3s}
   .progress i.done{background:var(--amber-dim)}
@@ -380,6 +380,7 @@
   .controls.three{gap:8px}
   .controls.three .btn{flex:1 1 0;min-width:0;padding:12px 10px;font-size:12px;letter-spacing:1px}
   .controls .btn[hidden]{display:none!important}
+  #cleanDeepBtn[hidden]{display:none!important} 
   .controls .primary{flex:1}
 
   .clean{padding:20px;display:flex;flex-direction:column;gap:12px}
@@ -393,6 +394,10 @@
   .comp.open .chev{transform:rotate(90deg)}
   .comp-body{display:none;border-top:1px solid var(--edge)}
   .comp.open .comp-body{display:block}
+  .comp-row .comp-body{border-top:none}
+  .comp-row .task{border-bottom:none}
+  .comp-row .trow-title{display:block;font-weight:600}
+  .comp-row .st-source,#cleanList .comp-row .warn{margin:0 16px 12px 46px}
   .task{display:flex;gap:11px;align-items:flex-start;padding:11px 16px;width:100%;background:none;border:none;border-bottom:1px solid var(--edge);color:var(--text);cursor:pointer;text-align:left;font-family:var(--body)}
   .task:last-child{border-bottom:none}
   .task .tbox{width:19px;height:19px;flex-shrink:0;border-radius:5px;margin-top:1px;border:2px solid var(--muted);color:transparent;display:flex;align-items:center;justify-content:center;font-size:12px}
@@ -527,6 +532,17 @@
   .gearrow{display:flex;align-items:center;gap:11px;background:#0e1013;
     border:1px solid var(--edge);border-radius:11px;padding:10px 12px;margin-top:8px}
   .gearmount{flex:0 0 auto;max-width:132px}
+  #scr-gear .attrow{margin-top:8px}
+  .suplow{flex:0 0 auto;font-family:var(--display);font-size:9.5px;letter-spacing:1.2px;color:#0C0E11;
+    background:var(--amber);border-radius:6px;padding:3px 7px;margin-left:6px}
+  .gearmountFull{width:100%;margin-top:0}
+  .supAdj{display:flex;align-items:center;gap:10px;margin:10px 0 2px}
+  .supAdj .btn{flex:0 0 52px;padding:9px 0;font-size:18px;line-height:1}
+  .supAdj .supQty{flex:1 1 auto;text-align:center;font-family:var(--display);font-size:22px;color:var(--text)}
+  .supAdj .supQty small{display:block;font-size:10px;letter-spacing:1.2px;color:var(--muted)}
+  .supRestock{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+  .supRestock .nf{flex:1 1 auto;margin:0}
+  .supRestock .btn{flex:0 0 auto}
   .photoslot{border:1px dashed var(--edge);border-radius:10px;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-family:var(--display);font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;background:#0e1013;cursor:pointer;text-align:center}
   .photoslot.filled{border-style:solid;border-color:rgba(95,163,107,.5)}
   .segrow{display:flex;gap:8px;margin-top:6px}
@@ -926,6 +942,7 @@
       <button class="btn primary full" id="addBtn" style="margin-top:14px">+ Add Firearm</button>
       <button class="btn primary full" id="addSupBtn" style="margin-top:8px">+ Add Suppressor</button>
       <button class="btn primary full" id="lockerSafeBtn" style="margin-top:8px">Ammo Locker</button>
+      <button class="btn primary full" id="gearSafeBtn" style="margin-top:8px">Gear Locker</button>
       <div class="spacer"></div>
       <button class="btn full officedoor" id="officeBtn">THE OFFICE</button>
       <button class="prorow" id="proRow" hidden></button>
@@ -968,6 +985,26 @@
         </div>
         <button class="btn sm primary" id="lkAdd" style="margin-top:11px">Add to Locker</button>
       </div>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-gear">
+    <div class="logform">
+      <h2>Gear Locker</h2>
+      <p class="sub">Things not mounted on a particular firearm, and the supplies you clean with.</p>
+      <div class="lifebox" id="gearShelf">
+        <div class="lrow"><span class="lt">Gear</span><span class="lv" id="gearCount"></span></div>
+        <div class="lmsg" id="gearMsg"></div>
+        <div id="gearList"></div>
+        <button class="btn sm primary full" id="gearAddBtn" style="margin-top:10px">+ ADD GEAR</button>
+      </div>
+      <div class="lifebox" id="supShelf" style="margin-top:14px">
+        <div class="lrow"><span class="lt">Supplies</span><span class="lv" id="supCount"></span></div>
+        <div class="lmsg" id="supMsg"></div>
+        <div id="supList"></div>
+        <button class="btn sm primary full" id="supAddBtn" style="margin-top:10px">+ ADD SUPPLY</button>
+      </div>
+      <div class="spacer"></div>
     </div>
   </section>
 
@@ -1829,6 +1866,7 @@
     <div class="clean">
       <div class="clean-head"><h2>Clean Each Component</h2><p id="cleanIntro"></p></div>
       <div id="cleanList"></div>
+      <button class="btn full" id="cleanDeepBtn" style="margin-top:6px" hidden>Deep Clean &#9656;</button>
       <button class="btn primary full" id="cleanGo" style="margin-top:6px">Reassembly &amp; Function Check</button>
     </div>
   </section>
@@ -2276,7 +2314,7 @@
 
   const KEY = "fs_attachments";
   const DIR = "bench/att";
-  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp","att","gear","malf","sess"];  
+  const PARENT_KINDS = ["firearm","mag","nfa","zero","ammo","svc","spec","stamp","att","gear","malf","sess","supply"];  
   const IMPORT_MAX_DIM = 2600;
   const THUMB_DIM = 320;
 
@@ -2741,6 +2779,18 @@
     });
     return buildCsv(rows);
   }
+  function buildSuppliesCsv(store){
+    const list=parse(store,"fs_supplies",[]);
+    const reg=parse(store,"fs_attachments",[]);
+    const countFiles=id=>reg.filter(x=>x&&x.parent&&x.parent.kind==="supply"&&x.parent.id===id).length;
+    const rows=[["id","name","kind","on_hand","unit","low_at","total_paid","units_bought","container","notes","added","files"]];
+    list.forEach(s=>{
+      rows.push([s.id||"", s.name||"", (s.kind==="Other"&&s.kindName)?s.kindName:(s.kind||""), +s.qty||0, s.unit||"count",
+        (typeof s.low==="number")?s.low:"", s.paid||"", s.bought||"", s.loc||"", s.notes||"",
+        s.addedAt?new Date(s.addedAt).toISOString().slice(0,10):"", countFiles(s.id)]);
+    });
+    return buildCsv(rows);
+  }
   function buildInventoryTemplate(){
     return buildCsv([INV_HEADERS.slice(),
       ["","Example Make","Example Model","9mm","","SN-000000","499.99","2026-01-31",
@@ -2816,7 +2866,7 @@
   }
 
   return {buildCsv, parseCsv, INV_HEADERS, ATT_HEADERS, buildAttachmentsCsv,
-          buildInventoryCsv, buildHistoryCsv, buildLockerCsv, buildInventoryTemplate,
+          buildInventoryCsv, buildHistoryCsv, buildLockerCsv, buildSuppliesCsv, buildInventoryTemplate,
           previewInventoryCsv, runInventoryImport};
 });
 
@@ -3352,8 +3402,8 @@
   function cardOpenIds(screen){ return Object.keys(cardOpenSet(screen)); }
   function cardsResetScreen(screen){ delete CARD_OPEN[screen]; }
 
-  const screens=["scr-safe","scr-pick","scr-detail","scr-logclean","scr-ammo","scr-ammoinv","scr-bench","scr-gate","scr-player","scr-clean","scr-done"];
-  const parents={"scr-pick":"scr-safe","scr-detail":"scr-safe","scr-logclean":"scr-detail","scr-ammo":"scr-detail","scr-ammoinv":"scr-detail","scr-bench":"scr-detail","scr-gate":"scr-detail","scr-player":"scr-gate","scr-clean":"scr-player","scr-done":"scr-clean"};
+  const screens=["scr-safe","scr-pick","scr-detail","scr-logclean","scr-ammo","scr-ammoinv","scr-gear","scr-bench","scr-gate","scr-player","scr-clean","scr-done"];
+  const parents={"scr-pick":"scr-safe","scr-detail":"scr-safe","scr-logclean":"scr-detail","scr-ammo":"scr-detail","scr-ammoinv":"scr-detail","scr-gear":"scr-safe","scr-bench":"scr-detail","scr-gate":"scr-detail","scr-player":"scr-gate","scr-clean":"scr-player","scr-done":"scr-clean"};
   const backBtn=document.getElementById("backBtn");
   const ctxLabel=document.getElementById("ctxLabel");
   let current="scr-safe";
@@ -5595,7 +5645,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
     const bb=document.getElementById("branchBtn");
-    bb.hidden=!(s.branch && !WALK.deep && gun.deepSteps);
+    const deepHere = WALK.mode==="clean" && stepIndex===steps.length-1 && !WALK.deep && !!(gun.deepSteps && gun.deepSteps.length);
+    bb.hidden=!deepHere;
     bb.innerHTML = "Deep Clean ▸" + (isPro() ? "" : ' <span class="protag">PRO</span>');
     bb.parentElement.classList.toggle("three",!bb.hidden);
     document.getElementById("stepPhase").textContent=s.phase;
@@ -5634,7 +5685,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(stepIndex>0){stepIndex--;renderStep();}
     else show("scr-detail");   
   });
-  document.getElementById("branchBtn").addEventListener("click",()=>{
+  function walkTakeDeep(){
     if(WALK.deep) return;
     if(!isPro()){ openProSheet(); return; }
     WALK.deep=true;
@@ -5642,14 +5693,52 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     buildProgress();
     stepIndex++;
     renderStep();
-  });
+  }
+  document.getElementById("branchBtn").addEventListener("click",()=>walkTakeDeep());
 
   const cleanList=document.getElementById("cleanList");
+  let cleanDeepTaken=false;
+  function cleanIsChecklistDeep(g){
+    return !!(g && g.deepSteps && g.deepSteps.length && g.cleaning && g.cleaning.length &&
+      !(g.steps||[]).some(s=>s.phase!=="Clear" && s.phase!=="Strip"));
+  }
+  function cleanDeepSync(){
+    const b=document.getElementById("cleanDeepBtn"); if(!b) return;
+    const all=cleanList.querySelectorAll(".task").length, done=cleanList.querySelectorAll(".task.done").length;
+    b.hidden=!(cleanIsChecklistDeep(activeGuide()) && !cleanDeepTaken && all>0 && done===all);
+    b.innerHTML = "Deep Clean ▸" + (isPro() ? "" : ' <span class="protag">PRO</span>');
+  }
+  function cleanRowGroup(comp){
+    const wrap=document.createElement("div");
+    wrap.className="comp open comp-row";
+    const body=document.createElement("div"); body.className="comp-body";
+    const task=document.createElement("button"); task.className="task";
+    task.innerHTML='<span class="tbox">✓</span><span class="tt"><span class="trow-title"></span><span class="trow-action"></span></span>';
+    task.querySelector(".trow-title").textContent=comp.title||"";
+    task.querySelector(".trow-action").textContent=comp.action||"";
+    task.addEventListener("click",()=>{ task.classList.toggle("done"); cleanDeepSync(); });
+    body.appendChild(task);
+    if(comp.quote){
+      const src=document.createElement("div"); src.className="st-source";
+      const q=document.createElement("span"); q.className="st-quote"; q.textContent="“"+comp.quote+"”"; src.appendChild(q);
+      if(comp.section){ const c=document.createElement("span"); c.className="st-cite"; c.textContent=comp.section; src.appendChild(c); }
+      body.appendChild(src);
+    }
+    if(comp.warn){
+      const w=document.createElement("div"); w.className="warn";
+      w.textContent = comp.warnSrc ? "“"+comp.warn+"”" : comp.warn;
+      body.appendChild(w);
+    }
+    wrap.appendChild(body);
+    return wrap;
+  }
   function buildCleaning(){
     const gun=activeGuide();
+    cleanDeepTaken=!!(WALK.on && WALK.deep);
     document.getElementById("cleanIntro").textContent=gun.cleanIntro;
     cleanList.innerHTML="";
     (gun.cleaning||[]).forEach((comp,ci)=>{
+      if(!Array.isArray(comp.tasks)){ cleanList.appendChild(cleanRowGroup(comp)); return; }   
       const wrap=document.createElement("div");
       const cid="comp"+ci;
       wrap.className="comp"+(cardIsOpen("scr-clean", cid)?" open":"");
@@ -5663,9 +5752,11 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       wrap.querySelectorAll(".task").forEach(task=>task.addEventListener("click",()=>{
         task.classList.toggle("done");
         wrap.querySelector(".count").textContent=`${doneCount()} / ${comp.tasks.length}`;
+        cleanDeepSync();
       }));
       cleanList.appendChild(wrap);
     });
+    cleanDeepSync();
   }
   document.getElementById("cleanGo").addEventListener("click",()=>{ buildDone(); show("scr-done"); });
   function buildDone(){
@@ -5920,7 +6011,27 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     locker(){ return gearRead(); },
     moveToLocker(fid, aid){ const f=byId(fid); if(f) attMoveToLocker(f, aid); },
     mount(gearId, fid){ return gearMount(gearId, fid); },
-    zerosOf(fid){ const f=byId(fid); return f ? (f.zeros||[]).slice() : []; }
+    zerosOf(fid){ const f=byId(fid); return f ? (f.zeros||[]).slice() : []; },
+    gearOpen(){ gearOpen(); },
+    gearOpenCard(id){ gearOpenCard(id); },
+    gearRemove(id){ gearRemove(id); },
+    supplies(){ return supRead(); },
+    supOpenCard(id){ supOpenCard(id); },
+    supAdjust(id, d){ supAdjust(id, d); supDraw(); },
+    supRestock(id, n, paid){ const ok=supRestock(id, n, paid); supDraw(); return ok; },
+    supRemove(id){ supRemove(id); },
+    supIsLow(s){ return supIsLow(s); },
+    importFile(parent, b64, opts){ return BenchAttach.importPhoto(BenchEnv.store, BenchEnv.files(), parent, b64, opts||{}); },
+    readFile(p){ return BenchEnv.files().readB64(p); },
+    exportBackup(opts){ return BenchExport.buildExport(BenchEnv.store, BenchEnv.files(), opts||{now:Date.now(), includePhotos:false, appVersion:"gate"}); },
+    importBackup(archive){ return BenchImport.runImport(BenchEnv.store, null, archive, {}); },
+    suppliesCsv(){ return BenchCsv.buildSuppliesCsv(BenchEnv.store); },
+    gridCount(parent, opts){ const d=document.createElement("div"); benchAttGrid(d, parent, opts||{}); return d.querySelectorAll(".attthumb:not(.add)").length; },
+    guideOf(model){ const k=fkey({model:model}); const g=k?GUNS[k]:null; const st=(g&&g.steps)||[];
+      return {key:k, hasClean:!!(g && (st.some(x=>x.phase==="Clean") || (g.cleaning&&g.cleaning.length))), cleanSteps:st.filter(x=>x.phase!=="Clear"&&x.phase!=="Strip").length,
+              strip:st.filter(x=>x.phase==="Clear"||x.phase==="Strip").length, hasDeep:!!(g&&g.deepSteps&&g.deepSteps.length),
+              plate:!!(typeof TM_PLATE_FOR!=="undefined" && TM_PLATE_FOR[model]), keys:g?Object.keys(g):null, stepsType:g?typeof g.steps:null}; },
+    pickRow(pred){ const c=CATALOG.find(x=>{ try{ return pred(x); }catch(e){ return false; } }); return c?c.i:null; }
   };
 
   (function attBootMigrate(){
@@ -5934,9 +6045,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }catch(e){  }
   })();
 
+  function benchAttKinds(opts){
+    const list = opts.only || opts.types || (opts.kind ? [opts.kind] : null);
+    if(!list) return null;
+    const set=new Set(list.map(k=>String(k).toLowerCase()));
+    if(set.has("receipt")||set.has("document")) set.add("note");
+    return set;
+  }
   function benchAttGrid(container, parent, opts){
     opts=opts||{};
-    const items=BenchAttach.listFor(BenchEnv.store, parent);
+    const kinds=benchAttKinds(opts);
+    const items=BenchAttach.listFor(BenchEnv.store, parent)
+      .filter(a=>!kinds || kinds.has(String(a.kind||"").toLowerCase()));
     container.innerHTML="";
     if(!BenchEnv.hasFS() && !items.length){ return 0; }
     let typeSel=null, otherName=null;
@@ -6905,53 +7025,394 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     saveSafe();
     return true;
   }
-  let gearSheet=null;
   function gearOpen(){
-    if(!gearSheet){
-      gearSheet=document.createElement("div");
-      gearSheet.className="prosheet"; gearSheet.id="gearSheet";
-      document.body.appendChild(gearSheet);
-      gearSheet.addEventListener("click",e=>{ if(e.target===gearSheet) gearSheet.classList.remove("open"); });
-    }
-    gearDraw();
-    gearSheet.classList.add("open");
+    gearDraw(); supDraw();
+    show("scr-gear");
   }
+  function gearById(id){ return gearRead().find(x=>x && x.id===id) || null; }
   function gearDraw(){
+    const host=document.getElementById("gearList"); if(!host) return;
     const locker=gearRead();
-    gearSheet.innerHTML=
-      `<div class="sheet attsheet">`
-      +`<button class="sheetx" id="glX">\u00d7</button>`
-      +`<div class="acType">Gear Locker</div>`
-      +`<div class="lmsg">Spares \u2014 anything not mounted on a particular firearm. Its photos and receipts came with it.</div>`
-      +(locker.length?`<div id="glList"></div>`
-        :`<div class="lmsg" style="margin-top:12px">Nothing in the Locker. Move an attachment off a firearm and it lands here with its files.</div>`)
-      +`</div>`;
-    gearSheet.querySelector("#glX").addEventListener("click",()=> gearSheet.classList.remove("open"));
-    const host=gearSheet.querySelector("#glList"); if(!host) return;
+    host.innerHTML="";
+    document.getElementById("gearCount").textContent = locker.length ? `${locker.length} thing${locker.length===1?"":"s"}` : "";
+    document.getElementById("gearMsg").textContent = locker.length
+      ? "Tap a thing for its photos, receipts and serial, or to mount it on a firearm."
+      : "Nothing in the Gear shelf yet.";
     locker.forEach(a=>{
       const files=attFilesOf(a);
-      const row=document.createElement("div"); row.className="gearrow";
+      const thumbRec=files.find(x=>x && x.thumb);
+      const row=document.createElement("button");
+      row.type="button"; row.className="attrow";
+      const bits=[];
+      if(a.serial) bits.push("S/N "+a.serial);
+      if(a.from&&a.from.name) bits.push("off "+a.from.name);
       row.innerHTML=
-        `<div class="attrow-ic"><span class="attrow-glyph">${esc(attTypeGlyph(a.type))}</span></div>`
-       +`<div class="attrow-body"><span class="attrow-type">${esc(attTypeLabel(a))}</span>`
+        `<span class="attrow-ic">${thumbRec?`<img alt="" data-thumb="${escAttr(thumbRec.thumb)}">`:`<span class="attrow-glyph">${esc(attTypeGlyph(a.type))}</span>`}</span>`
+       +`<span class="attrow-body">`
+       +`<span class="attrow-type">${esc(attTypeLabel(a))}</span>`
        +`<span class="attrow-name">${esc(a.name||attTypeLabel(a))}</span>`
-       +`<span class="attrow-det">${esc(a.from&&a.from.name?("off "+a.from.name):"")}${files.length?` \u00b7 ${files.length} file${files.length===1?"":"s"}`:""}</span></div>`;
-      const mount=document.createElement("select");
-      mount.className="gearmount";
-      mount.innerHTML=`<option value="">MOUNT ON\u2026</option>`
-        + safe.map(f=>`<option value="${escAttr(f.id)}">${esc(faInfo(f).name)}</option>`).join("");
-      mount.addEventListener("change",()=>{
-        if(!mount.value) return;
-        if(gearMount(a.id, mount.value)){
-          gearDraw();
-          const cur=byId(activeId); if(cur){ attRenderList(cur); }
-          benchAfterCardEdit();
-        }
-      });
-      row.appendChild(mount);
+       +(bits.length?`<span class="attrow-det">${esc(bits.join(" · "))}</span>`:"")
+       +`</span>`
+       +`<span class="attrow-files">${files.length?`${files.length} file${files.length===1?"":"s"}`:""}</span>`;
+      row.addEventListener("click",()=>gearOpenCard(a.id));
       host.appendChild(row);
+      const img=row.querySelector("img[data-thumb]");
+      if(img) benchLoadThumb(img, thumbRec);
     });
   }
+  let gearCardSheet=null, gearCardOn=null;
+  function gearCloseCard(){ if(gearCardSheet) gearCardSheet.classList.remove("open"); gearCardOn=null; }
+  function gearOpenCard(id){
+    if(!gearById(id)) return;
+    gearCardOn=id;
+    if(!gearCardSheet){
+      gearCardSheet=document.createElement("div");
+      gearCardSheet.className="prosheet"; gearCardSheet.id="gearCard";
+      document.body.appendChild(gearCardSheet);
+      gearCardSheet.addEventListener("click",e=>{ if(e.target===gearCardSheet) gearCloseCard(); });
+    }
+    gearDrawCard();
+    gearCardSheet.classList.add("open");
+  }
+  function gearDrawCard(){
+    if(!gearCardOn || !gearCardSheet) return;
+    const a=gearById(gearCardOn); if(!a){ gearCloseCard(); return; }
+    const bits=[];
+    if(a.serial) bits.push("S/N "+a.serial);
+    if(a.from&&a.from.name) bits.push("off "+a.from.name+(a.unmountedAt?" since "+fmtDate(a.unmountedAt):""));
+    gearCardSheet.innerHTML=
+      `<div class="sheet attsheet">`
+      +`<button class="sheetx" id="gcX">×</button>`
+      +`<div class="acHead"><span class="acGlyph">${esc(attTypeGlyph(a.type))}</span>`
+      +`<div><div class="acType">${esc(attTypeLabel(a))} · IN THE LOCKER</div>`
+      +`<div class="acName">${esc(a.name||attTypeLabel(a))}</div></div></div>`
+      +(bits.length?`<div class="acDet">${esc(bits.join(" · "))}</div>`:"")
+      +(a.notes?`<div class="acNotes">${esc(a.notes)}</div>`:"")
+      +`<div class="aclabel">PHOTOS</div><div id="gcPhotos"></div>`
+      +`<div class="aclabel">RECEIPTS &amp; FILES</div><div id="gcFiles"></div>`
+      +`<div class="aclabel">MOUNT ON</div>`
+      +`<select class="gearmount gearmountFull" id="gcMount"><option value="">Pick a firearm…</option>`
+      + safe.map(f=>`<option value="${escAttr(f.id)}">${esc(faInfo(f).name)}</option>`).join("")
+      +`</select>`
+      +`<div class="acActs">`
+      +`<button class="btn sm" id="gcEdit">EDIT</button>`
+      +`<button class="btn sm" id="gcDel">REMOVE</button>`
+      +`</div>`
+      +`</div>`;
+    gearCardSheet.querySelector("#gcX").addEventListener("click", gearCloseCard);
+    benchAttGrid(gearCardSheet.querySelector("#gcPhotos"), {kind:"att", id:a.id},
+      {kind:"photo", addLabel:"ADD PHOTO", onchange:()=>{ gearDrawCard(); gearDraw(); }});
+    benchAttGrid(gearCardSheet.querySelector("#gcFiles"), {kind:"att", id:a.id},
+      {kind:"receipt", types:["Receipt","Document"], addLabel:"ADD FILE",
+       onchange:()=>{ gearDrawCard(); gearDraw(); }});
+    gearCardSheet.querySelector("#gcMount").addEventListener("change",e=>{
+      const fid=e.target.value; if(!fid) return;
+      if(gearMount(a.id, fid)){
+        gearCloseCard(); gearDraw();
+        const cur=byId(activeId); if(cur){ attRenderList(cur); }
+        benchAfterCardEdit();
+      }
+    });
+    gearCardSheet.querySelector("#gcEdit").addEventListener("click",()=>{ gearCloseCard(); gearOpenSheet(a.id); });
+    let armed=false; const del=gearCardSheet.querySelector("#gcDel");
+    del.addEventListener("click",()=>{
+      if(!armed){ armed=true; del.textContent="TAP AGAIN TO REMOVE"; del.style.color="var(--safe-red)";
+                  setTimeout(()=>{ armed=false; del.textContent="REMOVE"; del.style.color=""; },4000); return; }
+      gearRemove(a.id);
+    });
+  }
+  function gearRemove(id){
+    const locker=gearRead();
+    const i=locker.findIndex(x=>x && x.id===id);
+    if(i<0) return;
+    locker.splice(i,1); gearWrite(locker);
+    gearCloseCard(); gearDraw(); benchAfterCardEdit();
+  }
+  function addSheetStrips(sheetEl, parent, onchange){
+    const seat=()=>{
+      const ph=sheetEl.querySelector("#"+parent.kind+"AddPhotos"), fl=sheetEl.querySelector("#"+parent.kind+"AddFiles");
+      if(ph) benchAttGrid(ph, parent, {kind:"photo", addLabel:"ADD PHOTO", onchange:()=>{ seat(); if(onchange) onchange(); }});
+      if(fl) benchAttGrid(fl, parent, {kind:"receipt", types:["Receipt","Document"], addLabel:"ADD FILE", onchange:()=>{ seat(); if(onchange) onchange(); }});
+    };
+    seat();
+    return seat;
+  }
+  function addSheetWatchCancel(sheetEl, pending){
+    if(sheetEl._cancelWatch){ sheetEl._cancelWatch.disconnect(); }
+    const mo=new MutationObserver(()=>{
+      if(sheetEl.classList.contains("open")) return;
+      mo.disconnect(); sheetEl._cancelWatch=null;
+      if(!pending.saved){ try{ deleteAttachmentsForIds([pending.id]); }catch(e){} }
+    });
+    mo.observe(sheetEl, {attributes:true, attributeFilter:["class"]});
+    sheetEl._cancelWatch=mo;
+  }
+  let gearSheetEl=null;
+  function gearOpenSheet(editId){
+    const editing = editId ? gearById(editId) : null;
+    const pending={id: editing ? editing.id : attMakeId(Date.now()), kind:"att", saved:!!editing};
+    if(!gearSheetEl){
+      gearSheetEl=document.createElement("div");
+      gearSheetEl.className="prosheet"; gearSheetEl.id="gearAddSheet";
+      document.body.appendChild(gearSheetEl);
+      gearSheetEl.addEventListener("click",e=>{ if(e.target===gearSheetEl) gearSheetEl.classList.remove("open"); });
+    }
+    let chosen = editing ? editing.type : "Optic";
+    const draw=()=>{
+      gearSheetEl.innerHTML=
+        `<div class="sheet attsheet">`
+        +`<button class="sheetx" id="gsX">×</button>`
+        +`<div class="acType">${editing?"Edit gear":"Add gear"}</div>`
+        +`<div class="aclabel">TYPE</div><div class="attchips" id="gsChips">`
+        + ATT_TYPES.map(t=>`<button type="button" class="attchip${t===chosen?" on":""}" data-t="${escAttr(t)}">${esc(t)}</button>`).join("")
+        +`</div>`
+        +`<div class="nf wide" id="gsOtherWrap"${chosen==="Other"?"":" hidden"}>`
+        +`<label for="gsOther">What is it called?</label>`
+        +`<input type="text" id="gsOther" maxlength="40" placeholder="e.g. Handstop" value="${escAttr(editing&&editing.type==="Other"?(editing.name||""):"")}"></div>`
+        +`<div class="nf wide"><label for="gsName">Name <span style="color:var(--safe-red)">*</span></label>`
+        +`<input type="text" id="gsName" maxlength="60" placeholder="e.g. Trijicon MRO" value="${escAttr(editing?editing.name||"":"")}"></div>`
+        +`<div class="nf wide"><label for="gsSerial">Serial (optional)</label><input type="text" id="gsSerial" maxlength="40" value="${escAttr(editing?editing.serial||"":"")}"></div>`
+        +`<div class="nf wide"><label for="gsNotes">Notes (optional)</label><input type="text" id="gsNotes" maxlength="140" value="${escAttr(editing?editing.notes||"":"")}"></div>`
+        +`<div class="aclabel">PHOTOS</div><div id="attAddPhotos"></div>`
+        +`<div class="aclabel">RECEIPTS &amp; FILES</div><div id="attAddFiles"></div>`
+        +`<div class="asErr" id="gsErr" hidden></div>`
+        +`<button class="btn sm primary full" id="gsSave" style="margin-top:11px">${editing?"SAVE":"ADD GEAR"}</button>`
+        +`</div>`;
+      gearSheetEl.dataset.pending=pending.id;
+      addSheetStrips(gearSheetEl, {kind:"att", id:pending.id}, ()=>{ gearDraw(); });
+      gearSheetEl.querySelector("#gsX").addEventListener("click",()=> gearSheetEl.classList.remove("open"));
+      gearSheetEl.querySelectorAll(".attchip").forEach(b=>b.addEventListener("click",()=>{ chosen=b.getAttribute("data-t"); draw(); }));
+      gearSheetEl.querySelector("#gsSave").addEventListener("click",()=>{
+        const nameEl=gearSheetEl.querySelector("#gsName");
+        const name=(nameEl.value||"").trim();
+        if(!name){ const e=gearSheetEl.querySelector("#gsErr");
+          e.textContent="Give it a name — that is what the row will read."; e.hidden=false;
+          nameEl.focus(); return; }
+        const locker=gearRead();
+        const rec = editing ? locker.find(x=>x && x.id===editing.id) : {id:pending.id, addedAt:Date.now(), from:null};
+        rec.type=chosen;
+        rec.name=name;
+        rec.serial=(gearSheetEl.querySelector("#gsSerial").value||"").trim();
+        rec.notes=(gearSheetEl.querySelector("#gsNotes").value||"").trim();
+        if(!editing) locker.push(rec);
+        gearWrite(locker);
+        pending.saved=true;
+        gearSheetEl.classList.remove("open");
+        gearDraw();
+        if(!editing) gearOpenCard(rec.id);
+      });
+    };
+    draw();
+    gearSheetEl.classList.add("open");
+    addSheetWatchCancel(gearSheetEl, pending);
+  }
+
+  const SUP_KEY="fs_supplies";
+  const SUP_KINDS=["Oil or CLP","Solvent","Grease","Patches","Rags","Brushes","Bore snake","Other"];
+  const SUP_UNITS=["count","oz","ml"];
+  function supRead(){ try{ const r=BenchEnv.store.getRaw(SUP_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; } }
+  function supWrite(list){ BenchEnv.store.setRaw(SUP_KEY, JSON.stringify(list||[])); }
+  function supById(id){ return supRead().find(x=>x && x.id===id) || null; }
+  let supSeq=0;
+  function supMakeId(){ supSeq=(supSeq+1)%46656; return "sup_"+Date.now().toString(36)+"_"+supSeq.toString(36); }
+  function supKindLabel(s){ return (s && s.kind==="Other" && s.kindName) ? s.kindName : ((s && s.kind) || "Other"); }
+  function supIsLow(s){ return !!s && typeof s.low==="number" && s.low>=0 && (+s.qty||0) <= s.low; }
+  function supQtyText(s){ const q=+s.qty||0; const u=s.unit||"count"; return u==="count" ? String(q) : `${q} ${u}`; }
+  function supFilesOf(s){ if(!s || !s.id) return []; try{ return BenchAttach.listFor(BenchEnv.store, {kind:"supply", id:s.id}); }catch(e){ return []; } }
+  function supDraw(){
+    const host=document.getElementById("supList"); if(!host) return;
+    const list=supRead();
+    host.innerHTML="";
+    const lowN=list.filter(supIsLow).length;
+    document.getElementById("supCount").textContent = list.length ? `${list.length} item${list.length===1?"":"s"}${lowN?` · ${lowN} low`:""}` : "";
+    document.getElementById("supMsg").textContent = list.length
+      ? "Tap a supply to adjust, restock or add a receipt."
+      : "Nothing in Supplies yet.";
+    list.forEach(s=>{
+      const files=supFilesOf(s);
+      const thumbRec=files.find(x=>x && x.thumb);
+      const row=document.createElement("button");
+      row.type="button"; row.className="attrow";
+      const bits=[supQtyText(s)];
+      if(s.loc) bits.push(s.loc);
+      row.innerHTML=
+        `<span class="attrow-ic">${thumbRec?`<img alt="" data-thumb="${escAttr(thumbRec.thumb)}">`:`<span class="attrow-glyph">▣</span>`}</span>`
+       +`<span class="attrow-body">`
+       +`<span class="attrow-type">${esc(supKindLabel(s))}</span>`
+       +`<span class="attrow-name">${esc(s.name||supKindLabel(s))}</span>`
+       +`<span class="attrow-det">${esc(bits.join(" · "))}</span>`
+       +`</span>`
+       +(supIsLow(s)?`<span class="suplow">LOW</span>`:"")
+       +`<span class="attrow-files">${files.length?`${files.length} file${files.length===1?"":"s"}`:""}</span>`;
+      row.addEventListener("click",()=>supOpenCard(s.id));
+      host.appendChild(row);
+      const img=row.querySelector("img[data-thumb]");
+      if(img) benchLoadThumb(img, thumbRec);
+    });
+  }
+  let supCardSheet=null, supCardOn=null;
+  function supCloseCard(){ if(supCardSheet) supCardSheet.classList.remove("open"); supCardOn=null; }
+  function supOpenCard(id){
+    if(!supById(id)) return;
+    supCardOn=id;
+    if(!supCardSheet){
+      supCardSheet=document.createElement("div");
+      supCardSheet.className="prosheet"; supCardSheet.id="supCard";
+      document.body.appendChild(supCardSheet);
+      supCardSheet.addEventListener("click",e=>{ if(e.target===supCardSheet) supCloseCard(); });
+    }
+    supDrawCard();
+    supCardSheet.classList.add("open");
+  }
+  function supAdjust(id, delta){
+    const list=supRead(); const s=list.find(x=>x && x.id===id); if(!s) return;
+    s.qty=Math.max(0, (+s.qty||0)+delta);
+    supWrite(list);
+  }
+  function supRestock(id, n, paid){
+    const list=supRead(); const s=list.find(x=>x && x.id===id); if(!s) return false;
+    n=Math.floor(+n||0); if(n<=0) return false;
+    s.qty=(+s.qty||0)+n;
+    paid=Math.max(0,+paid||0);
+    if(paid>0){ s.paid=(+s.paid||0)+paid; s.bought=(+s.bought||0)+n; }
+    supWrite(list);
+    return true;
+  }
+  function supDrawCard(){
+    if(!supCardOn || !supCardSheet) return;
+    const s=supById(supCardOn); if(!s){ supCloseCard(); return; }
+    const bits=[];
+    if(typeof s.low==="number") bits.push("low at "+s.low);
+    if(s.loc) bits.push(s.loc);
+    if(s.paid>0 && s.bought>0) bits.push(`$${(+s.paid).toFixed(2)} for ${s.bought}`);
+    supCardSheet.innerHTML=
+      `<div class="sheet attsheet">`
+      +`<button class="sheetx" id="scX">×</button>`
+      +`<div class="acHead"><span class="acGlyph">▣</span>`
+      +`<div><div class="acType">${esc(supKindLabel(s))}${supIsLow(s)?` · LOW`:""}</div>`
+      +`<div class="acName">${esc(s.name||supKindLabel(s))}</div></div></div>`
+      +(bits.length?`<div class="acDet">${esc(bits.join(" · "))}</div>`:"")
+      +(s.notes?`<div class="acNotes">${esc(s.notes)}</div>`:"")
+      +`<div class="aclabel">ON HAND</div>`
+      +`<div class="supAdj"><button class="btn sm" id="scMinus" type="button">−</button>`
+      +`<div class="supQty" id="scQty">${esc(supQtyText(s))}<small>${supIsLow(s)?"LOW — at or below "+s.low:(typeof s.low==="number"?"low mark at "+s.low:"no low mark")}</small></div>`
+      +`<button class="btn sm" id="scPlus" type="button">+</button></div>`
+      +`<div class="supRestock">`
+      +`<div class="nf"><label for="scRestockN">Restock (${esc(s.unit||"count")})</label><input type="number" id="scRestockN" min="1" inputmode="numeric" placeholder="e.g. 4"></div>`
+      +`<div class="nf"><label for="scRestockPaid">Price paid ($, total)</label><input type="number" id="scRestockPaid" min="0" step="0.01" inputmode="decimal" placeholder="optional"></div>`
+      +`<button class="btn sm primary" id="scRestock" type="button">RESTOCK</button></div>`
+      +`<div class="asErr" id="scErr" hidden></div>`
+      +`<div class="aclabel">PHOTOS</div><div id="scPhotos"></div>`
+      +`<div class="aclabel">RECEIPTS &amp; FILES</div><div id="scFiles"></div>`
+      +`<div class="acActs">`
+      +`<button class="btn sm" id="scEdit">EDIT</button>`
+      +`<button class="btn sm" id="scDel">REMOVE</button>`
+      +`</div>`
+      +`</div>`;
+    supCardSheet.querySelector("#scX").addEventListener("click", supCloseCard);
+    supCardSheet.querySelector("#scMinus").addEventListener("click",()=>{ supAdjust(s.id,-1); supDrawCard(); supDraw(); });
+    supCardSheet.querySelector("#scPlus").addEventListener("click",()=>{ supAdjust(s.id,+1); supDrawCard(); supDraw(); });
+    supCardSheet.querySelector("#scRestock").addEventListener("click",()=>{
+      const n=supCardSheet.querySelector("#scRestockN").value, paid=supCardSheet.querySelector("#scRestockPaid").value;
+      if(!supRestock(s.id, n, paid)){ const e=supCardSheet.querySelector("#scErr"); e.textContent="How many did you add? A whole number, 1 or more."; e.hidden=false; return; }
+      supDrawCard(); supDraw();
+    });
+    benchAttGrid(supCardSheet.querySelector("#scPhotos"), {kind:"supply", id:s.id},
+      {kind:"photo", addLabel:"ADD PHOTO", onchange:()=>{ supDrawCard(); supDraw(); }});
+    benchAttGrid(supCardSheet.querySelector("#scFiles"), {kind:"supply", id:s.id},
+      {kind:"receipt", types:["Receipt","Document"], addLabel:"ADD FILE",
+       onchange:()=>{ supDrawCard(); supDraw(); }});
+    supCardSheet.querySelector("#scEdit").addEventListener("click",()=>{ supCloseCard(); supOpenSheet(s.id); });
+    let armed=false; const del=supCardSheet.querySelector("#scDel");
+    del.addEventListener("click",()=>{
+      if(!armed){ armed=true; del.textContent="TAP AGAIN TO REMOVE"; del.style.color="var(--safe-red)";
+                  setTimeout(()=>{ armed=false; del.textContent="REMOVE"; del.style.color=""; },4000); return; }
+      supRemove(s.id);
+    });
+  }
+  function supRemove(id){
+    const list=supRead(); const i=list.findIndex(x=>x && x.id===id); if(i<0) return;
+    list.splice(i,1); supWrite(list);
+    supCloseCard(); supDraw(); benchAfterCardEdit();
+  }
+  let supSheetEl=null;
+  function supOpenSheet(editId){
+    const editing = editId ? supById(editId) : null;
+    const pending={id: editing ? editing.id : supMakeId(), kind:"supply", saved:!!editing};
+    if(!supSheetEl){
+      supSheetEl=document.createElement("div");
+      supSheetEl.className="prosheet"; supSheetEl.id="supAddSheet";
+      document.body.appendChild(supSheetEl);
+      supSheetEl.addEventListener("click",e=>{ if(e.target===supSheetEl) supSheetEl.classList.remove("open"); });
+    }
+    let chosen = editing ? editing.kind : "Oil or CLP";
+    let unit = editing ? (editing.unit||"count") : "oz";
+    const draw=()=>{
+      supSheetEl.innerHTML=
+        `<div class="sheet attsheet">`
+        +`<button class="sheetx" id="ssX">×</button>`
+        +`<div class="acType">${editing?"Edit supply":"Add supply"}</div>`
+        +`<div class="aclabel">KIND</div><div class="attchips" id="ssChips">`
+        + SUP_KINDS.map(t=>`<button type="button" class="attchip${t===chosen?" on":""}" data-t="${escAttr(t)}">${esc(t)}</button>`).join("")
+        +`</div>`
+        +`<div class="nf wide" id="ssOtherWrap"${chosen==="Other"?"":" hidden"}>`
+        +`<label for="ssOther">What kind of supply?</label>`
+        +`<input type="text" id="ssOther" maxlength="40" placeholder="e.g. Copper remover" value="${escAttr(editing&&editing.kindName?editing.kindName:"")}"></div>`
+        +`<div class="nf wide"><label for="ssName">Name <span style="color:var(--safe-red)">*</span></label>`
+        +`<input type="text" id="ssName" maxlength="60" placeholder="e.g. Break-Free CLP" value="${escAttr(editing?editing.name||"":"")}"></div>`
+        +`<div class="nfagrid">`
+        +`<div class="nf"><label for="ssQty">On hand</label><input type="number" id="ssQty" min="0" inputmode="numeric" placeholder="e.g. 8" value="${editing?escAttr(String(+editing.qty||0)):""}"></div>`
+        +`<div class="nf"><label for="ssUnit">Unit</label><select id="ssUnit">${SUP_UNITS.map(u=>`<option value="${u}"${u===unit?" selected":""}>${u}</option>`).join("")}</select></div>`
+        +`<div class="nf"><label for="ssLow">Low when at or below (optional)</label><input type="number" id="ssLow" min="0" inputmode="numeric" placeholder="e.g. 2" value="${editing&&typeof editing.low==="number"?escAttr(String(editing.low)):""}"></div>`
+        +`<div class="nf"><label for="ssPaid">Price paid ($, total)</label><input type="number" id="ssPaid" min="0" step="0.01" inputmode="decimal" placeholder="optional" value="${editing&&editing.paid>0?escAttr(String(editing.paid)):""}"></div>`
+        +`<div class="nf"><label for="ssLoc">Container / location</label><input type="text" id="ssLoc" maxlength="40" placeholder="e.g. Range bag" value="${escAttr(editing?editing.loc||"":"")}"></div>`
+        +`</div>`
+        +`<div class="nf wide"><label for="ssNotes">Notes (optional)</label><input type="text" id="ssNotes" maxlength="140" value="${escAttr(editing?editing.notes||"":"")}"></div>`
+        +`<div class="aclabel">PHOTOS</div><div id="supplyAddPhotos"></div>`
+        +`<div class="aclabel">RECEIPTS &amp; FILES</div><div id="supplyAddFiles"></div>`
+        +`<div class="asErr" id="ssErr" hidden></div>`
+        +`<button class="btn sm primary full" id="ssSave" style="margin-top:11px">${editing?"SAVE":"ADD SUPPLY"}</button>`
+        +`</div>`;
+      supSheetEl.dataset.pending=pending.id;
+      addSheetStrips(supSheetEl, {kind:"supply", id:pending.id}, ()=>{ supDraw(); });
+      supSheetEl.querySelector("#ssX").addEventListener("click",()=> supSheetEl.classList.remove("open"));
+      supSheetEl.querySelectorAll(".attchip").forEach(b=>b.addEventListener("click",()=>{ chosen=b.getAttribute("data-t"); unit=supSheetEl.querySelector("#ssUnit").value||unit; draw(); }));
+      supSheetEl.querySelector("#ssSave").addEventListener("click",()=>{
+        const nameEl=supSheetEl.querySelector("#ssName");
+        const name=(nameEl.value||"").trim();
+        if(!name){ const e=supSheetEl.querySelector("#ssErr");
+          e.textContent="Give it a name — that is what the row will read."; e.hidden=false;
+          nameEl.focus(); return; }
+        const list=supRead();
+        const rec = editing ? list.find(x=>x && x.id===editing.id) : {id:pending.id, addedAt:Date.now(), paid:0, bought:0};
+        rec.kind=chosen;
+        rec.kindName = chosen==="Other" ? (supSheetEl.querySelector("#ssOther").value||"").trim() : "";
+        rec.name=name;
+        rec.qty=Math.max(0, Math.floor(+supSheetEl.querySelector("#ssQty").value||0));
+        rec.unit=supSheetEl.querySelector("#ssUnit").value||"count";
+        const lowV=supSheetEl.querySelector("#ssLow").value;
+        rec.low = lowV==="" ? null : Math.max(0, Math.floor(+lowV||0));
+        const paidV=Math.max(0,+supSheetEl.querySelector("#ssPaid").value||0);
+        if(!editing){ if(paidV>0){ rec.paid=paidV; rec.bought=rec.qty; } }
+        else if(paidV!==(+rec.paid||0)){ rec.paid=paidV; }
+        rec.loc=(supSheetEl.querySelector("#ssLoc").value||"").trim();
+        rec.notes=(supSheetEl.querySelector("#ssNotes").value||"").trim();
+        if(!editing) list.push(rec);
+        supWrite(list);
+        pending.saved=true;
+        supSheetEl.classList.remove("open");
+        supDraw();
+        if(!editing) supOpenCard(rec.id);
+      });
+    };
+    draw();
+    supSheetEl.classList.add("open");
+    addSheetWatchCancel(supSheetEl, pending);
+  }
+  (function(){
+    const g=document.getElementById("gearAddBtn"); if(g) g.addEventListener("click",()=>gearOpenSheet(null));
+    const s=document.getElementById("supAddBtn"); if(s) s.addEventListener("click",()=>supOpenSheet(null));
+  })();
 
   function attRenderFiles(f){
     const box=document.getElementById("filesBox"); if(!box) return;
@@ -7015,6 +7476,10 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       (f.service||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"service"}); });
       (f.nfaFilings||[]).forEach(x=>{ if(x&&x.id) m.set(x.id, {f, name, what:"NFA filing"}); });
     });
+    if(!list){
+      try{ gearRead().forEach(a=>{ if(a&&a.id) m.set(a.id, {f:null, name:"Gear Locker", what:(a.name||a.type||"gear"), gear:a}); }); }catch(e){}
+      try{ supRead().forEach(s=>{ if(s&&s.id) m.set(s.id, {f:null, name:"Supplies", what:(s.name||"supply"), supply:s}); }); }catch(e){}
+    }
     return m;
   }
   function deleteAttachmentsFor(f){ return deleteAttachmentsForIds(attOwnedIds(f)); }
@@ -56018,7 +56483,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const s=steps[stepIndex];
     document.getElementById("stepNum").textContent=`STEP ${stepIndex+1} / ${steps.length}`;
     const bb=document.getElementById("branchBtn");
-    bb.hidden=!(s.branch && !WALK.deep && gun.deepSteps);
+    const deepHere = WALK.mode==="clean" && stepIndex===steps.length-1 && !WALK.deep && !!(gun.deepSteps && gun.deepSteps.length);
+    bb.hidden=!deepHere;
     bb.innerHTML = "Deep Clean ▸" + (isPro() ? "" : ' <span class="protag">PRO</span>');
     bb.parentElement.classList.toggle("three",!bb.hidden);
     document.getElementById("stepPhase").textContent=s.phase;
@@ -56887,8 +57353,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }).join("");
     return `<div class="heroplate" style="aspect-ratio:${aw} / ${ah};width:min(100%,${wCap}px)">${imgs}</div>`;
   }
+  const WALK_NO_FIGURE_FM = "AR15";
+  function walkFigureBarred(f){
+    const row = f && !f.custom ? catEntry(f.model) : null;
+    return !!(row && String(row.fm||"").trim() === WALK_NO_FIGURE_FM);
+  }
   function benchLaidOutUnder(f){
-    if(artFigureBarred(f)) return null;          
+    if(artFigureBarred(f) || walkFigureBarred(f)) return null;          
     return benchTmPlateFigure(f);
   }
   function benchTmPlateFigure(f){
@@ -58050,18 +58521,20 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const groups=new Map();
     items.slice().sort((a,b)=>(b.addedAt||0)-(a.addedAt||0)).forEach(a=>{
       const o=own.get(a.parent && a.parent.id);
-      const key=o?o.f.id:("~"+((a.parent&&a.parent.kind)||"other"));
+      const key=o?(o.f?o.f.id:("~locker:"+o.name)):("~"+((a.parent&&a.parent.kind)||"other"));
       const label=o?o.name:(((a.parent&&a.parent.kind)||"other")+" records");
       if(!groups.has(key)) groups.set(key,{key, label, items:[]});
       groups.get(key).items.push(a);
     });
     groups.forEach(g=>{
       const isGun=!/^~/.test(g.key||"");
-      const head=document.createElement(isGun?"button":"div");
-      head.className=isGun?"benchAttLink":"lmsg";
+      const isLocker=/^~locker:/.test(g.key||"");
+      const head=document.createElement((isGun||isLocker)?"button":"div");
+      head.className=(isGun||isLocker)?"benchAttLink":"lmsg";
       head.style.cssText="margin-top:10px;color:var(--text)";
       head.textContent=`${g.label} — ${g.items.length} file${g.items.length===1?"":"s"}`
-        + (isGun?"  ›":"");
+        + ((isGun||isLocker)?"  ›":"");
+      if(isLocker) head.addEventListener("click",()=>{ if(typeof gearOpen==="function") gearOpen(); });
       if(isGun) head.addEventListener("click",()=>{
         activeId=g.key; renderDetail(); show("scr-detail");
         const box=document.getElementById("attBox");
@@ -58832,6 +59305,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         <button class="btn sm" id="csvHist">History CSV</button>
         <button class="btn sm" id="csvAtt">Attachments CSV</button>
         <button class="btn sm" id="csvLocker">Locker CSV</button>
+        <button class="btn sm" id="csvSupplies">Supplies CSV</button>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
         <button class="btn sm" id="csvTemplate">Blank Template</button>
@@ -58844,6 +59318,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     csvBtn("csvHist",  ()=>benchCsvShare("fieldstrip-history",   BenchCsv.buildHistoryCsv(BenchEnv.store, CATALOG, {malfLabel:malfLabel})));
     csvBtn("csvAtt",   ()=>benchCsvShare("fieldstrip-attachments", BenchCsv.buildAttachmentsCsv(BenchEnv.store)));
     csvBtn("csvLocker",()=>benchCsvShare("fieldstrip-locker",    BenchCsv.buildLockerCsv(BenchEnv.store)));
+    csvBtn("csvSupplies",()=>benchCsvShare("fieldstrip-supplies", BenchCsv.buildSuppliesCsv(BenchEnv.store)));
     csvBtn("csvTemplate",()=>benchCsvShare("fieldstrip-import-template", BenchCsv.buildInventoryTemplate(),
                                            {name:"fieldstrip-import-template.csv"}));
     csvBtn("csvImport",()=>benchCsvImportFlow());
@@ -59100,7 +59575,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
   kegHomeRows();
 
-  const SAFE_MOVED_ROWS=["ownerRow","dataRow","backupRow","lockRow"];   
+  const SAFE_MOVED_ROWS=["ownerRow","dataRow","backupRow","lockRow","diagRow"];   
   function benchSafeRowText(){
     const cards=Object.keys(BENCH_CARD_LABELS).map(id=>BENCH_CARD_LABELS[id]);
     const moved=SAFE_MOVED_ROWS.map(id=>{
@@ -59132,6 +59607,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   function benchAdoptSettingsRows(){
     const host=benchOfficeSheet().querySelector("#officeHost");
     if(!host) return null;
+    if(typeof benchDiagnosticsRow==="function") benchDiagnosticsRow();
     SAFE_MOVED_ROWS.forEach(id=>{
       const el=document.getElementById(id);
       if(el && el.parentNode!==host) host.appendChild(el);
@@ -59147,23 +59623,40 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
   function benchDiagnosticsRow(){
     const host=benchOfficeSheet().querySelector("#officeHost"); if(!host) return;
-    let box=document.getElementById("officeDiag");
-    if(!box){
-      box=document.createElement("div"); box.id="officeDiag";
-      box.innerHTML='<div class="fo-sect" style="margin-top:18px">Diagnostics</div>'
-        +'<div class="hint">What the app saw the last times a library call or a request did not go through. Stays on this phone; paste it to support if you want help.</div>'
-        +'<pre id="officeDiagText" style="white-space:pre-wrap;font-size:11px;line-height:1.45;color:var(--muted);background:var(--panel2);border:1px solid var(--edge);border-radius:8px;padding:8px;margin:8px 0;max-height:220px;overflow:auto"></pre>'
+    const stale=document.getElementById("officeDiag"); if(stale) stale.remove();
+    let row=document.getElementById("diagRow");
+    const anchor=document.getElementById("backupRow")||document.getElementById("dataRow")||document.getElementById("ownerRow")||document.getElementById("lockRow");
+    if(!row){
+      row=document.createElement("button");
+      row.id="diagRow"; row.className="prorow";
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(row, anchor.nextSibling); else host.appendChild(row);
+      row.addEventListener("click",()=>benchDiagSheet());
+    }
+    row.innerHTML="<b>Diagnostics</b> — what the app saw when a call did not go through · Copy";
+  }
+  function benchDiagSheet(){
+    let sh=document.getElementById("diagSheet");
+    if(!sh){
+      sh=document.createElement("div"); sh.id="diagSheet"; sh.className="prosheet";
+      sh.innerHTML='<div class="sheet"><button class="sheetx" id="dgX">×</button>'
+        +'<h3>DIAGNOSTICS</h3>'
+        +'<p class="pp">What the app saw the last times a library call or a request did not go through. Stays on this phone; paste it to support if you want help.</p>'
+        +'<pre id="officeDiagText" style="white-space:pre-wrap;font-size:11px;line-height:1.45;color:var(--muted);background:var(--panel2);border:1px solid var(--edge);border-radius:8px;padding:8px;margin:8px 0;max-height:46vh;overflow:auto"></pre>'
         +'<button class="btn sm" type="button" id="officeDiagCopy">Copy</button>'
-        +'<span class="hint" id="officeDiagMsg" style="margin-left:8px"></span>';
-      host.appendChild(box);
-      box.querySelector("#officeDiagCopy").onclick=()=>{
-        const txt=libLogText(), msg=box.querySelector("#officeDiagMsg");
+        +'<span class="hint" id="officeDiagMsg" style="margin-left:8px"></span></div>';
+      document.body.appendChild(sh);
+      sh.addEventListener("click",e=>{ if(e.target.id==="diagSheet") sh.classList.remove("open"); });
+      sh.querySelector("#dgX").onclick=()=>sh.classList.remove("open");
+      sh.querySelector("#officeDiagCopy").onclick=()=>{
+        const txt=libLogText(), msg=sh.querySelector("#officeDiagMsg");
         const done=()=>{ msg.textContent="Copied."; };
         const fallback=()=>{ try{ const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); done(); }catch(e){ msg.textContent="Select the text and copy it."; } };
         try{ if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback); else fallback(); }catch(e){ fallback(); }
       };
     }
-    box.querySelector("#officeDiagText").textContent=libLogText();
+    sh.querySelector("#officeDiagText").textContent=libLogText();
+    sh.querySelector("#officeDiagMsg").textContent="";
+    sh.classList.add("open");
   }
   function benchOfficeDoorRow(){
     const b=document.getElementById("officeBtn"); if(!b) return;
@@ -59189,6 +59682,8 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(row) row.addEventListener("click",()=>{ renderBench(null); show("scr-bench"); });
     const lk=document.getElementById("lockerSafeBtn");
     if(lk) lk.addEventListener("click",()=>{ if(typeof openLocker==="function") openLocker(); else show("scr-ammoinv"); });
+    const gl=document.getElementById("gearSafeBtn");
+    if(gl) gl.addEventListener("click",()=>{ if(typeof gearOpen==="function") gearOpen(); });
   })();
   const benchPrevUpdateProRow_vC34=updateProRow;
   updateProRow=function(){ benchPrevUpdateProRow_vC34(); benchAdoptSettingsRows(); benchOfficeDoorRow(); benchSafeRow(); };
@@ -59623,13 +60118,13 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(WALK.mode==="clean") src.forEach((s,i)=>{ if(s.phase!=="Clear" && s.phase!=="Strip") cleanIdx.add(i); });
     users.filter(u=>!shown.has(u.id) && !cleanIdx.has(u.after)).forEach(u=>push(fsStepFromUser(u), "u:"+u.id));
     WALK.published=ordered.length;
-    if(WALK.deep && g && g.deepSteps && g.deepSteps.length){
-      push(deepSafetyStep(g), -1);
-      g.deepSteps.forEach((s,j)=>push(s, src.length+j));
-    }
     WALK.forkAt=steps.length-1;
     if(WALK.mode==="clean"){
       src.forEach((s,i)=>{ if(s.phase!=="Clear" && s.phase!=="Strip"){ push(s, i); usersAfter(i); } });
+      if(WALK.deep && g && g.deepSteps && g.deepSteps.length){
+        push(deepSafetyStep(g), -1);
+        g.deepSteps.forEach((s,j)=>push(s, src.length+j));
+      }
     }
     if(!steps.length){
       push({phase:"Your steps", title:"Nothing published for this one",
@@ -59659,11 +60154,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const b=document.getElementById("fsStripBar"); if(b) b.hidden=true;
   }
 
-  function walkEnter(){
+  function walkEnter(opts){
     const f=byId(activeId); if(!f) return;
     Object.assign(WALK, WALK_BLANK(), {on:true});
     stepIndex=0;
     walkBuild(f);
+    if(opts && opts.resume) return;
     buildGate();
     show("scr-gate");
   }
@@ -59673,14 +60169,29 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     if(montageSetFor(f)) montageMaybe(f, walkEnter); else walkEnter();
   }
 
-  function walkCleanIt(){
-    if(WALK.mode==="clean") return;
+  function walkToClean(){
+    if(WALK.mode==="clean") return false;
     WALK.mode="clean";
     walkBuild(byId(activeId));
     buildProgress();
+    return true;
+  }
+  function walkCleanIt(){
+    if(!walkToClean()) return;
     if(WALK.forkAt < WALK.steps.length-1){ stepIndex=WALK.forkAt+1; renderStep(); return; }
     buildCleaning(); show("scr-clean");
   }
+
+  function walkDeepFromChecklist(){
+    if(!isPro()){ openProSheet(); return; }
+    if(!cleanIsChecklistDeep(activeGuide())) return;
+    walkEnter({resume:true});
+    walkToClean();
+    stepIndex=WALK.forkAt;          
+    show("scr-player");
+    walkTakeDeep();
+  }
+  document.getElementById("cleanDeepBtn").addEventListener("click",()=>walkDeepFromChecklist());
 
   function walkReassemble(){
     const g=activeGuide();
