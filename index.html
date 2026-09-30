@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="FieldStrip">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>FieldStrip</title>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <style>
   :root{
     --bg:#14161A; --panel:#1D2127; --panel2:#232830; --edge:#2C333D;
@@ -1912,7 +1912,8 @@
       <div class="feat"><span class="fx">▸</span><span><b>Deep Clean guides</b> — the deeper strip past a field strip, on every guide. Standard guides stay free.</span></div>
       <div class="feat"><span class="fx">▸</span><span><b>Custom firearms</b> — add and <i>guide</i> firearms the catalog doesn't cover yet; assign any family's strip + parts diagram. One custom entry is free.</span></div>
       <div class="price" id="proPrice"></div>
-      <button class="btn primary full" id="proBuy">Unlock Pro</button>
+      <button class="gate-item" id="proTermsTick" type="button" style="margin-bottom:10px;width:100%;text-align:left"><span class="box">✓</span><span><div class="gt" style="font-size:13.5px">Pro is a one-time purchase for the app as it is. New guides and updates aren't promised.</div></span></button>
+      <button class="btn primary full" id="proBuy" disabled>Unlock Pro</button>
       <button class="btn full" id="proRestore" style="margin-top:8px">Restore Purchase</button>
       <button class="btn full" id="proClose" style="margin-top:8px">Not Now</button>
     </div>
@@ -2401,7 +2402,7 @@
   const FORMAT = "fieldstrip-backup";
   const FORMAT_VERSION = 1;
 
-  const EXPORT_EXCLUDE = ["fs_lock","fs_pro","fs_ack"];   
+  const EXPORT_EXCLUDE = ["fs_lock","fs_pro","fs_ack","fs_terms","fs_pro_terms"];      
   function gatherRaw(store){
     const data = {};
     store.keys().filter(k=>k.indexOf("fs_")===0 && EXPORT_EXCLUDE.indexOf(k)<0).sort().forEach(k=>{
@@ -3296,6 +3297,9 @@
     document.getElementById("proBuy").style.display = pro?"none":"";
     document.getElementById("proRestore").style.display = pro?"none":"";
     document.getElementById("proPrice").style.display = pro?"none":"";
+    document.getElementById("proTermsTick").style.display = pro?"none":"";
+    document.getElementById("proTermsTick").classList.remove("checked");
+    document.getElementById("proBuy").disabled = true;
     document.getElementById("proClose").textContent = (pro||FS_WEB_BUILD)?"Close":"Not Now";
     const dr=document.getElementById("safeDoor");
     const onDoor = !!(dr && dr.style.display && dr.style.display!=="none");
@@ -3329,7 +3333,13 @@
   document.getElementById("proClose").addEventListener("click",closeProSheet);
   document.getElementById("proX").addEventListener("click",closeProSheet);
   document.getElementById("proSheet").addEventListener("click",e=>{ if(e.target.id==="proSheet") closeProSheet(); });
+  document.getElementById("proTermsTick").addEventListener("click",()=>{
+    const t=document.getElementById("proTermsTick"); t.classList.toggle("checked");
+    document.getElementById("proBuy").disabled=!t.classList.contains("checked");
+  });
   document.getElementById("proBuy").addEventListener("click",()=>{
+    if(!document.getElementById("proTermsTick").classList.contains("checked")) return;
+    try{ BenchEnv.store.setRaw("fs_pro_terms", JSON.stringify({v:1, at:new Date().toISOString().slice(0,10)})); }catch(e){}
     alert("Purchases go live with the Play Store listing. For device testing: tap the version label on the My Safe screen 7 times.");
   });
   document.getElementById("proRestore").addEventListener("click",()=>{
@@ -3597,7 +3607,7 @@
     wrap.className="pickmore notfound";
     wrap.innerHTML=`<div class="nfh">Not in the list yet.</div>
       <div class="nfb">This one just hasn't been built.</div>
-      <button class="btn primary full" data-pm="request">Request it — requests get built first</button>
+      <button class="btn primary full" data-pm="request">Request it — requests jump the line</button>
       <button class="btn full" data-pm="custom" style="margin-top:8px">Add it as a custom firearm</button>`;
     wrap.querySelector('[data-pm="custom"]').addEventListener("click",()=> openCustomSheet(pickPrefill()));
     wrap.querySelector('[data-pm="request"]').addEventListener("click",()=> openReqSheet(pickPrefill()));   
@@ -6832,26 +6842,48 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     document.getElementById("attMsg").textContent = list.length
       ? "What is on this one. Tap a row for its photos, receipts and serial."
       : "Optics, mounts, slings, lights, cases \u2014 the things that hang off this one. Each keeps its own photos, receipts and serial.";
-    list.forEach(a=>{
-      const files=attFilesOf(a);
-      const thumbRec=files.find(x=>x && x.thumb);
-      const row=document.createElement("button");
-      row.type="button"; row.className="attrow";
-      const detail=attDetailLine(a);
-      row.innerHTML=
-        `<span class="attrow-ic">${thumbRec?`<img alt="" data-thumb="${escAttr(thumbRec.thumb)}">`:`<span class="attrow-glyph">${esc(attTypeGlyph(a.type))}</span>`}</span>`
-       +`<span class="attrow-body">`
-       +`<span class="attrow-type">${esc(attTypeLabel(a))}</span>`
-       +`<span class="attrow-name">${esc(a.name||attTypeLabel(a))}</span>`
-       +(detail?`<span class="attrow-det">${esc(detail)}</span>`:"")
-       +`</span>`
-       +`<span class="attrow-files">${files.length?`${files.length} file${files.length===1?"":"s"}`:""}</span>`;
-      row.addEventListener("click",()=>attOpenCard(f, a.id));
-      host.appendChild(row);
-      const img=row.querySelector("img[data-thumb]");
-      if(img) benchLoadThumb(img, thumbRec);
+    list.forEach(a=>{ host.appendChild(attRowEl(f, a)); });
+  }
+  function attRowEl(f, a){
+    const files=attFilesOf(a);
+    const thumbRec=files.find(x=>x && x.thumb);
+    const row=document.createElement("button");
+    row.type="button"; row.className="attrow"; row.dataset.att=a.id;
+    const detail=attDetailLine(a);
+    row.innerHTML=
+      `<span class="attrow-ic">${thumbRec?`<img alt="" data-thumb="${escAttr(thumbRec.thumb)}">`:`<span class="attrow-glyph">${esc(attTypeGlyph(a.type))}</span>`}</span>`
+     +`<span class="attrow-body">`
+     +`<span class="attrow-type">${esc(attTypeLabel(a))}</span>`
+     +`<span class="attrow-name">${esc(a.name||attTypeLabel(a))}</span>`
+     +(detail?`<span class="attrow-det">${esc(detail)}</span>`:"")
+     +`</span>`
+     +`<span class="attrow-files">${files.length?`${files.length} file${files.length===1?"":"s"}`:""}</span>`;
+    row.addEventListener("click",()=>{ activeId=f.id; attOpenCard(f, a.id); });
+    const img=row.querySelector("img[data-thumb]");
+    if(img) benchLoadThumb(img, thumbRec);
+    return row;
+  }
+  function benchGearRender(){
+    const host=document.getElementById("benchGearHost"); if(!host) return;
+    const guns=(typeof benchScopedSafe==="function")?benchScopedSafe():[];
+    const total=guns.reduce((a,f)=>a+fAtts(f).length,0);
+    const msg=document.getElementById("benchGearMsg");
+    if(msg) msg.textContent = total
+      ? (guns.length===1 ? "What is on this one. Tap a row for its photos, receipts and serial."
+                         : "What is on each one. Tap a row for its photos, receipts and serial.")
+      : (guns.length===1 ? "Optics, mounts, slings, lights, cases — the things that hang off this one. Each keeps its own photos, receipts and serial."
+                         : "Optics, mounts, slings, lights, cases — the things that hang off each one. Each keeps its own photos, receipts and serial.");
+    host.innerHTML="";
+    guns.forEach(f=>{
+      const list=fAtts(f); if(!list.length) return;
+      if(guns.length>1){
+        const nm=document.createElement("div"); nm.className="lmsg"; nm.style.margin="10px 0 4px";
+        nm.textContent=faInfo(f).name; host.appendChild(nm);
+      }
+      list.forEach(a=>{ host.appendChild(attRowEl(f, a)); });
     });
   }
+  function benchGearRefresh(){ if(document.getElementById("benchGearHost") && typeof renderBench==="function") renderBench(); }
   const ATT_GLYPH={"Optic":"\u25ce","Red dot":"\u25c9","Scope":"\u25ce","Mount / rings":"\u2338",
     "Sling":"\u301c","Light":"\u2600","Laser":"\u2192","Foregrip":"\u2293","Bipod":"\u22cf",
     "Grip":"\u220a","Muzzle device":"\u2299","Trigger":"\u21b5","Stock":"\u2310","Choke":"\u25d4",
@@ -6914,7 +6946,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       attRemove(f, a.id);
     });
   }
-  function attAfterChange(){ saveSafe(); const f=byId(activeId); if(f){ attRenderList(f); attRenderFiles(f); } }
+  function attAfterChange(){ saveSafe(); const f=byId(activeId); if(f){ attRenderList(f); attRenderFiles(f); } benchGearRefresh(); }
 
   let attSheet=null;
   function attOpenSheet(f, editId){
@@ -7546,7 +7578,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         c.care.length
           ? c.care.slice(0,3).map(x=>`<div class="benchrow"><div class="bi"><div class="bn">${esc(x.r.label)} — ${esc(x.name)}</div><div class="bs">${esc(benchDueLabel(x.f,x.r))}</div></div></div>`).join("")
           : `<div class="lmsg">Round clocks and time clocks, across the whole safe.</div>`);
-      lh+=lockRow("Attachments", c.attCount||"—",
+      lh+=lockRow("Photos & Files", c.attCount||"—",   
         `<div class="lmsg">Receipts, work photos, stamp photos and targets — stored on this phone only.</div>`);
       lh+=lockRow("Backup", "—",
         `<div class="lmsg">One local file with everything the Bench knows, photos optional — saved wherever you choose.</div>`);
@@ -7595,7 +7627,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       h+=`<div class="benchrow" data-nav="${x.f.id}"><div class="bi"><div class="bn">${esc(x.r.label)} — ${esc(x.name)}</div><div class="bs">${esc(benchDueLabel(x.f,x.r))}</div></div><span class="statuschip ${x.s.due?"due":"active"}">${x.s.due?"OVERDUE":"OK"}</span></div>`;
     });
     h+=`</div>`;
-    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Attachments</span><span class="lv">${c.attCount?`${c.attCount} files`:"none"}</span></div>
+    h+=`<div class="lifebox"><div class="lrow"><span class="lt">Photos &amp; Files</span><span class="lv">${c.attCount?`${c.attCount} files`:"none"}</span></div>
         <div class="lmsg">Receipts, work photos, stamp photos and targets across the safe. Stored on this phone only.</div></div>`;
     h+=`<div class="lifebox"><div class="lrow"><span class="lt">Backup</span></div>
         <div class="lmsg">One local file with everything the Bench knows. Save to Device writes it to this device's Downloads folder — nothing leaves this phone unless you share it.</div>
@@ -57978,6 +58010,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }catch(e){}
   }
   function benchBurnWipe(){
+    let keptTerms=null; try{ keptTerms=BenchEnv.store.getRaw("fs_terms"); }catch(e){}
     try{
       const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Preferences;
       const keys=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(FSNS.mine(k)) keys.push(k); }
@@ -57989,7 +58022,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     proState={on:false,src:null,ts:null};
     Object.keys(benchThumbCache).forEach(k=>delete benchThumbCache[k]);
     activeId=null; benchJustCleaned=null;
-    try{ BenchEnv.store.setRaw("fs_ack","1"); }catch(e){}
+    try{ BenchEnv.store.setRaw("fs_ack","1"); if(keptTerms!==null) BenchEnv.store.setRaw("fs_terms",keptTerms); }catch(e){}
   }
 
   sdDigit = function(d){
@@ -58205,11 +58238,44 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     sh.classList.add("open");
   }
 
-  function benchAckPage(force){
-    const seen=BenchEnv.store.getRaw("fs_ack");
-    if(seen && !force) return;
+  const TERMS_VERSION=1;
+  const TERMS_DATE="September 29, 2026";
+  const TERMS_TITLE="Fieldstrip terms";
+  const TERMS_POINTS=[
+    "1. Safety. Fieldstrip's guides follow each maker's published manual. They don't replace it. Always follow your manual and the maker's warnings, and treat every firearm as loaded. You are responsible for handling your firearm safely.",
+    "2. What Pro is. Pro is a one-time purchase. It unlocks the Pro features in the app as it is when you buy it. It is not a subscription or a service contract.",
+    "3. Updates and requests. New guides and updates may come, but they aren't promised. A guide request is a way to ask. It doesn't guarantee a guide will be added, or when.",
+    "4. If Fieldstrip stops. Fieldstrip L.L.C. may stop updating or selling the app at any time. What's on your device keeps working offline.",
+    "5. Limits. The app is provided as is. As far as the law allows, Fieldstrip L.L.C.'s liability is limited to what you paid for Pro. Refunds follow Google Play's refund policy."
+  ];
+  function termsCurrentVersion(){
+    let v=TERMS_VERSION;
+    try{ const t=parseInt(BenchEnv.store.getRaw("fs_terms_test_version")||"0",10); if(t>v) v=t; }catch(e){}
+    return v;
+  }
+  function termsWrapHTML(){
+    return '<div class="fo-brand">FIELD<span>STRIP</span></div>'
+      + '<h2 id="foTermsTitle" style="margin:22px 0 4px">'+TERMS_TITLE+'</h2>'
+      + '<div class="fo-quiet" id="foTermsVersion">Version '+TERMS_VERSION+' · '+TERMS_DATE+'</div>'
+      + '<div id="foTermsBody">'+TERMS_POINTS.map(p=>'<p class="fo-body">'+p+'</p>').join("")+'</div>'
+      + '<button class="btn primary full" id="foTermsBack" style="margin-top:16px">Back</button>';
+  }
+  function termsScreenOpen(){
     if(document.getElementById("firstOpen")) return;
-    if(!force && ((safe&&safe.length) || benchLockGet().on)){ BenchEnv.store.setRaw("fs_ack","1"); return; }
+    const page=document.createElement("div");
+    page.id="firstOpen"; page.className="on"; page.dataset.termsOnly="1";
+    page.innerHTML='<div class="fo-wrap" id="foTermsPage">'+termsWrapHTML()+'</div>';
+    document.body.appendChild(page);
+    page.querySelector("#foTermsBack").addEventListener("click",()=>page.remove());
+  }
+  function termsStoredVersion(){ try{ const r=JSON.parse(BenchEnv.store.getRaw("fs_terms")||"null"); return (r && r.v)|0; }catch(e){ return 0; } }
+  function termsRecordAgreed(){ BenchEnv.store.setRaw("fs_terms", JSON.stringify({v:termsCurrentVersion(), at:new Date().toISOString().slice(0,10)})); }
+  function benchAckPage(force){
+    let seen=BenchEnv.store.getRaw("fs_ack");
+    if(!force && !seen && ((safe&&safe.length) || benchLockGet().on)){ BenchEnv.store.setRaw("fs_ack","1"); seen="1"; }
+    const termsDue=termsStoredVersion()<termsCurrentVersion();
+    if(seen && !termsDue && !force) return;
+    if(document.getElementById("firstOpen")) return;
     const acks=[
       "This app is a reference, not an authority. It doesn't replace my firearm's owner's manual or a qualified gunsmith.",
       "Safe handling is mine. I'll confirm every firearm is unloaded before I work on it — every time.",
@@ -58218,13 +58284,14 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     ];
     const page=document.createElement("div");
     page.id="firstOpen"; page.className="on";
-    page.innerHTML=`<div class="fo-wrap">
+    page.innerHTML=`<div class="fo-wrap" id="foMain">
       <div class="fo-brand">FIELD<span>STRIP</span></div>
       <div class="fo-tag">Your safe, your bench, your records</div>
       <div class="fo-body">Guided field-stripping and cleaning for your firearms. A running record of everything you do — rounds, cleanings, service, ammo, filings.</div>
       <div class="fo-quiet">Everything stays on this phone. No account. No cloud. No tracking. The app reaches the internet only when you ask it to — to see whether guns have been added since this build while you're searching, and to download a guide you've said yes to.</div>
       <div class="fo-sect">Before you start</div>
       <div id="foAcks" style="display:flex;flex-direction:column;gap:10px">${acks.map((a,i)=>`<button class="gate-item" data-fa="${i}"><span class="box">✓</span><span><div class="gt" style="font-size:13.5px">${a}</div></span></button>`).join("")}</div>
+      <div class="fo-quiet" style="margin:12px 0 0" id="foAgree">By continuing, you agree to the <a href="#" id="foTermsLink">Fieldstrip terms</a>.</div>
       <button class="btn primary full" id="foGo" disabled style="margin-top:16px">I understand — continue</button>
       <div class="fo-pin" id="foPin" hidden>
         <div class="dc-h">Lock the door.</div>
@@ -58235,10 +58302,15 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         </div>
         <div class="dc-p" style="margin:8px 0 0">You can add one any time from My Safe.</div>
       </div>
-    </div>`;
+    </div>
+    <div class="fo-wrap" id="foTermsPage" hidden>${termsWrapHTML()}</div>`;
     document.body.appendChild(page);
+    page.querySelector("#foTermsLink").addEventListener("click",e=>{ e.preventDefault(); page.querySelector("#foMain").hidden=true; page.querySelector("#foTermsPage").hidden=false; page.scrollTop=0; });
+    page.querySelector("#foTermsBack").addEventListener("click",()=>{ page.querySelector("#foTermsPage").hidden=true; page.querySelector("#foMain").hidden=false; });
+    const askPin = !seen && !benchLockGet().on;
     const done=(openSecurity)=>{
       BenchEnv.store.setRaw("fs_ack","1");
+      termsRecordAgreed();   
       if(typeof benchNoPinSeen==="function") benchNoPinSeen();
       page.remove();
       if(openSecurity) benchSecuritySheet();
@@ -58250,6 +58322,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       page.querySelector("#foGo").disabled=checked.size!==acks.length;
     }));
     page.querySelector("#foGo").addEventListener("click",()=>{
+      if(!askPin){ done(false); return; }   
       page.querySelector("#foGo").hidden=true;
       page.querySelector("#foPin").hidden=false;
       page.querySelector("#foPin").scrollIntoView({block:"nearest"});
@@ -58258,6 +58331,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     page.querySelector("#foPinNo").addEventListener("click",()=>done(false));
   }
   benchAckPage(false);
+  window.FS_TERMS={version:TERMS_VERSION, date:TERMS_DATE, title:TERMS_TITLE, points:TERMS_POINTS.slice(), current:termsCurrentVersion, stored:termsStoredVersion, burnWipe:()=>benchBurnWipe(), ackPage:benchAckPage, screenOpen:termsScreenOpen};
   (function(){
     if(typeof benchRestoreResult!=="function") return;
     const prev=benchRestoreResult;
@@ -58575,7 +58649,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       <div class="lrow bc-h" data-bch="${id}"><span class="lt"><span class="bcchev">▾</span>${title}</span><span class="bcvitals"><span class="lv">${val}</span>${chipHtml}</span></div>
       <div class="bcbody"><div class="bcin">${bodyHtml}</div></div></div>`;
   }
-  const BENCH_CARD_LABELS={bcStats:"Round Counts",bcNfa:"NFA Items",bcMags:"Magazines",bcZeros:"Zero Records",bcCare:"Care Reminders",bcSvc:"Service & Mods",bcAtt:"Attachments",bcBackup:"Backup & CSV"};
+  const BENCH_CARD_LABELS={bcStats:"Round Counts",bcNfa:"NFA Items",bcMags:"Magazines",bcZeros:"Zero Records",bcCare:"Care Reminders",bcSvc:"Service & Mods",bcGear:"Attachments",bcAtt:"Photos & Files",bcBackup:"Backup & CSV"};
   renderBench=function(scopeId){
     if(arguments.length) benchScopeId = scopeId || null;
     const body=document.getElementById("benchBody");
@@ -58691,7 +58765,12 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     sb+=`<div id="benchSvcHost"></div>`;
     const svcTotal=svcGuns.reduce((a,f)=>a+((f.service||[]).length),0);
     h+=benchCard("bcSvc","Service & Mods", svcTotal?`${svcTotal} record${svcTotal===1?"":"s"}`:"none", sb);
-    h+=benchCard("bcAtt","Attachments", c.attCount?`${c.attCount} file${c.attCount===1?"":"s"}`:"none",
+    const gearGuns=benchScopedSafe();
+    const gearTotal=gearGuns.reduce((a,f)=>a+fAtts(f).length,0);
+    h+=benchCard("bcGear","Attachments", gearTotal?`${gearTotal} thing${gearTotal===1?"":"s"}`:"none",
+      `<div class="lmsg" id="benchGearMsg"></div>
+       <div id="benchGearHost"></div>`);
+    h+=benchCard("bcAtt","Photos & Files", c.attCount?`${c.attCount} file${c.attCount===1?"":"s"}`:"none",
       `<div class="lmsg">Receipts, work photos, stamp photos and targets — attached on each record's own card, stored on this phone only.</div>
        <div id="benchAttHost"></div>`);
     h+=benchCard("bcBackup","Backup & CSV","",
@@ -58711,6 +58790,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     }
     body.innerHTML=h;
     body.onclick=null;
+    benchGearRender();   
     body.querySelectorAll("[data-bch]").forEach(el=>el.addEventListener("click",e=>{
       if(e.target.closest(".boxhide")) return;
       const id=el.dataset.bch;
@@ -59575,7 +59655,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
   }
   kegHomeRows();
 
-  const SAFE_MOVED_ROWS=["ownerRow","dataRow","backupRow","lockRow","diagRow"];   
+  const SAFE_MOVED_ROWS=["ownerRow","dataRow","backupRow","lockRow","diagRow","termsRow"];      
   function benchSafeRowText(){
     const cards=Object.keys(BENCH_CARD_LABELS).map(id=>BENCH_CARD_LABELS[id]);
     const moved=SAFE_MOVED_ROWS.map(id=>{
@@ -59608,6 +59688,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
     const host=benchOfficeSheet().querySelector("#officeHost");
     if(!host) return null;
     if(typeof benchDiagnosticsRow==="function") benchDiagnosticsRow();
+    if(typeof benchTermsRow==="function") benchTermsRow();
     SAFE_MOVED_ROWS.forEach(id=>{
       const el=document.getElementById(id);
       if(el && el.parentNode!==host) host.appendChild(el);
@@ -59633,6 +59714,18 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
       row.addEventListener("click",()=>benchDiagSheet());
     }
     row.innerHTML="<b>Diagnostics</b> — what the app saw when a call did not go through · Copy";
+  }
+  function benchTermsRow(){
+    const host=benchOfficeSheet().querySelector("#officeHost"); if(!host) return;
+    let row=document.getElementById("termsRow");
+    const anchor=document.getElementById("diagRow")||document.getElementById("backupRow")||document.getElementById("dataRow")||document.getElementById("ownerRow")||document.getElementById("lockRow");
+    if(!row){
+      row=document.createElement("button");
+      row.id="termsRow"; row.className="prorow";
+      if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(row, anchor.nextSibling); else host.appendChild(row);
+      row.addEventListener("click",()=>{ if(typeof termsScreenOpen==="function") termsScreenOpen(); });
+    }
+    row.innerHTML="<b>Fieldstrip terms</b> — Version "+(typeof TERMS_VERSION!=="undefined"?TERMS_VERSION:1)+" · "+(typeof TERMS_DATE!=="undefined"?TERMS_DATE:"");
   }
   function benchDiagSheet(){
     let sh=document.getElementById("diagSheet");
@@ -61751,7 +61844,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
 
     sh.innerHTML = '<div class="sheet"><button class="sheetx" id="rqX">×</button>' +
       '<h3>REQUEST</h3>' +
-      '<p class="pp">Tell us what to build next. It is free, and it always will be.</p>' +
+      '<p class="pp">Tell us what to build next. It\'s free.</p>' +
       '<div class="field"><label for="rqKind">What is it?</label>' +
         '<select id="rqKind">' + REQ_KINDS.map(k =>
           '<option value="' + k.v + '">' + k.label + '</option>').join("") + '</select></div>' +
@@ -61894,7 +61987,7 @@ const EXP_LAYERS=[{n:"mag",asm:[18.23,-32.23],exp:[0,2],src:"assets/guns/glock/m
         '<div class="nfh">In the list. No guide yet.</div>' +
         '<div class="nfb">The row is here. The walk-through behind it hasn’t been built.</div>' +
         '<div class="nfacts"><button class="btn sm" type="button" id="fsDoorReq">' +
-          'Request it — requests get built first</button></div>';
+          'Request it — requests jump the line</button></div>';
     }
     if (!existing) row.insertBefore(el, row.firstChild);
 
